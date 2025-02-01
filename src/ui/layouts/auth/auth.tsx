@@ -1,12 +1,13 @@
-import { Box, Flex} from "@chakra-ui/react";
-import {Outlet } from "react-router-dom";
+import { Box, Flex } from "@chakra-ui/react";
+import { Outlet } from "react-router";
 
-import FixedPlugin from "../../components/fixedPlugin/FixedPlugin";
+import { ColorModeButton } from "@/components/ui/color-mode";
+import Footer from "@/ui/components/footer/FooterAuth";
 
 export default function Auth(props: any) {
   console.log("===== THIS IS AUTH VIEW =======");
   // console.log(props);
-  const {  illustrationBackground } = props;
+  const { illustrationBackground } = props;
   return (
     <Flex position="relative" h="max-content">
       <Flex
@@ -25,8 +26,6 @@ export default function Auth(props: any) {
         justifyContent="start"
         direction="column"
       >
-       
-
         <Outlet />
 
         <Box
@@ -44,14 +43,18 @@ export default function Auth(props: any) {
             w="100%"
             h="100%"
             bgSize="cover"
-            bgPosition="50%"
+            // bgPosition="50%"
             position="absolute"
             borderBottomLeftRadius={{ lg: "120px", xl: "200px" }}
           ></Flex>
         </Box>
-        {/* <Footer /> */}
+        <Footer />
       </Flex>
-      <FixedPlugin />
+      <ColorModeButton
+        position="fixed"
+        bottom="30px"
+        right="10"
+      ></ColorModeButton>
     </Flex>
   );
 }

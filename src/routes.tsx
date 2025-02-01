@@ -6,9 +6,10 @@ import { Suspense, lazy } from "react";
 // import HandleDynamicView from "./utils/app/HandleDynamicView";
 // // import AuthCallback from "./views/auth/AuthCallback";
 // const AuthCallback = lazy(() => import("./views/auth/AuthCallback"));
-// const AuthLayout = lazy(() => import("./ui/layouts/auth/auth"));
+const AuthLayout = lazy(() => import("./ui/layouts/auth/auth"));
 const SignInPage = lazy(() => import("./views/auth/signin/SignIn"));
 const SignUpPage = lazy(() => import("./views/auth/signup/SignUp"));
+const PageNotFound = lazy(() => import("./pages/NoPageFound"));
 // const PanelLayout = lazy(() => import("./ui/layouts/dashboard/dash"));
 // const PrivateRoute = lazy(() => import("./contexts/PrivateRoute"));
 
@@ -26,8 +27,8 @@ const routes: RouteObject[] = [
     element: (
       // <Suspense fallback={<AppLoader />}>
         <AuthProvider>
-          {/* <AuthLayout /> */}
-          <Outlet />
+          <AuthLayout />
+          {/* <Outlet /> */}
         </AuthProvider>
       // </Suspense>
     ),
@@ -96,6 +97,10 @@ const routes: RouteObject[] = [
   //     },
   //   ],
   // },
+  {
+    path: "/pageNotFound",
+    element:<PageNotFound/> ,
+  },
   {
     path: "*",
     element: <Navigate to="/pageNotFound" replace />,

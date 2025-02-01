@@ -9,6 +9,7 @@ import {
   Heading,
   HStack,
   Icon,
+  IconButton,
   IconProps,
   Input,
   SimpleGrid,
@@ -40,17 +41,15 @@ import { startLoading } from "../../../app/slices/loader/appLoaderSlice";
 import { POSTAPI } from "../../../app/api";
 // import AppVersionAlert from "../../../ui/components/alert/AppVersionAlert";
 // import { AlertProps } from "../../../types/appConfigInterface";
-import { SiAuthelia } from "react-icons/si";
-import { ColorModeButton, useColorModeValue } from "@/components/ui/color-mode";
+
 import { Field } from "@/components/ui/field";
 import { AiOutlineLogin } from "react-icons/ai";
 import { useForm } from "react-hook-form";
 import { LOGIN_CREDENTIAL } from "@/app/interfaces/app.interface";
 import { InputGroup } from "@/components/ui/input-group";
 import { LuUser } from "react-icons/lu";
-import { TbPasswordFingerprint } from "react-icons/tb";
 import { PasswordInput } from "@/components/ui/password-input";
-// const MotionText = motion(Text);
+import { SiSpringsecurity } from "react-icons/si";
 
 const SignIn = () => {
   console.log("signin");
@@ -79,106 +78,19 @@ const SignIn = () => {
     }
   };
 
-  // Chakra color mode
-  // const textColor = useColorModeValue("navy.700", "white");
-  // const textColorSecondary = "gray.400";
-  // const textColorDetails = useColorModeValue("navy.700", "secondaryGray.600");
-  // const textColorBrand = useColorModeValue("brand.500", "white");
-  // const brandStars = useColorModeValue("brand.500", "brand.400");
-  // const googleBg = useColorModeValue("secondaryGray.300", "whiteAlpha.200");
-  // const googleText = useColorModeValue("navy.700", "white");
-  // const googleHover = useColorModeValue(
-  //   { bg: "gray.200" },
-  //   { bg: "whiteAlpha.300" }
-  // );
-  // const googleActive = useColorModeValue(
-  //   { bg: "secondaryGray.300" },
-  //   { bg: "whiteAlpha.200" }
-  // );
   const [show, setShow] = useState(false);
   const handleClick = () => setShow(!show);
   const [isLoading, setLoading] = useState(false);
-  // const [showAlert, setShowAlert] = useState<AlertProps>({
-  //   title: "",
-  //   description: "",
-  //   status: "info",
-  //   isVisible: false,
-  // });
+
   const navigate = useNavigate();
 
   const location = useLocation();
-  // console.log("location", location);
 
   const searchParams = new URLSearchParams(location.search);
   const redirectUrl: any = searchParams.get("redirect");
-  // console.log("redirectUrl", redirectUrl);
-  // const [userCredentials, setUseCredentials] = useState({
-  //   loginId: "",
-  //   password: "",
-  // });
-
   const { loading, authInfo, setLoginAuthInfo } = useAuth();
-
-  // const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const { name, value } = e.target;
-  //   setUseCredentials({
-  //     ...userCredentials,
-  //     [name]: value,
-  //   });
-  // };
   const dispatch = useDispatch<AppDispatch>();
 
-  // const handleSubmit2 = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   console.log("userCredentials", userCredentials);
-  //   setLoading(true);
-  //   try {
-  //     POSTAPI({
-  //       path: "/auth/login",
-  //       data: userCredentials,
-  //       isPrivateApi: false,
-  //     }).subscribe((res: any) => {
-  //       if (res.success) {
-  //         console.log(res);
-
-  //         setLoading(false);
-  //         const responseInfo: any = res["login_info"];
-  //         console.log("AuthInfo", responseInfo);
-  //         setLoginAuthInfo(responseInfo);
-  //         dispatch(fetchAppConfig());
-  //         dispatch(login(res));
-  //         // setShowAlert({
-  //         //   title: res?.message,
-  //         //   description: res["message"],
-  //         //   status: "success",
-  //         //   isVisible: true,
-  //         // });
-  //         // console.log("redirectUrl",redirectUrl);
-  //         navigate(redirectUrl || "/myApps");
-  //       } else {
-  //         console.log(res);
-  //       }
-  //     });
-  //   } catch (error: any) {
-  //     console.log(error);
-  //     setLoading(false);
-  //     if (error.message === "Network Error") {
-  //       // setShowAlert({
-  //       //   title: error?.message,
-  //       //   description: "Please Check Your Internet Connections",
-  //       //   status: "error",
-  //       //   isVisible: true,
-  //       // });
-  //     } else {
-  //       // setShowAlert({
-  //       //   title: error?.statusText,
-  //       //   description: error?.response["data"]["message"],
-  //       //   status: "error",
-  //       //   isVisible: true,
-  //       // });
-  //     }
-  //   }
-  // };
   useEffect(() => {
     if (!loading && authInfo && authInfo.success) {
       // Uncomment if you have logic to set a redirect URL
@@ -330,11 +242,16 @@ const SignIn = () => {
         // bg="gray.100"
       >
         <Box p={8} maxW="md" w="full">
-          <Heading mb={6} textAlign="center" size="lg">
+          {/* <Heading mb={6} textAlign="center" size="lg">
             Sign in into IDP Provider
-          </Heading>
+          </Heading> */}
+
           <form onSubmit={onSubmit}>
-            <VStack>
+            <VStack gap={4}>
+              <IconButton variant="outline" p={5} w="100%">
+                <SiSpringsecurity />
+                <Text fontFamily="mono" >SIGN IN INTO OAUTH-IDP PROVIDER</Text>
+              </IconButton>
               <Field
                 label="User ID"
                 required
@@ -390,10 +307,10 @@ const SignIn = () => {
                 <AiOutlineLogin />
                 Sign In
               </Button>
-              <ColorModeButton></ColorModeButton>
-              <Text textAlign="center">
+              {/* <ColorModeButton></ColorModeButton> */}
+              <Text textAlign="center" fontSize="xs">
                 Don't have an account?{" "}
-                <Link color="blue.500" to={"/auth/sign-up"}>
+                <Link color="#0969da" to={"/auth/sign-up"}>
                   Sign Up
                 </Link>
               </Text>
