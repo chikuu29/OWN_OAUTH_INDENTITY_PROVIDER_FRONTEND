@@ -3,10 +3,10 @@ import {
   Flex,
   Icon,
   Menu,
-  MenuButton,
+  // MenuButton,
   MenuItem,
-  MenuList,
-  useColorModeValue,
+  // MenuList,
+  // useColorModeValue,
   Text,
   IconButton,
 } from "@chakra-ui/react";
@@ -19,15 +19,15 @@ import MenuLink from "../sidebar/components/MenuLink";
 import NotificationMenu from "./NotificationMenu";
 
 export default function PanelNavBarAction() {
-  const navbarIcon = useColorModeValue("gray.400", "white");
-  // let menuBg = useColorModeValue("white", "navy.800");
-  let bg = useColorModeValue("white", "gray.950");
-  const textColor = useColorModeValue("secondaryGray.900", "white");
-  const borderColor = useColorModeValue("#E6ECFA", "rgba(135, 140, 189, 0.3)");
-  const shadow = useColorModeValue(
-    "14px 17px 40px 4px rgba(112, 144, 176, 0.18)",
-    "14px 17px 40px 4px rgba(112, 144, 176, 0.06)"
-  );
+  // const navbarIcon = useColorModeValue("gray.400", "white");
+  // // let menuBg = useColorModeValue("white", "navy.800");
+  // let bg = useColorModeValue("white", "gray.950");
+  // const textColor = useColorModeValue("secondaryGray.900", "white");
+  // const borderColor = useColorModeValue("#E6ECFA", "rgba(135, 140, 189, 0.3)");
+  // const shadow = useColorModeValue(
+  //   "14px 17px 40px 4px rgba(112, 144, 176, 0.18)",
+  //   "14px 17px 40px 4px rgba(112, 144, 176, 0.06)"
+  // );
   // const { colorMode } = useColorMode();
   const auth = useSelector((state: any) => state.auth);
 

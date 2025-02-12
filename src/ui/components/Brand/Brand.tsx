@@ -9,7 +9,7 @@ import {
   Box,
 } from "@chakra-ui/react";
 import { GrDocumentStore } from "react-icons/gr";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 export default function Brand() {
   const navigate = useNavigate(); // Move useNavigate here

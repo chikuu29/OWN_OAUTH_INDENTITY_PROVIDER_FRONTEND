@@ -3,12 +3,11 @@ import {
   HStack,
   VStack,
   Text,
-  useColorMode,
-  useColorModeValue,
+  
 } from "@chakra-ui/react";
-import { mode } from "@chakra-ui/theme-tools";
+// import { mode } from "@chakra-ui/theme-tools";
 
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router";
 // import DashBoard from "../../../../views/dashboard/DashBoard";
 import * as dynamicFunctions from "../../../../script/myAppsScript";
 // import { IconType } from 'react-icons';
@@ -38,8 +37,8 @@ interface MenuLinkInterFace {
 
 export default function MenuLink(props: MenuLinkInterFace) {
   const { menuConfig, showFullSideBarMenu } = props;
-  const { colorMode } = useColorMode();
-  const activeBg=useColorModeValue("#F4F7FE", "#171717")
+  // const { colorMode } = useColorMode();
+  // const activeBg=useColorModeValue("#F4F7FE", "#171717")
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -72,9 +71,9 @@ export default function MenuLink(props: MenuLinkInterFace) {
     p: 2,
 
     borderRadius: "md",
-    _hover: {
-      bg: mode("secondaryGray.400", "whiteAlpha.200")({ colorMode }),
-    },
+    // _hover: {
+    //   bg: mode("secondaryGray.400", "whiteAlpha.200")({ colorMode }),
+    // },
   };
 
   const content = showFullSideBarMenu ? (
@@ -82,7 +81,7 @@ export default function MenuLink(props: MenuLinkInterFace) {
       {/* <Box as={AsyncLoadIcon(menuConfig.icon)} size="24px" /> */}
       <AsyncLoadIcon iconName={menuConfig.icon} />
       {/* <Box boxSize={"24px"} p={"0px"}><AsyncLoadIcon iconName={menuConfig.icon}/></Box> */}
-      <Text fontSize="0.8rem" fontWeight="600" isTruncated w="full">
+      <Text fontSize="0.8rem" fontWeight="600"  w="full">
         {menuConfig.label}
       </Text>
     </HStack>
@@ -113,7 +112,7 @@ export default function MenuLink(props: MenuLinkInterFace) {
       <NavLink
         to={menuConfig.path}
         style={({ isActive }) => ({
-          background:isActive? activeBg:'unset',
+          background:isActive? 'activeBg':'unset',
           borderRadius:'8px',
           // border:isActive?"1px solid #FEEFEE":'unset',
           // color: isActive ? "red" : "black",

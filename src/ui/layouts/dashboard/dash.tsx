@@ -21,11 +21,11 @@ console.log("features",FEATURE);
 
   return (
     <Flex h="100vh" flexDirection="column">
-      {/* <Navbar
+      <Navbar
         togglesidebar={toggleSidebar}
         FEATURE={FEATURE}
         DISPLAY_TYPE={DISPLAY_TYPE}
-      /> */}
+      />
       {/* Main Content */}
       <Flex flex="1" >
         {/* <PanelSideBar showSidebar={showSidebar} togglesidebar={toggleSidebar} /> */}

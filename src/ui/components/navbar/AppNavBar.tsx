@@ -3,8 +3,7 @@ import {
   Flex,
   Icon,
   IconButton,
-  useColorMode,
-  useColorModeValue,
+ 
 } from "@chakra-ui/react";
 
 import PanelNavBarAction from "./AppNavBarAction";
@@ -35,7 +34,7 @@ const AppNav = ({
   // let navbarBackdrop = "blur(20px)";
   let navbarShadow =
     "rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;";
-  let navbarBg = useColorModeValue("white", "gray.950");
+  // let navbarBg = useColorModeValue("white", "gray.950");
   // let navbarBg = useColorModeValue("white", "navy.800");
 
   return (
@@ -60,7 +59,7 @@ const AppNav = ({
       <Flex
         // position="fixed"
         minH="75px"
-        bg={navbarBg}
+        // bg={navbarBg}
         zIndex={999}
         position={"fixed"}
         ps={5}
@@ -79,7 +78,7 @@ const AppNav = ({
             {DISPLAY_TYPE.SHOW_SIDE_NAV_MENU && (
               <IconButton
                 aria-label="Menu"
-                icon={<Icon as={MdMenu} h="20px" w="20px" />}
+                // icon={<Icon as={MdMenu} h="20px" w="20px" />}
                 display={{ base: "none", sm: "none", xl: "block" }}
                 cursor="pointer"
                 variant='outline'
@@ -88,14 +87,14 @@ const AppNav = ({
             )}
             {FEATURE.length > 0 && <SidebarResponsive FEATURE_LIST={FEATURE} />}
           </Box>
-          <Box>
+          {/* <Box>
             <Brand />
-          </Box>
+          </Box> */}
         </Flex>
-        <TopNavMenuBuilder
+        {/* <TopNavMenuBuilder
           FEATURE_LIST={FEATURE}
           SHOW_TOP_NAV_MENU={DISPLAY_TYPE.SHOW_TOP_NAV_MENU}
-        />
+        /> */}
         <PanelNavBarAction />
       </Flex>
     </Box>
