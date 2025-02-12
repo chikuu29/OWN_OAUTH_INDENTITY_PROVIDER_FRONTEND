@@ -23,7 +23,7 @@ const privateAPI = axios.create({
     headers: {
         "Content-Type": "application/json",
         'X-Client-ID': import.meta.env.VITE_X_Client_ID,
-        'X-CSRFToken':getCRSFToken()
+        'X-CSRFToken': getCRSFToken()
     },
     timeout: 30000
 
@@ -36,7 +36,7 @@ const publicAPI = axios.create({
     headers: {
         "Content-Type": "application/json",
         'X-Client-ID': import.meta.env.VITE_X_Client_ID,
-        'X-CSRFToken':getCRSFToken()
+        'X-CSRFToken': getCRSFToken()
     },
     timeout: 30000
 })
@@ -44,21 +44,24 @@ const publicAPI = axios.create({
 privateAPI.interceptors.request.use(
     (config) => {
         const authState: RootState = store.getState()
+        if (config.data instanceof FormData) {
+
+            config.headers['Content-Type'] = 'multipart/form-data';
+            // config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
+        } else if (config.data && typeof config.data === 'object') {
+            // If the data is an object, we use application/json
+            config.headers['Content-Type'] = 'application/json';
+        } else {
+            // You can set any other default Content-Type if needed
+            config.headers['Content-Type'] = 'text/plain';
+        }
         if (authState && authState.auth && authState.auth.isAuthenticated) {
-            if (config.data instanceof FormData) {
-                config.headers['Content-Type'] = 'multipart/form-data';
-            } else if (config.data && typeof config.data === 'object') {
-                // If the data is an object, we use application/json
-                config.headers['Content-Type'] = 'application/json';
-            } else {
-                // You can set any other default Content-Type if needed
-                config.headers['Content-Type'] = 'text/plain';
-            }
+           
             const { token } = authState.auth
             config.headers = config.headers || {};
             config.headers['Authorization'] = `Bearer ${token}`;
         }
-        
+
         return config
     },
     (error: AxiosError) => {

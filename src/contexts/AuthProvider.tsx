@@ -76,7 +76,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               //   }
               // });
 
-              dispatch(fetchAppConfig());
+              // dispatch(fetchAppConfig());
               setAuthInfo(res);
               dispatch(login(res));
             }

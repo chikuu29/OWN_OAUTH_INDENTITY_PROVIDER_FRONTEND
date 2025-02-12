@@ -7,7 +7,7 @@ import {
   Center,
   Text,
   Image,
-  useColorModeValue,
+  // useColorModeValue,
   HStack,
 } from "@chakra-ui/react";
 import { useSelector } from "react-redux";
@@ -52,7 +52,8 @@ const Loader = ({
   // loaderText = "Loading Please Wait..",
   ...props
 }) => {
-  let bgColor = useColorModeValue("white", "gray.950");
+  // let bgColor = useColorModeValue("white", "gray.950");
+  let bgColor = "white"
   const {active,loaderText} = useSelector((state:RootState) => state.loader);
   if (!active) return null;
   return (
@@ -71,7 +72,7 @@ const Loader = ({
           borderRadius="xl"
           textAlign="center"
         >
-          <HStack spacing={4}  p={4}>
+          <HStack  p={4}>
             {/* <Image
               width="100px"
               height="100px"
@@ -82,9 +83,9 @@ const Loader = ({
   
             /> */}
             <Spinner
-              thickness="4px"
-              speed="0.65s"
-              emptyColor="gray.750"
+              // thickness="4px"
+              // speed="0.65s"
+              // emptyColor="gray.750"
               color={bgColor}
               size="md"
               // border="8px solid"
@@ -130,17 +131,17 @@ export const AppLoader = () => {
       // bg={bg}
     >
       <Image src={"../assets/gif/loader.gif"} alt="App Logo" boxSize="120px" mb={8} />
-      <Spinner thickness="4px" speed="0.65s" color="teal.500" size="xl" />
+      <Spinner  color="teal.500" size="xl" />
       <Text fontSize="lg" mt={4} textAlign={'center'}>
        Just a moment , we're getting things ready for you...
       </Text>
-      <Progress
+      {/* <Progress
         value={progress}
         size="sm"
         colorScheme="teal"
         width="80%"
         mt={4}
-      />
+      /> */}
     </Flex>
   );
 };

@@ -50,6 +50,8 @@ import { InputGroup } from "@/components/ui/input-group";
 import { LuUser } from "react-icons/lu";
 import { PasswordInput } from "@/components/ui/password-input";
 import { SiSpringsecurity } from "react-icons/si";
+import { TbPasswordFingerprint } from "react-icons/tb";
+import axios from "axios";
 
 const SignIn = () => {
   console.log("signin");
@@ -177,17 +179,26 @@ const SignIn = () => {
     mode: "onChange",
     reValidateMode: "onChange",
   });
-  const onSubmit = handleSubmit((formState) => {
+  const onSubmit = handleSubmit(async (formState) => {
     console.log(formState);
 
     //   e.preventDefault();
     //   console.log("userCredentials", userCredentials);
     //   setLoading(true);
+
+    const formData = new FormData();
+    formData.append("username", formState.username ?? "");
+    formData.append("password", formState.password ?? "");
+    console.log("form", formData);
+
     try {
+      // const response = await axios.post("http://localhost:8000/auth/login", formData, {
+      //   headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      // });
       POSTAPI({
         path: "/auth/login",
-        data: formState,
-        isPrivateApi: false,
+        data: formData,
+        isPrivateApi: true,
       }).subscribe((res: any) => {
         if (res.success) {
           console.log(res);
@@ -250,18 +261,18 @@ const SignIn = () => {
             <VStack gap={4}>
               <IconButton variant="outline" p={5} w="100%">
                 <SiSpringsecurity />
-                <Text fontFamily="mono" >SIGN IN INTO OAUTH-IDP PROVIDER</Text>
+                <Text fontFamily="mono">SIGN IN INTO OAUTH-IDP PROVIDER</Text>
               </IconButton>
               <Field
                 label="User ID"
                 required
                 w="100%"
-                errorText={errors.userName?.message}
-                invalid={!!errors.userName}
+                errorText={errors.username?.message}
+                invalid={!!errors.username}
               >
                 <InputGroup flex="1" w="100%" startElement={<LuUser />}>
                   <Input
-                    {...register("userName", {
+                    {...register("username", {
                       required: "user ID is required",
                     })}
                     placeholder="Enter your user ID"
@@ -282,6 +293,7 @@ const SignIn = () => {
                   })}
                   variant={"outline"}
                   placeholder="Enter your password"
+                  rootProps={{ startElement: <TbPasswordFingerprint /> }}
                 />
                 {/* <InputGroup
                   flex="1"

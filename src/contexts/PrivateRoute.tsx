@@ -1,8 +1,8 @@
 // src/PrivateRoute.tsx
 import React from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate, useLocation } from "react-router";
 import { useAuth } from "./AuthProvider";
-import { GetNavMenuConfig } from "../utils/services/appServices";
+// import { GetNavMenuConfig } from "../utils/services/appServices";
 import Loader from "../ui/components/Loader/Loader";
 // import isAuthenticated from './auth';
 
@@ -18,7 +18,7 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({
   redirection = true,
 }) => {
   console.log("%c===EXCECUTE PRIVATE ROUTE===", "color:red");
-  GetNavMenuConfig();
+  // GetNavMenuConfig();
   const location = useLocation();
   elseNavigation =
     elseNavigation && elseNavigation !== ""

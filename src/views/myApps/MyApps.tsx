@@ -1,22 +1,16 @@
-import {
-  Flex,
-  Text,
-  Box,
-  Image,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  useColorMode,
-  useColorModeValue,
-} from "@chakra-ui/react";
-import { useNavigate } from "react-router-dom";
+import { Flex, Text, Box, Image } from "@chakra-ui/react";
+import { useNavigate } from "react-router";
 import * as dynamicFunctions from "../../script/myAppsScript";
 
 import { useSelector } from "react-redux";
 import { RootState } from "../../app/store";
-import ErrorComponent from "../../ui/components/Error/ErrorComponent";
+// import ErrorComponent from "../../ui/components/Error/ErrorComponent";
 // import Loader from "../../ui/components/Loader/Loader";
-
+import {
+  BreadcrumbCurrentLink,
+  BreadcrumbLink,
+  BreadcrumbRoot,
+} from "@/components/ui/breadcrumb";
 export default function MyApps() {
   const appConfig = useSelector((state: RootState) => state.app.appConfig);
   // const loading = useSelector((state: RootState) => state.app.loading);
@@ -61,18 +55,17 @@ export default function MyApps() {
   // if (loading === "loading") return <Loader loaderText="Loading App Configuration..."/>;
   return (
     <Box p="4">
-      <Breadcrumb fontWeight={"bold"}>
-        <BreadcrumbItem>
-          <BreadcrumbLink href="/">Home</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbItem isCurrentPage>
-          <BreadcrumbLink href="#">myApps</BreadcrumbLink>
-        </BreadcrumbItem>
-      </Breadcrumb>
-      {error && <ErrorComponent errorMessage={error}></ErrorComponent>}
+      
+      <BreadcrumbRoot>
+        <BreadcrumbLink href="/">Home</BreadcrumbLink>
+        {/* <BreadcrumbLink href="#">Components</BreadcrumbLink> */}
+        <BreadcrumbCurrentLink>myApps</BreadcrumbCurrentLink>
+      </BreadcrumbRoot>
+
+      {/* {error && <ErrorComponent errorMessage={error}></ErrorComponent>}
       {!error && (
         <AppList apps={appList} handleNavigate={handleDefaultNavigate} />
-      )}
+      )} */}
     </Box>
   );
 }
@@ -90,17 +83,17 @@ const AppItem: React.FC<AppItemProps> = ({
   name,
   handleNavigate,
 }) => {
-  if(appConfig && appConfig.hidden) return null
+  if (appConfig && appConfig.hidden) return null;
   return (
     <Box
       w={{ base: "45%", md: "200px" }}
       // h="250px"
-      bg={useColorModeValue("white", "gray.950")}
+      // bg={useColorModeValue("white", "gray.950")}
       p="4"
       borderWidth="1px"
       borderRadius="lg"
       // boxShadow="md"
-      boxShadow={'2xl'}
+      boxShadow={"2xl"}
       m="2"
       transition="all 0.3s ease"
       _hover={{

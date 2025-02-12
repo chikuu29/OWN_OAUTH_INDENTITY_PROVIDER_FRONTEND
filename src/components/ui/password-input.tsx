@@ -1,8 +1,10 @@
 "use client"
 
 import type {
+  BoxProps,
   ButtonProps,
   GroupProps,
+  InputElementProps,
   InputProps,
   StackProps,
 } from "@chakra-ui/react"
@@ -18,7 +20,6 @@ import {
 import * as React from "react"
 import { LuEye, LuEyeOff } from "react-icons/lu"
 import { InputGroup } from "./input-group"
-import { TbPasswordFingerprint } from "react-icons/tb"
 
 export interface PasswordVisibilityProps {
   defaultVisible?: boolean
@@ -26,11 +27,20 @@ export interface PasswordVisibilityProps {
   onVisibleChange?: (visible: boolean) => void
   visibilityIcon?: { on: React.ReactNode; off: React.ReactNode }
 }
+export interface PasswordInputGroupProps extends BoxProps {
+  startElementProps?: InputElementProps
+  endElementProps?: InputElementProps
+  startElement?: React.ReactNode
+  endElement?: React.ReactNode
+  // children: React.ReactElement<InputElementProps>
+  // startOffset?: InputElementProps["paddingStart"]
+  // endOffset?: InputElementProps["paddingEnd"]
+}
 
 export interface PasswordInputProps
   extends InputProps,
     PasswordVisibilityProps {
-  rootProps?: GroupProps
+  rootProps?: PasswordInputGroupProps
 }
 
 export const PasswordInput = React.forwardRef<
@@ -69,9 +79,6 @@ export const PasswordInput = React.forwardRef<
         >
           {visible ? visibilityIcon.off : visibilityIcon.on}
         </VisibilityTrigger>
-      }
-      startElement={
-        <TbPasswordFingerprint />
       }
       {...rootProps}
     >

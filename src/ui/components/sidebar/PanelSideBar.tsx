@@ -1,5 +1,5 @@
 import {
-  useColorModeValue,
+
   Box,
   Flex,
   Drawer,
@@ -7,7 +7,6 @@ import {
   DrawerContent,
   Icon,
   useDisclosure,
-  Divider,
   IconButton,
   VStack,
 } from "@chakra-ui/react";
@@ -18,7 +17,7 @@ import Brand from "../Brand/Brand";
 // import { useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../app/store";
-import { APP_CONFIG_STATE } from "../../../types/appConfigInterface";
+import { APP_CONFIG_STATE } from "../../../app/interfaces/app.interface";
 
 export default function PanelSideBar(props: any) {
   const { showSidebar, togglesidebar, SHOW_SIDEBAR, ...rest } = props;
@@ -26,11 +25,11 @@ export default function PanelSideBar(props: any) {
   console.log("showSidebar", showSidebar);
 
   let variantChange = "0.2s linear";
-  let shadow = useColorModeValue(
-    "rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;",
-    "unset"
-  );
-  let sidebarBg = useColorModeValue("white", "gray.950");
+  // let shadow = useColorModeValue(
+  //   "rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;",
+  //   "unset"
+  // );
+  // let sidebarBg = useColorModeValue("white", "gray.950");
 
   let sidebarMargins = "0px";
   const { DISPLAY_TYPE, FEATURE }: APP_CONFIG_STATE = useSelector(
@@ -43,11 +42,11 @@ export default function PanelSideBar(props: any) {
       display={{ base: "none", sm: "none", xl: "block" }}
       minH="100%"
       p={"0px"}
-      boxShadow={shadow}
+      // boxShadow={shadow}
     >
       <Box
         {...rest}
-        bg={sidebarBg}
+        // bg={sidebarBg}
         transition={variantChange}
         p={"0px"}
   
@@ -73,8 +72,8 @@ export default function PanelSideBar(props: any) {
 // FUNCTIONS
 export function SidebarResponsive(props: any) {
   const { DISPLAY_TYPE, FEATURE, ...rest } = props;
-  let sidebarBg = useColorModeValue("white", "gray.950");
-  let subbg = useColorModeValue("secondaryGray.100", "gray.800");
+  // let sidebarBg = useColorModeValue("white", "gray.950");
+  // let subbg = useColorModeValue("secondaryGray.100", "gray.800");
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <Flex

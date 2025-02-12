@@ -2,9 +2,9 @@ import { Container, Flex, VStack } from "@chakra-ui/react";
 import Navbar from "../../components/navbar/AppNavBar";
 import PanelSideBar from "../../components/sidebar/PanelSideBar";
 import { memo, useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet } from "react-router";
 import { useSelector } from "react-redux";
-import { APP_CONFIG_STATE } from "../../../types/appConfigInterface";
+import { APP_CONFIG_STATE } from "../../../app/interfaces/app.interface";
 import { RootState } from "../../../app/store";
 import AppFooter from "../../components/footer/AppFooter";
 
@@ -21,20 +21,20 @@ console.log("features",FEATURE);
 
   return (
     <Flex h="100vh" flexDirection="column">
-      <Navbar
+      {/* <Navbar
         togglesidebar={toggleSidebar}
         FEATURE={FEATURE}
         DISPLAY_TYPE={DISPLAY_TYPE}
-      />
+      /> */}
       {/* Main Content */}
       <Flex flex="1" >
-        <PanelSideBar showSidebar={showSidebar} togglesidebar={toggleSidebar} />
+        {/* <PanelSideBar showSidebar={showSidebar} togglesidebar={toggleSidebar} /> */}
         {/* Main Content */}
-        <VStack flex="1" spacing={4} align="stretch">
+        <VStack flex="1" gap={4} align="stretch">
           <Container maxW="100%">
             <Outlet></Outlet>
           </Container>
-          <AppFooter />
+          {/* <AppFooter /> */}
         </VStack>
       </Flex>
     </Flex>

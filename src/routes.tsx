@@ -1,5 +1,10 @@
 import { AuthProvider } from "./contexts/AuthProvider";
-import { Navigate, createBrowserRouter, RouteObject, Outlet } from "react-router";
+import {
+  Navigate,
+  createBrowserRouter,
+  RouteObject,
+  Outlet,
+} from "react-router";
 import { Suspense, lazy } from "react";
 // import { AppLoader } from "./ui/components/Loader/Loader";
 // // const AppLoader=lazy(()=>import("./ui/components/Loader/Loader"))
@@ -7,16 +12,35 @@ import { Suspense, lazy } from "react";
 // // import AuthCallback from "./views/auth/AuthCallback";
 // const AuthCallback = lazy(() => import("./views/auth/AuthCallback"));
 const AuthLayout = lazy(() => import("./ui/layouts/auth/auth"));
+const DashLayout = lazy(() => import("./ui/layouts/dashboard/dash"));
 const SignInPage = lazy(() => import("./views/auth/signin/SignIn"));
 const SignUpPage = lazy(() => import("./views/auth/signup/SignUp"));
 const PageNotFound = lazy(() => import("./pages/NoPageFound"));
+const AuthorizePage = lazy(() => import("./views/auth/oauth/AuthorizePage"));
+const MyApps=lazy(()=>import("./views/myApps/MyApps"))
 // const PanelLayout = lazy(() => import("./ui/layouts/dashboard/dash"));
-// const PrivateRoute = lazy(() => import("./contexts/PrivateRoute"));
+const PrivateRoute = lazy(() => import("./contexts/PrivateRoute"));
 
 const routes: RouteObject[] = [
   {
     path: "/",
-    element: <Navigate to="/myApps" replace />,
+    element: <Navigate to="myApps" replace />,
+    // element: <Navigate to="/myApps" replace />,
+  },
+  {
+    path: "myApps",
+    element: (
+      <AuthProvider>
+        <DashLayout />
+      </AuthProvider>
+    ),
+    children: [
+      {
+        path: "*",
+        index:true,
+        element: <MyApps />,
+      },
+    ],
   },
   {
     path: "/auth",
@@ -26,10 +50,9 @@ const routes: RouteObject[] = [
     path: "/auth/*",
     element: (
       // <Suspense fallback={<AppLoader />}>
-        <AuthProvider>
-          <AuthLayout />
-          {/* <Outlet /> */}
-        </AuthProvider>
+      <AuthProvider>
+        <AuthLayout />
+      </AuthProvider>
       // </Suspense>
     ),
     children: [
@@ -37,7 +60,7 @@ const routes: RouteObject[] = [
         path: "sign-in",
         element: (
           // <Suspense fallback={<AppLoader />}>
-            <SignInPage />
+          <SignInPage />
           // </Suspense>
         ),
       },
@@ -67,40 +90,57 @@ const routes: RouteObject[] = [
       // },
     ],
   },
-  // {
-  //   path: "/:tenant_name/:view/*", // Parent route for `view`
-  //   element: (
-  //     <Suspense fallback={<AppLoader />}>
-  //       <AuthProvider>
-  //         <PrivateRoute>
-  //           <PanelLayout />
-  //         </PrivateRoute>
-  //       </AuthProvider>
-  //     </Suspense>
-  //   ),
-  //   children: [
-  //     {
-  //       path: "", // Child route for `params`
-  //       element: (
-  //         // <Suspense fallback={<AppLoader />}>
-  //           <HandleDynamicView />
-  //         // </Suspense>
-  //       ),
-  //     },
-  //     {
-  //       path: ":params/*", // Child route for `params`
-  //       element: (
-  //         // <Suspense fallback={<AppLoader />}>
-  //           <HandleDynamicView />
-  //         // </Suspense>
-  //       ),
-  //     },
-  //   ],
-  // },
   {
-    path: "/pageNotFound",
-    element:<PageNotFound/> ,
+    path: "oauth",
+    element: (
+      <AuthProvider>
+        <PrivateRoute>
+          <DashLayout />
+        </PrivateRoute>
+      </AuthProvider>
+    ),
+    children: [
+      {
+        path: "authorize",
+        element: <AuthorizePage />,
+      },
+    ],
   },
+
+  // // {
+  // //   path: "/:tenant_name/:view/*", // Parent route for `view`
+  // //   element: (
+  // //     <Suspense fallback={<AppLoader />}>
+  // //       <AuthProvider>
+  // //         <PrivateRoute>
+  // //           <PanelLayout />
+  // //         </PrivateRoute>
+  // //       </AuthProvider>
+  // //     </Suspense>
+  // //   ),
+  // //   children: [
+  // //     {
+  // //       path: "", // Child route for `params`
+  // //       element: (
+  // //         // <Suspense fallback={<AppLoader />}>
+  // //           <HandleDynamicView />
+  // //         // </Suspense>
+  // //       ),
+  // //     },
+  // //     {
+  // //       path: ":params/*", // Child route for `params`
+  // //       element: (
+  // //         // <Suspense fallback={<AppLoader />}>
+  // //           <HandleDynamicView />
+  // //         // </Suspense>
+  // //       ),
+  // //     },
+  // //   ],
+  // // },
+  // {
+  //   path: "/pageNotFound",
+  //   element: <PageNotFound />,
+  // },
   {
     path: "*",
     element: <Navigate to="/pageNotFound" replace />,
