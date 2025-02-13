@@ -1,4 +1,4 @@
-import { Container, Flex, VStack } from "@chakra-ui/react";
+import { Box, Center, Container, Flex, VStack } from "@chakra-ui/react";
 import Navbar from "../../components/navbar/AppNavBar";
 import PanelSideBar from "../../components/sidebar/PanelSideBar";
 import { memo, useState } from "react";
@@ -21,6 +21,7 @@ console.log("features",FEATURE);
 
   return (
     <Flex h="100vh" flexDirection="column">
+  
       <Navbar
         togglesidebar={toggleSidebar}
         FEATURE={FEATURE}
@@ -37,6 +38,7 @@ console.log("features",FEATURE);
           {/* <AppFooter /> */}
         </VStack>
       </Flex>
+  
     </Flex>
   );
 }

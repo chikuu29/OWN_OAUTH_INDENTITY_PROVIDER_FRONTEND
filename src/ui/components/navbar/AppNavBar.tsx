@@ -53,16 +53,16 @@ const AppNav = ({
       display={"flex"}
       // minH="75px"
       justifyContent={{ xl: "center" }}
-      // mx="auto"
+      mx="auto"
     
       w="100%"
     >
       <Flex
-        // position="fixed"
-        minH="75px"
+        position="fixed"
+        // minH="75px"
         // bg={navbarBg}
         zIndex={999}
-        position={"fixed"}
+        // position={"fixed"}
         ps={5}
         pe={7}
         w="100%"

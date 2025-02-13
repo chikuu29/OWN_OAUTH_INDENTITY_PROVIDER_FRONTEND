@@ -16,10 +16,11 @@ import {
 import DarkModeLightMode from "../darkLightMode/DarkModeLightMode";
 import { useAuth } from "../../../contexts/AuthProvider";
 import { useSelector } from "react-redux";
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import MenuLink from "../sidebar/components/MenuLink";
 import NotificationMenu from "./NotificationMenu";
 import { ColorModeButton } from "@/components/ui/color-mode";
+const AccountActions=lazy(()=>import("./AccountActions"))
 import {
   MenuContent,
   MenuItem,
@@ -62,6 +63,7 @@ export default function PanelNavBarAction() {
       alignItems={"center"}
       justifyContent={"end"}
       flexDirection="row"
+      gap={2}
     >
       {/* <Menu>
         <DarkModeLightMode
@@ -142,6 +144,11 @@ export default function PanelNavBarAction() {
             </Avatar.Root>
           </HStack>
         </MenuTrigger>
+        <MenuContent>
+          <Suspense fallback={<div>Loading...</div>}>
+            <AccountActions />
+          </Suspense>
+        </MenuContent>
       </MenuRoot>
     </Flex>
   );
