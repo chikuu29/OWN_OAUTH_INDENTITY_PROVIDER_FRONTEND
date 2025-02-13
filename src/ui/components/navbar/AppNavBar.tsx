@@ -12,6 +12,7 @@ import { SidebarResponsive } from "../sidebar/PanelSideBar";
 import Brand from "../Brand/Brand";
 import TopNavMenuBuilder from "./TopNavMenuBuilder";
 import  { memo } from "react";
+import { ColorModeButton } from "@/components/ui/color-mode";
 // import React from "react";
 interface AppNavType {
   DISPLAY_TYPE: any[];
@@ -40,19 +41,19 @@ const AppNav = ({
   return (
     <Box
       // bg={navbarBg}
-      boxShadow={navbarShadow}
-      filter={navbarFilter}
+      // boxShadow={navbarShadow}
+      // filter={navbarFilter}
       backgroundPosition="center"
       backgroundSize="cover"
-      transitionDelay="0s, 0s, 0s, 0s"
-      transitionDuration=" 0.25s, 0.25s, 0.25s, 0s"
-      transition-property="box-shadow, background-color, filter, border"
-      transitionTimingFunction="linear, linear, linear, linear"
+      // transitionDelay="0s, 0s, 0s, 0s"
+      // transitionDuration=" 0.25s, 0.25s, 0.25s, 0s"
+      // transition-property="box-shadow, background-color, filter, border"
+      // transitionTimingFunction="linear, linear, linear, linear"
       alignItems={{ xl: "center" }}
       display={"flex"}
-      minH="75px"
+      // minH="75px"
       justifyContent={{ xl: "center" }}
-      mx="auto"
+      // mx="auto"
     
       w="100%"
     >
@@ -83,9 +84,11 @@ const AppNav = ({
                 cursor="pointer"
                 variant='outline'
                 onClick={togglesidebar}
-              />
+              >
+                <MdMenu/>
+              </IconButton>
             )}
-            {FEATURE.length > 0 && <SidebarResponsive FEATURE_LIST={FEATURE} />}
+            {/* {FEATURE.length > 0 && <SidebarResponsive FEATURE_LIST={FEATURE} />} */}
           </Box>
           {/* <Box>
             <Brand />
@@ -96,6 +99,8 @@ const AppNav = ({
           SHOW_TOP_NAV_MENU={DISPLAY_TYPE.SHOW_TOP_NAV_MENU}
         /> */}
         <PanelNavBarAction />
+        
+
       </Flex>
     </Box>
   );
