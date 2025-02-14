@@ -37,11 +37,13 @@ const NoPageFound = () => {
       </Text>
 
       <Button
-      
         // bgGradient="linear(to-r, teal.400, teal.500, teal.600)"
         // color="white"
-        variant='solid'
-      
+        variant="solid"
+        as={Link}
+        // to="/" // Navigates to home
+        // variant="solid"
+        colorScheme="blue"
       >
         Go to Home
       </Button>

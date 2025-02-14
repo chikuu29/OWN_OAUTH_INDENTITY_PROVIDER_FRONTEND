@@ -145,7 +145,7 @@ const routes: RouteObject[] = [
   // },
   {
     path: "*",
-    element: <Navigate to="/pageNotFound" replace />,
+    element: <PageNotFound />
   },
 ];
 

@@ -12,6 +12,7 @@ import {
 } from "@chakra-ui/react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../app/store";
+import { useColorMode, useColorModeValue } from "@/components/ui/color-mode";
 // const spinWithColorChange = keyframes`
 //   0% {
 //     transform: rotate(0deg);
@@ -53,7 +54,11 @@ const Loader = ({
   ...props
 }) => {
   // let bgColor = useColorModeValue("white", "gray.950");
-  let bgColor = "white"
+  //  const { colorMode } = useColorMode()
+   const bg = useColorModeValue("gray.800", 'white')
+   color = useColorModeValue("white", "gray.800")
+ 
+
   const {active,loaderText} = useSelector((state:RootState) => state.loader);
   if (!active) return null;
   return (
@@ -68,7 +73,7 @@ const Loader = ({
     >
       <Center height="100vh">
         <Box
-          bg={bgColor}
+          bg={bg}
           borderRadius="xl"
           textAlign="center"
         >
@@ -86,14 +91,16 @@ const Loader = ({
               // thickness="4px"
               // speed="0.65s"
               // emptyColor="gray.750"
-              color={bgColor}
-              size="md"
+              // color={bgColor}
+              borderWidth="4px"
+              color={'teal.500'}
+              size="lg"
               // border="8px solid"
               // borderColor="red" // Initial color
               // borderRadius="50%"
               // animation={`${spinWithColorChange} 2s linear infinite`}
             />
-            <Text fontSize="sm"  >
+            <Text fontSize="sm" color={color} fontWeight={'bold'} >
               {loaderText}
             </Text>
           </HStack>

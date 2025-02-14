@@ -9,13 +9,14 @@ import { Center, Spinner, VStack, Text, Box } from "@chakra-ui/react";
 import { useNavigate } from "react-router";
 import { useDispatch } from "react-redux";
 import { login, logout } from "../app/slices/auth/authSlice";
-import { GETAPI } from "../app/api";
+import { GETAPI, POSTAPI } from "../app/api";
 // import { setAppConfig } from "../app/slices/appConfig/appConfigSlice";
 // import { saveState } from "../utils/app/localStorageUtils";
 import { fetchAppConfig } from "../app/slices/appConfig/appConfigSlice";
 import type { AppDispatch, RootState } from '../app/store';
 // import Loader from "../ui/components/Loader/Loader";
 import { startLoading, stopLoading } from "../app/slices/loader/appLoaderSlice";
+import Loader from "@/ui/components/Loader/Loader";
 // Define user type
 interface User {
   name: string;
@@ -124,7 +125,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     console.log("Logout Application");
     dispatch(startLoading('Please Wait Logout Your Application..'))
     try {
-      GETAPI({
+      POSTAPI({
         path: "/auth/logout",
         isPrivateApi:true,
       }).subscribe(
@@ -134,6 +135,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             dispatch(stopLoading())
             location.reload()
             // navigate("myApps");
+          }else{
+            location.reload()
           }
         }
       );
@@ -149,8 +152,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   if (loading) {
     return (
-      // <Loader loaderText="Rebuild Login Stage, please wait..."/>
-      <>Rebuild Login Stage, please wait...</>
+      <Loader loaderText="Rebuild Login Stage, please wait..."/>
+      // <>Rebuild Login Stage, please wait...</>
     ); // Or a loading spinner
   }
 

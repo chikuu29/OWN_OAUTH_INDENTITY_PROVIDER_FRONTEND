@@ -1,5 +1,6 @@
 import { Avatar } from "@/components/ui/avatar";
 import { CloseButton } from "@/components/ui/close-button";
+import { useAuth } from "@/contexts/AuthProvider";
 import {
   Box,
   VStack,
@@ -17,6 +18,8 @@ export default function AccountsActions() {
   const auth = useSelector((state: any) => state.auth);
   console.log(auth);
 
+  const {logoutUser}=useAuth()
+
   return (
     <Box
       p={4}
@@ -33,7 +36,7 @@ export default function AccountsActions() {
       <VStack gap={4}>
         {/* Email */}
         <Text fontSize="md" fontWeight="bold">
-          {auth.loginInfo.email}
+          {auth.loginInfo?.email}
         </Text>
 
         <Avatar
@@ -42,7 +45,7 @@ export default function AccountsActions() {
           name={auth.loginInfo ? auth.loginInfo.userFullName : "Guest"}
         ></Avatar>
         <Text fontSize="xl" fontWeight="bold" pt={4}>
-          Hi,{auth.loginInfo.firstName} !
+          Hi,{auth.loginInfo?.firstName} !
         </Text>
 
         {/* Manage Account Button */}
@@ -51,7 +54,7 @@ export default function AccountsActions() {
           <FiSettings />
           Manage Account
         </IconButton>
-        <IconButton variant={'outline'} w={'full'}  colorPalette="red"> 
+        <IconButton variant={'outline'} w={'full'}  colorPalette="red" onClick={logoutUser}> 
           <FiLogOut />
           Sign Out
         </IconButton>

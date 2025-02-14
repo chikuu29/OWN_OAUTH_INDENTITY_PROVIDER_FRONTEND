@@ -207,7 +207,7 @@ const SignIn = () => {
           const responseInfo: any = res["login_info"];
           console.log("AuthInfo", responseInfo);
           setLoginAuthInfo(responseInfo);
-          dispatch(fetchAppConfig());
+          // dispatch(fetchAppConfig());
           dispatch(login(res));
           // setShowAlert({
           //   title: res?.message,
