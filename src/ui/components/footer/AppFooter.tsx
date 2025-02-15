@@ -3,7 +3,6 @@ import {
   Flex,
   Text,
   Link,
-  useColorModeValue,
   Stack,
   Button,
 } from "@chakra-ui/react";
@@ -16,7 +15,7 @@ const AppFooter=()=> {
 
   let navbarShadow =
     "rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;";
-  let navbarBg = useColorModeValue("white", "gray.950");
+  // let navbarBg = useColorModeValue("white", "gray.950");
   const compyany_name=new Date().getFullYear() +" Your Company"
   return (
     <Box
@@ -29,7 +28,7 @@ const AppFooter=()=> {
         minH="60px"
         alignItems={'center'}
         bottom="0"
-        bg={navbarBg} // Replace with navbarBg
+        // bg={navbarBg} // Replace with navbarBg
         boxShadow={navbarShadow} // Replace with navbarShadow
         justifyContent={'center'}
       >

@@ -40,7 +40,7 @@ import { AppDispatch } from "../../../app/store";
 import { startLoading } from "../../../app/slices/loader/appLoaderSlice";
 import { POSTAPI } from "../../../app/api";
 // import AppVersionAlert from "../../../ui/components/alert/AppVersionAlert";
-// import { AlertProps } from "../../../types/appConfigInterface";
+import { AlertProps } from "../../../app/interfaces/app.interface";
 
 import { Field } from "@/components/ui/field";
 import { AiOutlineLogin } from "react-icons/ai";
@@ -52,6 +52,8 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { SiSpringsecurity } from "react-icons/si";
 import { TbPasswordFingerprint } from "react-icons/tb";
 import axios from "axios";
+import { CloseButton } from "@/components/ui/close-button";
+import AppVersionAlert from "@/ui/components/alert/AppVersionAlert";
 
 const SignIn = () => {
   console.log("signin");
@@ -83,6 +85,12 @@ const SignIn = () => {
   const [show, setShow] = useState(false);
   const handleClick = () => setShow(!show);
   const [isLoading, setLoading] = useState(false);
+  const [showAlert, setShowAlert] = useState<AlertProps>({
+    title: "",
+    description: "",
+    status: "info",
+    isVisible: false,
+  });
 
   const navigate = useNavigate();
 
@@ -100,76 +108,6 @@ const SignIn = () => {
       navigate(redirectUrl || "/myApps", { replace: true });
     }
   }, [loading]);
-
-  // const loginWithGoogle = () => {
-  //   console.log("Login With Google");
-  //   dispatch(startLoading("Please Wait We Will Redirected to Google..."));
-  //   // console.log("Location", window.location.origin + "/api/auth/google");
-
-  //   const redirectTo = encodeURIComponent(window.location.href);
-  //   console.log("Redirecturl", redirectTo);
-  //   console.log("hiii", window.location.href);
-
-  //   // Redirect to Google OAuth, with the `redirectTo` parameter
-  //   // window.location.href = `http://localhost:5000/auth/google?redirectTo=${redirectTo}`;
-  //   // window.open(window.location.origin+"/api/auth/google",'_self')
-  //   window.open(
-  //     window.location.origin + `/api/v1/oauth/google?redirectTo=${redirectTo}`,
-  //     "_self"
-  //   );
-  //   // window.open("http://localhost:7000/v1/auth/google",'_self')
-  // };
-
-  // const loginWithSso = () => {
-  //   console.log("Login With SSO");
-  //   dispatch(startLoading("Please Wait We Will Redirected to SSO..."));
-  //   // console.log("Location", window.location.origin + "/api/auth/google");
-  //   const clientId = "uqQdID3LfLNvhuKakSt2XW1niHgg35nfjzI4q67t"; // Replace with your OAuth application client ID
-  //   // const redirectUri = 'http://127.0.0.1:3000/callback'; // Your frontend callback URL
-  //   const authServerUrl = "http://localhost:8000/o/authorize/";
-  //   // const redirectTo = encodeURIComponent(window.location.href);
-  //   const redirectTo = "http://localhost:5173/auth/callback";
-  //   console.log("Redirecturl", redirectTo);
-  //   console.log("hiii", window.location.href);
-  //   // const authUrl = `${authServerUrl}?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}`;
-  //   // window.location.href = authUrl;
-  //   console.log(
-  //     "url",
-  //     authServerUrl +
-  //       `?client_id=${clientId}&response_type=code&redirect_uri=${redirectTo}`
-  //   );
-  //   window.open(
-  //     authServerUrl +
-  //       `?client_id=${clientId}&response_type=code&redirect_uri=${redirectTo}&scope=openid profile email`,
-  //     "_self"
-  //   );
-  //   // window.open(
-  //   //   window.location.origin + `/api/o/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectTo}`,
-  //   //   "_self"
-  //   // );
-  // };
-
-  // const Blur = (props: IconProps) => {
-  //   return (
-  //     <Icon
-  //       width={useBreakpointValue({ base: "100%", md: "40vw", lg: "30vw" })}
-  //       zIndex={useBreakpointValue({ base: -1, md: -1, lg: 0 })}
-  //       height="200px"
-  //       viewBox="0 0 528 560"
-  //       fill="none"
-  //       xmlns="http://www.w3.org/2000/svg"
-  //       {...props}
-  //     >
-  //       <circle cx="71" cy="61" r="111" fill="#F56565" />
-  //       <circle cx="244" cy="106" r="139" fill="#ED64A6" />
-  //       <circle cy="291" r="139" fill="#ED64A6" />
-  //       <circle cx="80.5" cy="189.5" r="101.5" fill="#ED8936" />
-  //       <circle cx="196.5" cy="317.5" r="101.5" fill="#ECC94B" />
-  //       <circle cx="70.5" cy="458.5" r="101.5" fill="#48BB78" />
-  //       <circle cx="426.5" cy="-0.5" r="101.5" fill="#4299E1" />
-  //     </Icon>
-  //   );
-  // };
 
   const {
     handleSubmit,
@@ -195,56 +133,61 @@ const SignIn = () => {
       // const response = await axios.post("http://localhost:8000/auth/login", formData, {
       //   headers: { "Content-Type": "application/x-www-form-urlencoded" },
       // });
+      setLoading(true);
       POSTAPI({
         path: "/auth/login",
         data: formData,
         isPrivateApi: true,
       }).subscribe((res: any) => {
+        setLoading(false);
         if (res.success) {
           console.log(res);
-
-          setLoading(false);
           const responseInfo: any = res["login_info"];
           console.log("AuthInfo", responseInfo);
           setLoginAuthInfo(responseInfo);
           // dispatch(fetchAppConfig());
           dispatch(login(res));
-          // setShowAlert({
-          //   title: res?.message,
-          //   description: res["message"],
-          //   status: "success",
-          //   isVisible: true,
-          // });
+          setShowAlert({
+            title: res?.message,
+            description: res["message"],
+            status: "success",
+            isVisible: true,
+          });
           // console.log("redirectUrl",redirectUrl);
           navigate(redirectUrl || "/myApps");
         } else {
-          console.log(res);
+          setShowAlert({
+            title: res?.message,
+            description: res["message"],
+            status: "error",
+            isVisible: true,
+          });
         }
       });
     } catch (error: any) {
       console.log(error);
       setLoading(false);
       if (error.message === "Network Error") {
-        // setShowAlert({
-        //   title: error?.message,
-        //   description: "Please Check Your Internet Connections",
-        //   status: "error",
-        //   isVisible: true,
-        // });
+        setShowAlert({
+          title: error?.message,
+          description: "Please Check Your Internet Connections",
+          status: "error",
+          isVisible: true,
+        });
       } else {
-        // setShowAlert({
-        //   title: error?.statusText,
-        //   description: error?.response["data"]["message"],
-        //   status: "error",
-        //   isVisible: true,
-        // });
+        setShowAlert({
+          title: error?.statusText,
+          description: error?.response["data"]["message"],
+          status: "error",
+          isVisible: true,
+        });
       }
     }
   });
 
   return (
     <>
-      {/* <AppVersionAlert isNewVersionAvailable={isNewVersionAvailable} /> */}
+      <AppVersionAlert isNewVersionAvailable={isNewVersionAvailable} />
       <Box
         // minH="100vh"
         display="flex"
@@ -276,6 +219,7 @@ const SignIn = () => {
                       required: "user ID is required",
                     })}
                     placeholder="Enter your user ID"
+                    onFocus={checkVersion}
                   />
                 </InputGroup>
               </Field>
@@ -294,6 +238,7 @@ const SignIn = () => {
                   variant={"outline"}
                   placeholder="Enter your password"
                   rootProps={{ startElement: <TbPasswordFingerprint /> }}
+              
                 />
                 {/* <InputGroup
                   flex="1"
@@ -310,11 +255,23 @@ const SignIn = () => {
                   />
                 </InputGroup> */}
               </Field>
+
+              {showAlert.isVisible && (
+                <Alert.Root status={showAlert.status} variant="outline">
+                  <Alert.Indicator />
+                  {/* <Alert.Content> */}
+                  <Alert.Title>{showAlert.title}</Alert.Title>
+                  <Alert.Description>{showAlert.description}</Alert.Description>
+                  {/* </Alert.Content> */}
+                </Alert.Root>
+              )}
               <Button
                 colorPalette="blue"
                 width="full"
                 variant="solid"
                 type="submit"
+                loading={isLoading}
+                loadingText="Authentication Start"
               >
                 <AiOutlineLogin />
                 Sign In

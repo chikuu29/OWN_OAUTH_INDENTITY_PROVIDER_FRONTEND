@@ -1,4 +1,4 @@
-import { Alert, AlertIcon, AlertTitle, AlertDescription, Box, Button } from '@chakra-ui/react';
+import { Alert, AlertTitle, AlertDescription, Box, Button } from '@chakra-ui/react';
 
 
 interface ErrorComponentProps {
@@ -12,8 +12,8 @@ const ErrorComponent = ({ error, retry, errorMessage }:ErrorComponentProps) => {
 
   return (
     <Box mt={4} px={4} py={2}>
-      <Alert status="error" variant="left-accent" borderRadius="md">
-        <AlertIcon />
+      <Alert.Root status="error">
+        {/* <AlertIcon /> */}
         <Box flex="1">
           <AlertTitle>{errorMessage}</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
@@ -21,7 +21,7 @@ const ErrorComponent = ({ error, retry, errorMessage }:ErrorComponentProps) => {
         <Button colorScheme="red" size="sm" onClick={retry} ml="auto">
           Retry
         </Button>
-      </Alert>
+      </Alert.Root>
     </Box>
   );
 };

@@ -2,7 +2,7 @@
 import React from "react";
 import { Box, Heading, Text, Button } from "@chakra-ui/react";
 import { Link } from "react-router";
-// import { useHistory } from 'react-router-dom';
+// import { useHistory } from 'react-router';
 
 const NoPageFound = () => {
   // const history = useHistory();

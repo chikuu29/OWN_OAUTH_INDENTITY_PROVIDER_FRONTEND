@@ -10,7 +10,7 @@ const LoadIcon = React.memo(({ iconName ,...rest}: { iconName: string ,[key: str
     return DynamicIcon(iconName); // Call the DynamicIcon function synchronously
   }, [iconName]);
   return (
-    <Box as={IconComponent} size="24px" {...rest}/>
+    <Box as={IconComponent}   {...rest}/>
   );
 });
 

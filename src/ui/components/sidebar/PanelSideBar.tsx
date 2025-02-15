@@ -74,7 +74,7 @@ export function SidebarResponsive(props: any) {
   const { DISPLAY_TYPE, FEATURE, ...rest } = props;
   // let sidebarBg = useColorModeValue("white", "gray.950");
   // let subbg = useColorModeValue("secondaryGray.100", "gray.800");
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open, onOpen, onClose } = useDisclosure();
   return (
     <Flex
       display={{ base: "flex", md: "flex", xl: "none" }}
@@ -85,12 +85,12 @@ export function SidebarResponsive(props: any) {
       <Flex w="max-content" h="max-content" onClick={onOpen}>
         <IconButton
           aria-label="Menu"
-          icon={<Icon as={MdMenu} h="20px" w="20px" />}
+          // icon={<Icon as={MdMenu} h="20px" w="20px" />}
           cursor="pointer"
           variant='outline'
         />
       </Flex>
-      <Drawer isOpen={isOpen} onClose={onClose} placement={"left"}>
+      {/* <Drawer open={open} onClose={onClose} placement={"left"}>
         <DrawerContent maxW="200px" bg={subbg}>
           <Flex alignItems={"center"} justifyContent={"start"} gap={2} p={3} >
             <Box paddingStart={3}>
@@ -123,7 +123,7 @@ export function SidebarResponsive(props: any) {
             </Flex>
           </DrawerBody>
         </DrawerContent>
-      </Drawer>
+      </Drawer> */}
     </Flex>
   );
 }

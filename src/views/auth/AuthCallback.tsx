@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router";
-// import { useHistory } from 'react-router-dom';
+// import { useHistory } from 'react-router';
 import { v4 as uuidv4 } from "uuid";
 
 const AuthCallback = () => {
@@ -28,17 +28,17 @@ const AuthCallback = () => {
 
     try {
       // Create URLSearchParams for x-www-form-urlencoded encoding
-      const formData = new URLSearchParams({
-        client_id: clientId,
-        client_secret: clientSecret,
-        grant_type: "authorization_code", // Correct value
-        code,
-        redirect_uri: "http://localhost:5173/auth/callback",
-        device_id: deviceId,
-      });
+      // const formData = new URLSearchParams({
+      //   client_id: clientId,
+      //   client_secret: clientSecret,
+      //   grant_type: "authorization_code", // Correct value
+      //   code,
+      //   redirect_uri: "http://localhost:5173/auth/callback",
+      //   device_id: deviceId,
+      // });
 
       // Make POST request with proper headers
-      const response = await axios.post(tokenUrl, formData, {
+      const response = await axios.post(tokenUrl, {}, {
         headers: {
           "Cache-Control": "no-cache", // Cache-Control header is optional
           "Content-Type": "application/x-www-form-urlencoded", // Required

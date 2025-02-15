@@ -1,11 +1,11 @@
-import { VStack, Text, useColorModeValue } from "@chakra-ui/react";
+import { VStack, Text } from "@chakra-ui/react";
 import React from "react";
 import MenuLink from "./components/MenuLink";
-import { HSeparator } from "../separator/Separator";
+// import { HSeparator } from "../separator/Separator";
 
 import { useSelector } from "react-redux";
 import { RootState } from "../../../app/store";
-import { APP_CONFIG_STATE } from "../../../types/appConfigInterface";
+import { APP_CONFIG_STATE } from "../../../app/interfaces/app.interface";
 // import { APP_STATE } from "../../../types/appConfigInterface";
 
 interface SideNavPropsType {
@@ -14,7 +14,7 @@ interface SideNavPropsType {
 export default function SideNavMenuBuilder(props: SideNavPropsType) {
   console.log("%c ==== EXECUTE SIDENAVMENU BUILDER ====", "color:green");
   const { showFullSideBarMenu } = props;
-  let textColor = useColorModeValue("secondaryGray.500", "white");
+  // let textColor = useColorModeValue("secondaryGray.500", "white");
   const {FEATURE}: APP_CONFIG_STATE = useSelector(
     (state: RootState) => state.app.AppConfigState
   );
@@ -24,7 +24,7 @@ export default function SideNavMenuBuilder(props: SideNavPropsType) {
   }
   return (
     <VStack
-      spacing={4}
+      // spacing={4}
       //  align="stretch"
       maxW={showFullSideBarMenu ? "200px" : "50px"}
       align={showFullSideBarMenu ? "start" : "center"}
@@ -40,10 +40,10 @@ export default function SideNavMenuBuilder(props: SideNavPropsType) {
             <>
               {props.showFullSideBarMenu && (
                 <>
-                  <Text fontSize="0.8rem" pl={3} color={textColor}>
+                  <Text fontSize="0.8rem" pl={3} >
                     {menu.label}
                   </Text>
-                  <HSeparator mb="5px" />
+                  {/* <HSeparator mb="5px" /> */}
                 </>
               )}
 

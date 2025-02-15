@@ -6,9 +6,9 @@ import {
   Input,
   Button,
   Text,
-  useColorModeValue,
+  // useColorModeValue,
   PinInput,
-  PinInputField,
+  // PinInputField,
   HStack,
   Flex,
 } from "@chakra-ui/react";
@@ -16,7 +16,7 @@ import {
 const AppOtp = () => {
   //   const bgColor = useColorModeValue("gray.100", "gray.800");
   //   const boxBg = useColorModeValue("white", "gray.700");
-  let bgColor = useColorModeValue("white", "gray.950");
+  // let bgColor = useColorModeValue("white", "gray.950");
   return (
     <Box
       position="fixed"
@@ -29,7 +29,7 @@ const AppOtp = () => {
     >
       <Center height="100vh">
         <Box
-          bg={bgColor}
+          // bg={bgColor}
           w={"100%"}
           p={8}
           borderRadius="8px"
@@ -44,16 +44,16 @@ const AppOtp = () => {
           <Text mb={6} color="gray.500">
             We’ve sent an OTP to your registered email.
           </Text>
-          <Stack spacing={4}>
+          <Stack >
             <HStack>
-              <PinInput size="lg">
+              {/* <PinInput size="lg">
                 <PinInputField />
                 <PinInputField />
                 <PinInputField />
                 <PinInputField />
                 <PinInputField />
                 <PinInputField />
-              </PinInput>
+              </PinInput> */}
             </HStack>
 
             {/* <PinInput mask/> */}
