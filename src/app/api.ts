@@ -82,6 +82,7 @@ const GETAPI = ({
             const message = errorMessages[statusCode] || 'An unknown error occurred';
             // Format the error response
             return of({
+                data:error.response.data,
                 success: false,
                 message: message || 'An unknown error occurred',
                 errorInfo: error

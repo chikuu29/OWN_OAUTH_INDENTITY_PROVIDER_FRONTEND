@@ -71,7 +71,7 @@ const Loader = ({
       zIndex="9999"
       bg="rgba(0, 0, 0, 0.9)"
     >
-      <Center height="100vh">
+      <Center height="100vh" width={'100%'}>
         <Box
           bg={bg}
           borderRadius="xl"

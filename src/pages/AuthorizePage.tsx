@@ -9,7 +9,7 @@ const AuthorizePage = () => {
     const authCode = "xyz123";
 
     // Redirect to callback with authCode
-    navigate(`/callback?code=${authCode}`);
+    // navigate(`/callback?code=${authCode}`);s
   };
 
   return (

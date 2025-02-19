@@ -25,7 +25,9 @@ const privateAPI = axios.create({
         'X-Client-ID': import.meta.env.VITE_X_Client_ID,
         'X-CSRFToken': getCRSFToken()
     },
-    timeout: 30000
+    timeout: 30000,
+    maxRedirects:5
+
 
 })
 
@@ -74,6 +76,13 @@ privateAPI.interceptors.request.use(
 privateAPI.interceptors.response.use(
 
     (response: AxiosResponse) => {
+        console.log("response", response);
+        // ("response", response)
+        if ([301, 302, 307].includes(response.status)) {
+            const redirectUrl = response.headers['location']; // Location header contains the redirect URL
+            // return Promise.resolve({ redirectUrl });
+            response.data = { redirectUrl };
+        }
         return response
     },
     (error: AxiosError) => {

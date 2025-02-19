@@ -66,6 +66,14 @@ const routes: RouteObject[] = [
           // </Suspense>
         ),
       },
+      {
+        path: "callback",
+        element: (
+          // <Suspense fallback={<AppLoader />}>
+          <h1>Callback</h1>
+          // </Suspense>
+        ),
+      },
       // {
       //   path: "sign-up",
       //   element: (
@@ -90,6 +98,7 @@ const routes: RouteObject[] = [
       //     </Suspense>
       //   ),
       // },
+      // ,
     ],
   },
   {
@@ -145,7 +154,7 @@ const routes: RouteObject[] = [
   // },
   {
     path: "*",
-    element: <PageNotFound />
+    element: <PageNotFound />,
   },
 ];
 
