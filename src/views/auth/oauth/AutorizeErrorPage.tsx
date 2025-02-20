@@ -3,8 +3,6 @@ import {
   Box,
   Text,
   IconButton,
-  VStack,
-  Container,
   Icon,
   DialogRoot,
   DialogBackdrop,
@@ -20,31 +18,34 @@ import { TbLockAccess } from "react-icons/tb";
 
 import { List } from "@chakra-ui/react";
 
-const OAuthErrorScreen = ({ errorDetails }: any) => {
+const OAuthErrorScreen = (props: any) => {
   // Extract error message and query fields from the error details
-  console.log("Calling OAuthErrorScreen", errorDetails);
-
-  const { error, message } = errorDetails.data;
-  const [errors, setErrors] = useState<string | null>(null);
+  console.log("Calling OAuthErrorScreen", props);
+  const { errors, setErrors, ...rest } = props;
+  const { error, message } = errors.data;
+  // const [errors, setErrors] = useState<string | null>(null);
   const [errorList, setErrorList] = useState<any[]>([]);
 
   useEffect(() => {
     if (error) {
       const errorFields = error.query || error.body
+      console.log(errorFields);
+
       const errorMessages = Object.keys(errorFields || {}).map((key) => ({
         field: key,
         message: errorFields[key].msg || "Unknown error",
       }));
-      setErrors(`Authentication failed due to: ${message}`);
+      // setErrors(`Authentication failed due to: ${message}`);
+
       setErrorList(errorMessages);
     }
-  }, [errorDetails]);
+  }, [errors]);
 
   const handleRetry = () => {
-    // Retry logic for OAuth authorization
+   
     setErrors(null); // Clear previous error
     setErrorList([]); // Clear previous error details
-    // Re-initiate the OAuth process (you can trigger the re-authorization here)
+  
   };
 
   return (
@@ -57,7 +58,7 @@ const OAuthErrorScreen = ({ errorDetails }: any) => {
         </DialogHeader>
 
         <Text color="gray.500" fontSize="sm" textAlign="center">
-          {errors ||
+          {message ||
             "An error occurred while trying to authenticate your account."}
         </Text>
         <DialogBody className="dialog-body">
@@ -79,7 +80,7 @@ const OAuthErrorScreen = ({ errorDetails }: any) => {
                 {errorList.map((error, index) => (
                   <List.Item key={index}>
                     <List.Indicator asChild colorPalette="green.500">
-                      <AiTwotoneCloseCircle color="red"/>
+                      <AiTwotoneCloseCircle color="red" />
                     </List.Indicator>
                     {`${error.field} - ${error.message}`}
                   </List.Item>

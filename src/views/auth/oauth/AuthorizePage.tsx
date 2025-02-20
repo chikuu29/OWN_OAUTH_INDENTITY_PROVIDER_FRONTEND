@@ -1,7 +1,5 @@
 import { useNavigate, useParams, useSearchParams } from "react-router";
-const API_BASE_URL = import.meta.env.DEV
-  ? "/api"
-  : import.meta.env.VITE_API_URL;
+
 import {
   Box,
   Button,
@@ -21,7 +19,7 @@ import {
   Alert,
 } from "@chakra-ui/react";
 import { IoShieldCheckmarkOutline } from "react-icons/io5";
-import { GETAPI, POSTAPI } from "@/app/api";
+import { GETAPI, POSTAPI, POSTWITHOAUTH } from "@/app/api";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AiTwotoneCloseCircle } from "react-icons/ai";
 import { DialogBackdrop, DialogRoot } from "@/components/ui/dialog";
@@ -37,7 +35,7 @@ import { LuAlarmClockPlus } from "react-icons/lu";
 const AuthorizePage = () => {
   console.log("===CALLING AUTHORIZE PAGE===");
   const { open, onOpen, onClose } = useDisclosure();
-  const [error, setError] = useState<any | null>(null);
+  const [error, setErrors] = useState<any | null>(null);
   const scopes: any = {
     openid: "OpenID Connect",
     profile: "Read your profile information",
@@ -120,7 +118,7 @@ const AuthorizePage = () => {
           onOpen();
         }
       } else {
-        setError(res);
+        setErrors(res);
       }
       // navigate(`/callback?code=${res.data.code
     });
@@ -133,46 +131,39 @@ const AuthorizePage = () => {
     const formData = new URLSearchParams();
     formData.append("client_id", oauthData?.client_id);
     formData.append("redirect_url", oauthData.OauthRequest?.redirect_url!);
+    formData.append("response_type", oauthData.response_types);
     formData.append("state", oauthData.OauthRequest?.state!);
     formData.append("action", action);
-    console.log(API_BASE_URL);
+    // console.log(API_BASE_URL);
 
-    try {
-      const res = await fetch(`${API_BASE_URL}/oauth/grant`, {
-        method: "POST",
-        body: formData,
-        redirect: "follow",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      });
+    const response = await POSTWITHOAUTH("/oauth/grant", {
+      body: formData,
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      redirect: "follow",
+    });
+    console.log(response);
 
-      if (res.redirected) {
-        setIsDone(true); // Show animation
-        setTimeout(() => {
-          window.location.href = res.url; // Redirect after animation
-        }, 1500); // 1.5s delay
-        return;
-      }
-
-      const resJson = await res.json();
-      console.log("Response JSON:", resJson);
-
-      if (resJson.success) {
-        console.log("Success:", resJson);
+    if (response.success) {
+      if (response.data && (response.data as any).redirectedUrl) {
+        // Handle redirect after animation
         setIsDone(true);
-        // navigate(`/callback?code=${resJson.data.code}`);
+        setTimeout(() => {
+          window.location.href = (response.data as any).redirectedUrl;
+        }, 1500);
       } else {
-        console.error("Error:", resJson);
-        setError({ data: resJson, success: false });
+        console.log("OAuth Grant Success:", response.data);
+        setIsDone(true);
       }
-    } catch (error) {
-      console.error("Fetch error:", error);
+    } else {
+      console.error("OAuth Grant Error:", response);
+      setErrors(response);
     }
   };
 
   if (error && error.success == false) {
     console.log(error);
 
-    return <OAuthErrorScreen errorDetails={error} />;
+    return <OAuthErrorScreen errors={error} setErrors={setErrors} />;
   }
 
   return (
@@ -223,7 +214,7 @@ const AuthorizePage = () => {
                   <LuAlarmClockPlus />
                 </Alert.Indicator>
                 <Alert.Title>
-                  Please Wait We are Redirecting you to the Application
+                  Hold on! We're redirecting you to the application
                 </Alert.Title>
               </Alert.Root>
             </>

@@ -3,6 +3,9 @@ import { from, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { privateAPI, publicAPI } from "./handlers/axiosHandlers";
 import { getFromCache, saveToCache } from './handlers/dexieHandles';
+import { RootState, store } from './store';
+
+const API_BASE_URL = import.meta.env.DEV ? '/api' : import.meta.env.VITE_API_URL;
 interface GETAPI_INTERFACE {
     path: string
     params?: any
@@ -82,7 +85,7 @@ const GETAPI = ({
             const message = errorMessages[statusCode] || 'An unknown error occurred';
             // Format the error response
             return of({
-                data:error.response.data,
+                data: error.response.data,
                 success: false,
                 message: message || 'An unknown error occurred',
                 errorInfo: error
@@ -128,28 +131,28 @@ const POSTAPI = ({
     data = {},
     isPrivateApi = false,
     files = undefined  // Optional files to upload
-    
+
 }: POSTAPI_INTERFACE) => {
     // console.log("params", { path, data, enableCache, cacheTTL });
     // Select the API handler based on the apiType
     const apiHandler = isPrivateApi ? privateAPI : publicAPI;
     // Create FormData if files are provided
-   
-    let apiData:any=data
+
+    let apiData: any = data
     // Append files to FormData
     if (files) {
         const formData = new FormData();
         Array.from(files).forEach((file, index) => {
             formData.append('files', file, file.name);  // 'files' is the key used in the backend to access files
         });
-       
+
 
         // Append non-file data to FormData
         Object.keys(data).forEach(key => {
             formData.append(key, data[key]);
         });
-        console.log("FORMDATA",formData);
-        apiData=formData
+        console.log("FORMDATA", formData);
+        apiData = formData
     }
     return from(
         // apiHandler.post(path, JSON.stringify(data)).then(response => response.data)
@@ -164,7 +167,7 @@ const POSTAPI = ({
             const message = errorMessages[statusCode] || 'An unknown error occurred';
             // Format the error response
             return of({
-                data:error['response']['data'],
+                data: error['response']['data'],
                 success: false,
                 message: message || 'An unknown error occurred',
                 errorInfo: error
@@ -174,7 +177,115 @@ const POSTAPI = ({
 };
 
 
-export { GETAPI, POSTAPI }
+type PostOptions = {
+    headers?: Record<string, string>;
+    body: URLSearchParams | FormData | string;
+    redirect?: RequestRedirect; // 'follow' | 'manual' | 'error'
+};
+
+type PostResponse<T = any> = {
+    success: boolean;
+    data?: T;
+    message?: string;
+    errorInfo?:any
+
+};
+
+// Function to refresh the access token using the refresh token
+//   const refreshAccessToken = async (): Promise<string | null> => {
+//     const refreshToken = localStorage.getItem("refresh_token");
+//     if (!refreshToken) return null;
+
+//     try {
+//       const res = await fetch("https://api.example.com/oauth/token", {
+//         method: "POST",
+//         headers: { "Content-Type": "application/x-www-form-urlencoded" },
+//         body: new URLSearchParams({
+//           grant_type: "refresh_token",
+//           refresh_token: refreshToken,
+//           client_id: "your_client_id",
+//           client_secret: "your_client_secret",
+//         }),
+//       });
+
+//       const resJson = await res.json();
+
+//       if (res.ok && resJson.access_token) {
+//         localStorage.setItem("access_token", resJson.access_token);
+//         if (resJson.refresh_token) {
+//           localStorage.setItem("refresh_token", resJson.refresh_token);
+//         }
+//         return resJson.access_token;
+//       } else {
+//         console.error("Failed to refresh token:", resJson.error);
+//         return null;
+//       }
+//     } catch (error) {
+//       console.error("Token refresh error:", error);
+//       return null;
+//     }
+//   };
+
+// Main POST function with Authorization and Token Refresh
+const POSTWITHOAUTH = async <T>(
+    path: string,
+    options: PostOptions,
+    retry: boolean = true
+): Promise<PostResponse<T>> => {
+    const url = API_BASE_URL + path
+    let accessToken = localStorage.getItem("access_token");
+    const authState: RootState = store.getState()
+    if (authState && authState.auth && authState.auth.isAuthenticated) {
+           
+        const { token } = authState.auth
+        accessToken=token
+    }
+
+    try {
+        const res = await fetch(url, {
+            method: "POST",
+            body: options.body,
+            redirect: options.redirect || "follow",
+            headers: {
+                "Authorization": accessToken ? `Bearer ${accessToken}` : "",
+                ...(options.headers || {}),
+            },
+        });
+
+        if (res.status === 401 && retry) {
+            // Access token expired, attempt to refresh
+            const newAccessToken = "await refreshAccessToken()";
+            if (newAccessToken) {
+                // Retry original request with new token
+                return POSTWITHOAUTH<T>(url, options, false);
+            } else {
+                return { success: false, message: "Session expired. Please log in again." };
+            }
+        }
+
+        if (res.redirected) {
+            return { success: true, data: { redirectedUrl: res.url } as any };
+        }
+
+        const resJson = await res.json();
+
+        if (res.ok && resJson.success) {
+            return { success: true, data: resJson.data };
+        } else {
+            return { success: false, message: "Unknown error" ,data:resJson};
+        }
+    } catch (error: any) {
+        console.error("Fetch error:", error);
+        return { success: false, message:"Network error" ,errorInfo:error};
+    }
+};
+
+
+
+
+
+
+export { GETAPI, POSTAPI, POSTWITHOAUTH }
 
 
 
