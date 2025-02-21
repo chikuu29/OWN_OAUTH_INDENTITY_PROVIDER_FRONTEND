@@ -1,14 +1,10 @@
-import { useNavigate, useParams, useSearchParams } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 
 import {
   Box,
-  Button,
-  Heading,
   VStack,
   Text,
-  Flex,
   IconButton,
-  Center,
   DialogBody,
   DialogContent,
   DialogFooter,
@@ -19,7 +15,7 @@ import {
   Alert,
 } from "@chakra-ui/react";
 import { IoShieldCheckmarkOutline } from "react-icons/io5";
-import { GETAPI, POSTAPI, POSTWITHOAUTH } from "@/app/api";
+import { GETAPI, POSTWITHOAUTH } from "@/app/api";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AiTwotoneCloseCircle } from "react-icons/ai";
 import { DialogBackdrop, DialogRoot } from "@/components/ui/dialog";
@@ -27,9 +23,7 @@ import { DialogBackdrop, DialogRoot } from "@/components/ui/dialog";
 import { useEffect, useRef, useState } from "react";
 import { TbLockAccess } from "react-icons/tb";
 import OAuthErrorScreen from "./AutorizeErrorPage";
-import { privateAPI } from "@/app/handlers/axiosHandlers";
-import axios from "axios";
-import { log } from "console";
+
 import { LuAlarmClockPlus } from "react-icons/lu";
 import { startLoading, stopLoading } from "@/app/slices/loader/appLoaderSlice";
 import { AppDispatch } from "@/app/store";
@@ -39,7 +33,7 @@ const AuthorizePage = () => {
   console.log("===CALLING AUTHORIZE PAGE===");
   const dispatch = useDispatch<AppDispatch>();
 
-  const { open, onOpen, onClose } = useDisclosure();
+  const { open, onOpen} = useDisclosure();
   const [error, setErrors] = useState<any | null>(null);
   const scopes: any = {
     openid: "OpenID Connect",
@@ -62,21 +56,19 @@ const AuthorizePage = () => {
     // onOpen();
     const params = Object.fromEntries(searchParams.entries());
     console.log("params", params);
-    dispatch(startLoading('Authenticating... Please wait'));
+    dispatch(startLoading("Authenticating... Please wait"));
     GETAPI({
       path: "/oauth/authorize",
       params: params,
       isPrivateApi: true,
     }).subscribe((res) => {
-      dispatch(stopLoading())
+      dispatch(stopLoading());
       if (res.success) {
-       
         oauthData.current = res.data[0];
         if (oauthData.current && oauthData.current["skip_authorization_done"]) {
-          // window.location.href = oauthData.current.redirect_url;
+          window.location.href = oauthData.current.redirect_url;
         } else {
           onOpen();
-
         }
       } else {
         setErrors(res);
@@ -94,7 +86,7 @@ const AuthorizePage = () => {
     formData.append("response_type", oauthData.current.response_types);
     formData.append("state", oauthData.current.OauthRequest?.state!);
     formData.append("action", action);
-    dispatch(startLoading('Granting Permission... Please wait'));
+    dispatch(startLoading("Granting Permission... Please wait"));
     const response = await POSTWITHOAUTH("/oauth/grant", {
       body: formData,
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -102,7 +94,7 @@ const AuthorizePage = () => {
     });
 
     if (response.success) {
-      dispatch(stopLoading())
+      dispatch(stopLoading());
       setIsDone(true);
       if (response.data && (response.data as any).redirectedUrl) {
         // Handle redirect after animation
@@ -116,7 +108,7 @@ const AuthorizePage = () => {
         setIsDone(true);
       }
     } else {
-      dispatch(stopLoading())
+      dispatch(stopLoading());
       console.error("OAuth Grant Error:", response);
       setErrors(response);
     }
