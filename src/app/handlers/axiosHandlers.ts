@@ -76,7 +76,6 @@ privateAPI.interceptors.request.use(
 privateAPI.interceptors.response.use(
 
     (response: AxiosResponse) => {
-        console.log("response", response);
         // ("response", response)
         if ([301, 302, 307].includes(response.status)) {
             const redirectUrl = response.headers['location']; // Location header contains the redirect URL

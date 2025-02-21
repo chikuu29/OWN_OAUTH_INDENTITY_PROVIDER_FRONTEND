@@ -9,6 +9,7 @@ import {
   Image,
   // useColorModeValue,
   HStack,
+  VStack,
 } from "@chakra-ui/react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../app/store";
@@ -69,7 +70,8 @@ const Loader = ({
       width="100%"
       height="100%"
       zIndex="9999"
-      bg="rgba(0, 0, 0, 0.9)"
+      // bg="rgba(0, 0, 0, 0.9)"
+      bg={bg}
     >
       <Center height="100vh" width={'100%'}>
         <Box
@@ -77,7 +79,7 @@ const Loader = ({
           borderRadius="xl"
           textAlign="center"
         >
-          <HStack  p={4}>
+          <VStack  p={4}>
             {/* <Image
               width="100px"
               height="100px"
@@ -93,7 +95,7 @@ const Loader = ({
               // emptyColor="gray.750"
               // color={bgColor}
               borderWidth="4px"
-              color={'teal.500'}
+              color={'blue.500'}
               size="lg"
               // border="8px solid"
               // borderColor="red" // Initial color
@@ -103,7 +105,7 @@ const Loader = ({
             <Text fontSize="sm" color={color} fontWeight={'bold'} >
               {loaderText}
             </Text>
-          </HStack>
+          </VStack>
         </Box>
       </Center>
     </Box>

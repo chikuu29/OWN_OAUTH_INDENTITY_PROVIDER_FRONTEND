@@ -24,16 +24,21 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { AiTwotoneCloseCircle } from "react-icons/ai";
 import { DialogBackdrop, DialogRoot } from "@/components/ui/dialog";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { TbLockAccess } from "react-icons/tb";
 import OAuthErrorScreen from "./AutorizeErrorPage";
 import { privateAPI } from "@/app/handlers/axiosHandlers";
 import axios from "axios";
 import { log } from "console";
 import { LuAlarmClockPlus } from "react-icons/lu";
+import { startLoading, stopLoading } from "@/app/slices/loader/appLoaderSlice";
+import { AppDispatch } from "@/app/store";
+import { useDispatch } from "react-redux";
 
 const AuthorizePage = () => {
   console.log("===CALLING AUTHORIZE PAGE===");
+  const dispatch = useDispatch<AppDispatch>();
+
   const { open, onOpen, onClose } = useDisclosure();
   const [error, setErrors] = useState<any | null>(null);
   const scopes: any = {
@@ -44,7 +49,7 @@ const AuthorizePage = () => {
     activity: "View your activity history",
   };
 
-  const [oauthData, setOauthData] = useState<any | null>({});
+  const oauthData = useRef<any>({});
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const client_id = searchParams.get("client_id");
@@ -53,100 +58,56 @@ const AuthorizePage = () => {
   const scope: string[] = searchParams.get("scope")?.split(" ") || [];
   const [isDone, setIsDone] = useState(false);
 
-  console.log(scope);
-
-  //  fromd this
-  // console.log("searchParams",searchParams.get("client_id"));/
-  // Get all query parameters as an object
-
-  // console.log("params", params);
-
-  // const handleAuthorize = async () => {
-  //   const formData = new URLSearchParams();
-  //   formData.append("client_id", params.client_id);
-  //   formData.append("redirect_url", params.redirect_url);
-  //   formData.append("response_type", params.response_type);
-  //   formData.append("scope", params.scope);
-  //   if (params.state) formData.append("state", params.state);
-  //   const response = await fetch("http://localhost:8000/oauth/authorize", {
-  //     method: "GET",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify(params),
-  //   });
-  //   // GETAPI({
-  //   //   path: "/oauth/authorize",
-  //   //   params: params,
-  //   //   isPrivateApi: true,
-
-  //   //   // headers: {
-  //   //   //   "Content-Type": "multipart/form-data",
-  //   //   // },
-  //   // }).subscribe((res) => {
-  //   //   console.log("res", res);
-  //   //   // navigate(`/callback?code=${res.data.code}`);
-  //   // });
-  // };
-
-  // const handleAuthorize = async () => {
-  //   // Construct query parameters for GET request
-  //   const queryParams = new URLSearchParams({
-  //     client_id: params.client_id,
-  //     redirect_url: params.redirect_url, // Ensure consistency with backend param name
-  //     response_type: params.response_type,
-  //     scope: params.scope,
-  //     ...(params.state && { state: params.state }), // Add state if present
-  //   }).toString();
-
-  //   // Redirect user to FastAPI authorization endpoint
-  //   window.location.href = `http://localhost:5173/api/oauth/authorize?${queryParams}`;
-  // };
-
   useEffect(() => {
     // onOpen();
     const params = Object.fromEntries(searchParams.entries());
     console.log("params", params);
+    dispatch(startLoading('Authenticating... Please wait'));
     GETAPI({
       path: "/oauth/authorize",
       params: params,
       isPrivateApi: true,
     }).subscribe((res) => {
-      console.log("res", res);
+      dispatch(stopLoading())
       if (res.success) {
-        setOauthData(res.data[0]);
-        if (res.data[0]["skip_authorization"] == "true") {
+       
+        oauthData.current = res.data[0];
+        if (oauthData.current && oauthData.current["skip_authorization_done"]) {
+          // window.location.href = oauthData.current.redirect_url;
         } else {
           onOpen();
+
         }
       } else {
         setErrors(res);
       }
-      // navigate(`/callback?code=${res.data.code
     });
   }, [client_id, redirect_url, response_type, navigate]);
 
   const handleAction = async (action: "allow" | "deny") => {
-    console.log("action", action);
-    console.log("oauthData", oauthData);
-
     const formData = new URLSearchParams();
-    formData.append("client_id", oauthData?.client_id);
-    formData.append("redirect_url", oauthData.OauthRequest?.redirect_url!);
-    formData.append("response_type", oauthData.response_types);
-    formData.append("state", oauthData.OauthRequest?.state!);
+    formData.append("client_id", oauthData.current?.client_id);
+    formData.append(
+      "redirect_url",
+      oauthData.current.OauthRequest?.redirect_url!
+    );
+    formData.append("response_type", oauthData.current.response_types);
+    formData.append("state", oauthData.current.OauthRequest?.state!);
     formData.append("action", action);
-    // console.log(API_BASE_URL);
-
+    dispatch(startLoading('Granting Permission... Please wait'));
     const response = await POSTWITHOAUTH("/oauth/grant", {
       body: formData,
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       redirect: "follow",
     });
-    console.log(response);
 
     if (response.success) {
+      dispatch(stopLoading())
+      setIsDone(true);
       if (response.data && (response.data as any).redirectedUrl) {
         // Handle redirect after animation
-        setIsDone(true);
+        console.log((response.data as any).redirectedUrl);
+
         setTimeout(() => {
           window.location.href = (response.data as any).redirectedUrl;
         }, 1500);
@@ -155,14 +116,13 @@ const AuthorizePage = () => {
         setIsDone(true);
       }
     } else {
+      dispatch(stopLoading())
       console.error("OAuth Grant Error:", response);
       setErrors(response);
     }
   };
 
   if (error && error.success == false) {
-    console.log(error);
-
     return <OAuthErrorScreen errors={error} setErrors={setErrors} />;
   }
 
