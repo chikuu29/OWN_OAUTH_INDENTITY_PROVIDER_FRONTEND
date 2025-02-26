@@ -6,6 +6,7 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 export default defineConfig({
   plugins: [react(), createVersionPlugin(),tsconfigPaths()],
   server: {
+
     hmr: {overlay:true},
     proxy: {
       '/api': {

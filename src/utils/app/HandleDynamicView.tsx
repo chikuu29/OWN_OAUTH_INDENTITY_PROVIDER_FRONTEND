@@ -1,4 +1,4 @@
-import { useParams, useSearchParams } from "react-router";
+import { useLocation, useParams, useSearchParams } from "react-router";
 import { lazy, Suspense, useMemo } from "react";
 import { Navigate } from "react-router";
 import { AppLoader } from "../../ui/components/Loader/Loader";
@@ -10,9 +10,9 @@ const HandleDynamicView = () => {
   const { view, params } = useParams(); // Access the `view` and `params` from the URL
   const [searchParams] = useSearchParams();
   const appName = searchParams.get("app") || "Default";
-  // Dynamically import the component based on `view` parameter
-  // Access the relevant app config from componentConfig
+
   const appConfig = componentConfig[appName];
+
   // Safely access the component based on the view
   const Component = useMemo(() => {
     if (
@@ -30,12 +30,14 @@ const HandleDynamicView = () => {
     }
   }, [view, appConfig]);
   // If the component doesn't exist, redirect to the 404 page
+  console.log("Component",Component);
+  
   if (!Component) {
     return <Navigate to="/pageNotFound" replace />;
   }
 
   return (
-    <Suspense fallback={<AppLoader />}>
+    <Suspense fallback={<AppLoader />} key={view}>
       <Component /> {/* Render the lazy-loaded component */}
     </Suspense>
   );

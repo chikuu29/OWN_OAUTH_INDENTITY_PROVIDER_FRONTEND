@@ -19,6 +19,7 @@ const componentConfig: ComponentConfig = {
     "AdminModules": {
         AdminModule: () => import("./views/modules/admin/AdminView"),
         DatabaseStatistics: () => import("./views/modules/admin/DatabaseStatisticsView"),
+        ApplicationClients: () => import("./views/modules/admin/OAuthView"),
     },
     // "myGym": {
     //     GymView: () => import("./views/modules/gym/GymView"),
