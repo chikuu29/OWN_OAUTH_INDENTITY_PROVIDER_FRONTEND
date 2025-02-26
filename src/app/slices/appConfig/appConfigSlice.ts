@@ -58,7 +58,759 @@ const initialState: AppConfig = {
   },
   appConfig: {
     config: {
-      appList: [],
+      appList: [
+          {
+            id: "ADMIN_MODULES",
+            hidden: false,
+            name: "Admin Module",
+            target: "/AdminModule?app=AdminModules",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/3d-casual-life-secure-document.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MYOMSSYSTEM",
+            hidden: false,
+            name: "OMS SYSTEM",
+            target: "/MyOMS?app=MyOMS",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/rainbow-online-store.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MY_GYM",
+            hidden: false,
+            name: "MY GYM",
+            target: "/GymView?app=myGym",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/smart-gym-water-bottle-and-dumbbells-for-a-healthy-lifestyle.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          }, {
+            id: "ADMIN_MODULES",
+            hidden: false,
+            name: "Admin Module",
+            target: "/AdminModule?app=AdminModules",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/3d-casual-life-secure-document.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MYOMSSYSTEM",
+            hidden: false,
+            name: "OMS SYSTEM",
+            target: "/MyOMS?app=MyOMS",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/rainbow-online-store.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MY_GYM",
+            hidden: false,
+            name: "MY GYM",
+            target: "/GymView?app=myGym",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/smart-gym-water-bottle-and-dumbbells-for-a-healthy-lifestyle.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          }, {
+            id: "ADMIN_MODULES",
+            hidden: false,
+            name: "Admin Module",
+            target: "/AdminModule?app=AdminModules",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/3d-casual-life-secure-document.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MYOMSSYSTEM",
+            hidden: false,
+            name: "OMS SYSTEM",
+            target: "/MyOMS?app=MyOMS",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/rainbow-online-store.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MY_GYM",
+            hidden: false,
+            name: "MY GYM",
+            target: "/GymView?app=myGym",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/smart-gym-water-bottle-and-dumbbells-for-a-healthy-lifestyle.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          }, {
+            id: "ADMIN_MODULES",
+            hidden: false,
+            name: "Admin Module",
+            target: "/AdminModule?app=AdminModules",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/3d-casual-life-secure-document.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MYOMSSYSTEM",
+            hidden: false,
+            name: "OMS SYSTEM",
+            target: "/MyOMS?app=MyOMS",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/rainbow-online-store.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MY_GYM",
+            hidden: false,
+            name: "MY GYM",
+            target: "/GymView?app=myGym",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/smart-gym-water-bottle-and-dumbbells-for-a-healthy-lifestyle.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          }, {
+            id: "ADMIN_MODULES",
+            hidden: false,
+            name: "Admin Module",
+            target: "/AdminModule?app=AdminModules",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/3d-casual-life-secure-document.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MYOMSSYSTEM",
+            hidden: false,
+            name: "OMS SYSTEM",
+            target: "/MyOMS?app=MyOMS",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/rainbow-online-store.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MY_GYM",
+            hidden: false,
+            name: "MY GYM",
+            target: "/GymView?app=myGym",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/smart-gym-water-bottle-and-dumbbells-for-a-healthy-lifestyle.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          }, {
+            id: "ADMIN_MODULES",
+            hidden: false,
+            name: "Admin Module",
+            target: "/AdminModule?app=AdminModules",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/3d-casual-life-secure-document.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MYOMSSYSTEM",
+            hidden: false,
+            name: "OMS SYSTEM",
+            target: "/MyOMS?app=MyOMS",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/rainbow-online-store.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MY_GYM",
+            hidden: false,
+            name: "MY GYM",
+            target: "/GymView?app=myGym",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/smart-gym-water-bottle-and-dumbbells-for-a-healthy-lifestyle.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          }, {
+            id: "ADMIN_MODULES",
+            hidden: false,
+            name: "Admin Module",
+            target: "/AdminModule?app=AdminModules",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/3d-casual-life-secure-document.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MYOMSSYSTEM",
+            hidden: false,
+            name: "OMS SYSTEM",
+            target: "/MyOMS?app=MyOMS",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/rainbow-online-store.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MY_GYM",
+            hidden: false,
+            name: "MY GYM",
+            target: "/GymView?app=myGym",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/smart-gym-water-bottle-and-dumbbells-for-a-healthy-lifestyle.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          }, {
+            id: "ADMIN_MODULES",
+            hidden: false,
+            name: "Admin Module",
+            target: "/AdminModule?app=AdminModules",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/3d-casual-life-secure-document.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MYOMSSYSTEM",
+            hidden: false,
+            name: "OMS SYSTEM",
+            target: "/MyOMS?app=MyOMS",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/rainbow-online-store.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MY_GYM",
+            hidden: false,
+            name: "MY GYM",
+            target: "/GymView?app=myGym",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/smart-gym-water-bottle-and-dumbbells-for-a-healthy-lifestyle.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          }, {
+            id: "ADMIN_MODULES",
+            hidden: false,
+            name: "Admin Module",
+            target: "/AdminModule?app=AdminModules",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/3d-casual-life-secure-document.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MYOMSSYSTEM",
+            hidden: false,
+            name: "OMS SYSTEM",
+            target: "/MyOMS?app=MyOMS",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/rainbow-online-store.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MY_GYM",
+            hidden: false,
+            name: "MY GYM",
+            target: "/GymView?app=myGym",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/smart-gym-water-bottle-and-dumbbells-for-a-healthy-lifestyle.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          }, {
+            id: "ADMIN_MODULES",
+            hidden: false,
+            name: "Admin Module",
+            target: "/AdminModule?app=AdminModules",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/3d-casual-life-secure-document.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MYOMSSYSTEM",
+            hidden: false,
+            name: "OMS SYSTEM",
+            target: "/MyOMS?app=MyOMS",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/rainbow-online-store.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MY_GYM",
+            hidden: false,
+            name: "MY GYM",
+            target: "/GymView?app=myGym",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/smart-gym-water-bottle-and-dumbbells-for-a-healthy-lifestyle.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          }, {
+            id: "ADMIN_MODULES",
+            hidden: false,
+            name: "Admin Module",
+            target: "/AdminModule?app=AdminModules",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/3d-casual-life-secure-document.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MYOMSSYSTEM",
+            hidden: false,
+            name: "OMS SYSTEM",
+            target: "/MyOMS?app=MyOMS",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/rainbow-online-store.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MY_GYM",
+            hidden: false,
+            name: "MY GYM",
+            target: "/GymView?app=myGym",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/smart-gym-water-bottle-and-dumbbells-for-a-healthy-lifestyle.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          }, {
+            id: "ADMIN_MODULES",
+            hidden: false,
+            name: "Admin Module",
+            target: "/AdminModule?app=AdminModules",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/3d-casual-life-secure-document.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MYOMSSYSTEM",
+            hidden: false,
+            name: "OMS SYSTEM",
+            target: "/MyOMS?app=MyOMS",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/rainbow-online-store.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MY_GYM",
+            hidden: false,
+            name: "MY GYM",
+            target: "/GymView?app=myGym",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/smart-gym-water-bottle-and-dumbbells-for-a-healthy-lifestyle.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          }, {
+            id: "ADMIN_MODULES",
+            hidden: false,
+            name: "Admin Module",
+            target: "/AdminModule?app=AdminModules",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/3d-casual-life-secure-document.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MYOMSSYSTEM",
+            hidden: false,
+            name: "OMS SYSTEM",
+            target: "/MyOMS?app=MyOMS",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/rainbow-online-store.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MY_GYM",
+            hidden: false,
+            name: "MY GYM",
+            target: "/GymView?app=myGym",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/smart-gym-water-bottle-and-dumbbells-for-a-healthy-lifestyle.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          }, {
+            id: "ADMIN_MODULES",
+            hidden: false,
+            name: "Admin Module",
+            target: "/AdminModule?app=AdminModules",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/3d-casual-life-secure-document.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MYOMSSYSTEM",
+            hidden: false,
+            name: "OMS SYSTEM",
+            target: "/MyOMS?app=MyOMS",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/rainbow-online-store.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MY_GYM",
+            hidden: false,
+            name: "MY GYM",
+            target: "/GymView?app=myGym",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/smart-gym-water-bottle-and-dumbbells-for-a-healthy-lifestyle.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          }, {
+            id: "ADMIN_MODULES",
+            hidden: false,
+            name: "Admin Module",
+            target: "/AdminModule?app=AdminModules",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/3d-casual-life-secure-document.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MYOMSSYSTEM",
+            hidden: false,
+            name: "OMS SYSTEM",
+            target: "/MyOMS?app=MyOMS",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/rainbow-online-store.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+          {
+            id: "MY_GYM",
+            hidden: false,
+            name: "MY GYM",
+            target: "/GymView?app=myGym",
+            actions: {
+              onClick: "",
+            },
+            logo: {
+              url: "../assets/icons/smart-gym-water-bottle-and-dumbbells-for-a-healthy-lifestyle.png",
+              style: {
+                mb: "4px",
+                boxSize: "59px",
+                objectFit: "contain",
+              },
+            },
+          },
+        ],
       featueListBaseOnURL: {},
     },
   },

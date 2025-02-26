@@ -1,4 +1,4 @@
-import { Flex, Text, Box, Image } from "@chakra-ui/react";
+import { Flex, Text, Box, Image, Input } from "@chakra-ui/react";
 import { useNavigate } from "react-router";
 import * as dynamicFunctions from "../../script/myAppsScript";
 
@@ -11,18 +11,37 @@ import {
   BreadcrumbLink,
   BreadcrumbRoot,
 } from "@/components/ui/breadcrumb";
+import { useEffect, useState } from "react";
+import { InputGroup } from "@/components/ui/input-group";
+import { useColorModeValue } from "@/components/ui/color-mode";
 export default function MyApps() {
+  console.log("===MyApps===");
+
   const appConfig = useSelector((state: RootState) => state.app.appConfig);
   // const loading = useSelector((state: RootState) => state.app.loading);
   const error = useSelector((state: RootState) => state.app.error);
   const navigate = useNavigate(); // Move useNavigate here
+  const [searchTerm, setSearchTerm] = useState("");
   const appList = appConfig?.config?.appList || [];
+  const [filteredApps, setFilteredApps] = useState([]);
+  const auth = useSelector((state: RootState) => state.auth);
+  // Filter appList based on search input
+  useEffect(() => {
+    const filtered = appList.filter(
+      (app: any) => app.name.toLowerCase().includes(searchTerm.toLowerCase()) // Ensure app has 'name'
+    );
+    setFilteredApps(filtered);
+  }, [searchTerm, appList]); // Dependencies
   // console.log("error in loadinf app ", error);
 
   // Handler function for navigation
   const handleDefaultNavigate = (e: React.MouseEvent, appConfig: any) => {
     e.preventDefault();
     console.log("On Click handleNavigate", e);
+    if(!auth?.isAuthenticated)return
+
+    const tenant_name = auth?.loginInfo ? auth.loginInfo['tenant_name'] : "GHOST_TENANT";
+
 
     if (Object.keys(appConfig.actions || {}).length > 0) {
       if (appConfig.actions["onClick"] && appConfig.actions["onClick"] !== "") {
@@ -35,37 +54,54 @@ export default function MyApps() {
           console.log("====CHECK YOUR METHOD NAME NOT FOUND====");
         }
       } else {
+        console.log(auth);
+
+        
         if (appConfig.target && appConfig.target !== "") {
           console.log("app", appConfig);
           // navigate('')
           // navigate(`/GymView?app=myGym`);
           // console.log("/GymView?app=myGym");
-
-          navigate(appConfig.target);
+          navigate(`/${tenant_name}${appConfig.target}`);
         }
       }
     } else {
       // Handle cases where actions are empty or undefined
       if (appConfig.target && appConfig.target !== "") {
-        navigate(appConfig.target);
+        navigate(`/${tenant_name}${appConfig.target}`);
       }
     }
   };
+  const bgColor = useColorModeValue("#FFFFFF", "dark.100");
 
   // if (loading === "loading") return <Loader loaderText="Loading App Configuration..."/>;
   return (
     <Box p="4">
-      
-      {/* <BreadcrumbRoot> */}
-        {/* <BreadcrumbLink href="/">Home</BreadcrumbLink> */}
-        {/* <BreadcrumbLink href="#">Components</BreadcrumbLink> */}
-        {/* <BreadcrumbCurrentLink>myApps</BreadcrumbCurrentLink> */}
-      {/* </BreadcrumbRoot> */}
+      <Box
+        // position="sticky"
+        position="sticky"
+        top={["7.3rem", "64px", "3.8rem"]}
+        w="100%"
+        bg={bgColor}
+        zIndex={999}
+        // boxShadow="sm"
+        px={4}
+        py={2}
+      >
+        <Input
+          placeholder="Search Apps..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          mb={4}
+        />
+      </Box>
+      {/* {error && <ErrorComponent errorMessage={error}></ErrorComponent>} */}
 
-      {/* {error && <ErrorComponent errorMessage={error}></ErrorComponent>}
-      {!error && (
-        <AppList apps={appList} handleNavigate={handleDefaultNavigate} />
-      )} */}
+      <Box mt={["7.3rem", "64px", "3.8rem"]}>
+        {!error && (
+          <AppList apps={filteredApps} handleNavigate={handleDefaultNavigate} />
+        )}
+      </Box>
     </Box>
   );
 }
@@ -93,7 +129,7 @@ const AppItem: React.FC<AppItemProps> = ({
       borderWidth="1px"
       borderRadius="lg"
       // boxShadow="md"
-      boxShadow={"2xl"}
+      // boxShadow={"2xl"}
       m="2"
       transition="all 0.3s ease"
       _hover={{
@@ -134,9 +170,9 @@ interface AppListProps {
 
 const AppList: React.FC<AppListProps> = ({ apps, handleNavigate }) => (
   <Flex wrap="wrap" justify="center">
-    {apps.map((app) => (
+    {apps.map((app, index) => (
       <AppItem
-        key={app.name}
+        key={index}
         appConfig={app}
         logoConfig={app.logo}
         name={app.name}

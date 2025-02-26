@@ -6,6 +6,8 @@ import {
   Outlet,
 } from "react-router";
 import { Suspense, lazy } from "react";
+import { AppLoader } from "./ui/components/Loader/Loader";
+import HandleDynamicView from "./utils/app/HandleDynamicView";
 // import { AppLoader } from "./ui/components/Loader/Loader";
 // // const AppLoader=lazy(()=>import("./ui/components/Loader/Loader"))
 // import HandleDynamicView from "./utils/app/HandleDynamicView";
@@ -118,40 +120,36 @@ const routes: RouteObject[] = [
     ],
   },
 
-  // // {
-  // //   path: "/:tenant_name/:view/*", // Parent route for `view`
-  // //   element: (
-  // //     <Suspense fallback={<AppLoader />}>
-  // //       <AuthProvider>
-  // //         <PrivateRoute>
-  // //           <PanelLayout />
-  // //         </PrivateRoute>
-  // //       </AuthProvider>
-  // //     </Suspense>
-  // //   ),
-  // //   children: [
-  // //     {
-  // //       path: "", // Child route for `params`
-  // //       element: (
-  // //         // <Suspense fallback={<AppLoader />}>
-  // //           <HandleDynamicView />
-  // //         // </Suspense>
-  // //       ),
-  // //     },
-  // //     {
-  // //       path: ":params/*", // Child route for `params`
-  // //       element: (
-  // //         // <Suspense fallback={<AppLoader />}>
-  // //           <HandleDynamicView />
-  // //         // </Suspense>
-  // //       ),
-  // //     },
-  // //   ],
-  // // },
-  // {
-  //   path: "/pageNotFound",
-  //   element: <PageNotFound />,
-  // },
+  {
+    path: "/:tenant_name/:view/*", // Parent route for `view`
+    element: (
+      <Suspense fallback={<AppLoader />}>
+        <AuthProvider>
+          <PrivateRoute>
+            <DashLayout />
+          </PrivateRoute>
+        </AuthProvider>
+      </Suspense>
+    ),
+    children: [
+      {
+        path: "", // Child route for `params`
+        element: (
+          // <Suspense fallback={<AppLoader />}>
+            <HandleDynamicView />
+          // </Suspense>
+        ),
+      },
+      {
+        path: ":params/*", // Child route for `params`
+        element: (
+          // <Suspense fallback={<AppLoader />}>
+            <HandleDynamicView />
+          // </Suspense>
+        ),
+      },
+    ],
+  },
   {
     path: "*",
     element: <PageNotFound />,

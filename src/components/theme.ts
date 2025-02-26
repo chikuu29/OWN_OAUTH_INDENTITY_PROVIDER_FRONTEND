@@ -95,25 +95,26 @@ const system = createSystem(defaultConfig, {
                 },
 
                 dark: {
-                    100: { value: "rgb(32, 32, 32)" },
+                    100: { value: "#09090B" },
                     200: { value: "#191919" },
                     300: { value: "#212121" },
                     400: { value: "#676767" }
                 }
             }
         },
-        textStyles:{
-            
+        textStyles: {
+
 
         }
     },
-    
+
     globalCss: {
         "html, body": {
             margin: 0,
             padding: 0,
-        //    fontFamily: "DM Sans",
-            
+            //    fontFamily: "DM Sans",
+            // background: "{base: 'blue.100', _dark: 'dark.100'}"
+
         },
 
     }

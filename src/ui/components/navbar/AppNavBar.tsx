@@ -6,7 +6,7 @@ import { SidebarResponsive } from "../sidebar/PanelSideBar";
 import Brand from "../Brand/Brand";
 // import TopNavMenuBuilder from "./TopNavMenuBuilder";
 import { memo } from "react";
-import { ColorModeButton } from "@/components/ui/color-mode";
+import { ColorModeButton, useColorModeValue } from "@/components/ui/color-mode";
 // import React from "react";
 interface AppNavType {
   DISPLAY_TYPE: any[];
@@ -23,46 +23,31 @@ const AppNav = ({
   ...rest
 }: AppNavType & any) => {
   console.log("===CALLING NAVBAR===");
-
-  // let navbarPosition = "fixed";
-  let navbarFilter = "none";
-  // let navbarBackdrop = "blur(20px)";
-  let navbarShadow =
-    "rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;";
-  // let navbarBg = useColorModeValue("white", "gray.950");
-  // let navbarBg = useColorModeValue("white", "navy.800");
-
+  const bgColor = useColorModeValue("white", "dark.100");
   return (
+    <Box  minH="75px">
     <Box
-      // bg={navbarBg}
-      // boxShadow={navbarShadow}
-      // filter={navbarFilter}
-      // backgroundPosition="center"
-      // backgroundSize="cover"
-      // transitionDelay="0s, 0s, 0s, 0s"
-      // transitionDuration=" 0.25s, 0.25s, 0.25s, 0s"
-      // transition-property="box-shadow, background-color, filter, border"
-      // transitionTimingFunction="linear, linear, linear, linear"
-      // alignItems={{ xl: "center" }}
-      // display={"flex"}
-      // minH="75px"
-      // justifyContent={{ xl: "center" }}
-      // mx="auto"
       w="100%"
       boxShadow="md"
-      position="fixed"
-      top="1"
-      left="0"
+      // position="fixed"
+      // position="sticky"
+      // top="1"
+      // left="0"
       zIndex={999}
+      // minH="75px"
+      position="fixed"
+      top="0"
+      left="0"
+      bg={bgColor}
     >
       <Flex
-        // zIndex={999}
-        // position={"fixed"}
-        // justify={'center'}
         w="100%"
+        // zIndex={999}
+        px={4}
         align={"center"}
         justify={"space-between"}
-        px={4}
+        // px={4}
+        //  position="fixed"
         // boxShadow="md"
         // {...rest}
       >
@@ -94,6 +79,7 @@ const AppNav = ({
           <PanelNavBarAction />
         </Flex>
       </Flex>
+    </Box>
     </Box>
   );
 };

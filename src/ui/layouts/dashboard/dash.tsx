@@ -20,7 +20,7 @@ const dash=()=> {
 console.log("features",FEATURE);
 
   return (
-    <Flex h="100vh" flexDirection="column">
+    <Box h="100vh" >
   
       <Navbar
         togglesidebar={toggleSidebar}
@@ -39,7 +39,7 @@ console.log("features",FEATURE);
         </VStack>
       </Flex>
   
-    </Flex>
+    </Box>
   );
 }
 
