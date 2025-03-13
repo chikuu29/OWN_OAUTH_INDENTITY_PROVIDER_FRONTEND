@@ -53,6 +53,7 @@ import {
 } from "@/components/ui/pagination";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { MdOpenInNew } from "react-icons/md";
+import { GrAction } from "react-icons/gr";
 
 const OAuthView = () => {
   console.log("===CALLING OAUTHVIEW===");
@@ -217,11 +218,12 @@ const OAuthView = () => {
             <Table.ScrollArea height="50vh">
               <Table.Root stickyHeader>
                 <Table.Header>
-                  <Table.Row borderRadius={"md"} bg={"bg.subtle"}>
+                  <Table.Row borderRadius={"md"} bg={"bg.subtle"} >
                     <Table.ColumnHeader
                       display={"flex"}
                       alignItems={"center"}
                       gap={2}
+                      cursor={'pointer'}
                     >
                       SN <FaArrowDownShortWide />
                     </Table.ColumnHeader>
@@ -229,7 +231,7 @@ const OAuthView = () => {
                     <Table.ColumnHeader>Client Name</Table.ColumnHeader>
                     <Table.ColumnHeader>Client Secreat</Table.ColumnHeader>
                     <Table.ColumnHeader>Created At</Table.ColumnHeader>
-                    <Table.ColumnHeader>Actions</Table.ColumnHeader>
+                    <Table.ColumnHeader>Actions <GrAction /></Table.ColumnHeader>
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
