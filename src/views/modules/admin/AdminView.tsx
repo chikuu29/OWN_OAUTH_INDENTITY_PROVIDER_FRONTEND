@@ -10,10 +10,10 @@ export default function AdminView(params: any) {
   const navigate = useNavigate(); // Move useNavigate here
   const items = [
     { id: 1, name: "OAUTH APPLICATION", image: "../assets/icons/oauth.png" },
-    { id: 2, name: "USER", image: "https://via.placeholder.com/150" },
-    { id: 3, name: "APPLICATION", image: "https://via.placeholder.com/150" },
-    { id: 4, name: "MONITORE", image: "https://via.placeholder.com/150" },
-    { id: 5, name: "REPORT", image: "https://via.placeholder.com/150" },
+    // { id: 2, name: "USER", image: "https://via.placeholder.com/150" },
+    // { id: 3, name: "APPLICATION", image: "https://via.placeholder.com/150" },
+    // { id: 4, name: "MONITORE", image: "https://via.placeholder.com/150" },
+    // { id: 5, name: "REPORT", image: "https://via.placeholder.com/150" },
   ];
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -22,7 +22,7 @@ export default function AdminView(params: any) {
   );
   const auth = useSelector((state: RootState) => state.auth);
 
-  const handleDefaultNavigate = ( url: string) => {
+  const handleDefaultNavigate = (url: string) => {
     // e.preventDefault();
     // console.log("On Click handleNavigate", e);
     if (!auth?.isAuthenticated) return;
@@ -53,13 +53,13 @@ export default function AdminView(params: any) {
     //     }
     //   }
     // } else {
-      // Handle cases where actions are empty or undefined
-      // if (appConfig.target && appConfig.target !== "") {
-      console.log(`/${tenant_name}${url}`);
-      
-        navigate(`/${tenant_name}y${url}`);
-      
-      // }
+    // Handle cases where actions are empty or undefined
+    // if (appConfig.target && appConfig.target !== "") {
+    console.log(`/${tenant_name}${url}`);
+
+    navigate(`/${tenant_name}y${url}`);
+
+    // }
     // }
   };
   return (
@@ -78,8 +78,12 @@ export default function AdminView(params: any) {
           justify="space-between"
           align="center"
           cursor={"pointer"}
+          // w={{ base: "45%", md: "200px" }}
           // h="100px"
-          onClick={() => handleDefaultNavigate('/ApplicationClients?app=AdminModules')}
+          
+          onClick={() =>
+            handleDefaultNavigate("/ApplicationClients?app=AdminModules")
+          }
         >
           <Image src={item.image} alt={item.name} boxSize="100px" />
           <Text fontSize="md" fontWeight="bold" mt="auto">

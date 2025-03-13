@@ -28,16 +28,16 @@ console.log("features",FEATURE);
         DISPLAY_TYPE={DISPLAY_TYPE}
       />
       {/* Main Content */}
-      <Flex flex="1" >
+      {/* <Flex flex="1" > */}
         {/* <PanelSideBar showSidebar={showSidebar} togglesidebar={toggleSidebar} /> */}
         {/* Main Content */}
-        <VStack flex="1" gap={4} align="stretch">
-          <Container maxW="100%">
+        <VStack  flex={1} align="stretch" m={"1.4rem"}>
+          {/* <Container > */}
             <Outlet></Outlet>
-          </Container>
+          {/* </Container> */}
           {/* <AppFooter /> */}
         </VStack>
-      </Flex>
+      {/* </Flex> */}
   
     </Box>
   );
