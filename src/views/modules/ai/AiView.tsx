@@ -6,8 +6,8 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 
-export default function AdminView(params: any) {
-  console.log("===CALLING ADMIN VIEW===", params);
+export default function AIView(params: any) {
+  console.log("===CALLING AI VIEW===", params);
   const navigate = useNavigate(); // Move useNavigate here
   const items = [
     { id: 1, name: "OAUTH APPLICATION", image: "../assets/icons/oauth.png" ,path:"/ApplicationClients?app=AdminModules"},
@@ -64,36 +64,6 @@ export default function AdminView(params: any) {
     // }
   };
   return (
-    <SimpleGrid columns={[1, 2, 3,4,5,6]} gap={4} mt={4}>
-      {filteredItems.map((item) => (
-        <Flex
-          key={item.id}
-          borderWidth="1px"
-          borderRadius="lg"
-          overflow="hidden"
-          p={4}
-          boxShadow="sm"
-          _hover={{ boxShadow: "md" }}
-          transition="0.3s"
-          direction="column"
-          justify="space-between"
-          align="center"
-          cursor={"pointer"}
-          flex={1}
-          
-          // w={{ base: "45%", md: "200px" }}
-          // h="100px"
-          
-          onClick={() =>
-            handleDefaultNavigate(item.path)
-          }
-        >
-          <Image src={item.image} alt={item.name} boxSize="100px" />
-          <Text fontSize="md" fontWeight="bold" mt="auto">
-            {item.name}
-          </Text>
-        </Flex>
-      ))}
-    </SimpleGrid>
+   <h1>AI CHAT BOT</h1>
   );
 }

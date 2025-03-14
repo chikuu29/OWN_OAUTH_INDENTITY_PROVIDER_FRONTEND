@@ -63,7 +63,7 @@ export default function Brand() {
     //     {/* </Text> */}
     //   </Text>
     // </Box>
-    <Box textAlign="center" >
+    <Box textAlign="center" onClick={onClickLogo}  cursor={'pointer'}>
       <Text fontSize="2xl" fontWeight="bold" color="blue.500">
         OAuth Provider
       </Text>

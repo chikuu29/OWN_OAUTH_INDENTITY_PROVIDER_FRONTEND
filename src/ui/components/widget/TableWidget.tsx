@@ -46,105 +46,110 @@ interface TABLE_WIDGET {
     currentPage: number;
     pageSize: number;
   };
+  filltersRequired?: boolean;
+  activeLoader?: boolean;
   api?: String;
   fillters?: any[];
 }
 
 export const TableWidget = memo(
   forwardRef<any, TABLE_WIDGET>((props, ref) => {
-    console.log("===CALLING TABLE ===",props);
-    
+    console.log("===CALLING TABLE ===", props);
+
     const {
       data = [],
       headerConfig = [],
       paginationRequired = false,
       autoHeader = true,
+      activeLoader = true,
+      filltersRequired=false,
       paginationSettings = { totalPages: 1, currentPage: 1, pageSize: 10 },
       ...rest
     } = props;
-    const [isLoading, setLoading] = useState<boolean>(false);
+    const [isLoading, setLoading] = useState<boolean>(activeLoader);
     const [keys, setKeys] = useState<any[]>(headerConfig);
 
     useEffect(() => {
-      if (autoHeader && data.length > 0 && headerConfig.length==0) {
+      if (autoHeader && data.length > 0 && headerConfig.length == 0) {
         const getKys: any[] = Object.keys(data[0]);
         setKeys(getKys);
+        setLoading(false);
       }
-    },[data]);
-
-   
+    }, [data]);
 
     return (
       <Box>
         <Box mt={3} mb={3}>
           <Flex justifyContent={"space-between"} gap={2}>
-            <Flex justifyContent={"space-between"} gap={2}>
-              <MenuRoot>
-                <MenuTrigger asChild>
-                  <IconButton padding={3} variant={"outline"}>
-                    Status
-                    <FaAngleDown />
-                  </IconButton>
-                  {/* <Button variant="outline" size="sm">
+            {filltersRequired && (
+              <Flex justifyContent={"space-between"} gap={2}>
+                <MenuRoot>
+                  <MenuTrigger asChild>
+                    <IconButton padding={3} variant={"outline"}>
+                      Status
+                      <FaAngleDown />
+                    </IconButton>
+                    {/* <Button variant="outline" size="sm">
                             Status
                           </Button> */}
-                </MenuTrigger>
-                <MenuContent>
-                  <Input
-                    placeholder="Search Value..."
-                    // value={search}
-                    // onChange={handleSearch}
-                    mb={2}
-                  />
-                  <VStack align="start" maxH="150px" overflowY="auto">
-                    {/* <MenuItem>
+                  </MenuTrigger>
+                  <MenuContent>
+                    <Input
+                      placeholder="Search Value..."
+                      // value={search}
+                      // onChange={handleSearch}
+                      mb={2}
+                    />
+                    <VStack align="start" maxH="150px" overflowY="auto">
+                      {/* <MenuItem>
                               <Checkbox mr={2}>Open</Checkbox>
                             </MenuItem> */}
-                    {[
-                      { title: "Open", value: "open" },
-                      { title: "Pendding", value: "pendding" },
-                    ].map(({ title, value }, index) => (
+                      {[
+                        { title: "Open", value: "open" },
+                        { title: "Pendding", value: "pendding" },
+                      ].map(({ title, value }, index) => (
+                        <Button
+                          key={value || index}
+                          w={"100%"}
+                          variant={"outline"}
+                          colorPalette={"blue"}
+                        >
+                          <Checkbox
+                            variant={"subtle"}
+                            // colorPalette={"blue"}
+                            cursor={"pointer"}
+                            w={"100%"}
+                            // bg={"blue.100"}
+                            // p={2}
+                            borderRadius={"md"}
+                            // color={"black"}
+                          >
+                            {title}
+                          </Checkbox>
+                        </Button>
+                      ))}
+                    </VStack>
+
+                    {/* Submit Button */}
+                    <HStack mt={3} w={"100%"}>
                       <Button
-                        key={value || index}
+                        size="sm"
+                        colorPalette="blue"
                         w={"100%"}
                         variant={"outline"}
-                        colorPalette={"blue"}
                       >
-                        <Checkbox
-                          variant={"subtle"}
-                          // colorPalette={"blue"}
-                          cursor={"pointer"}
-                          w={"100%"}
-                          // bg={"blue.100"}
-                          // p={2}
-                          borderRadius={"md"}
-                          // color={"black"}
-                        >
-                          {title}
-                        </Checkbox>
+                        Submit
                       </Button>
-                    ))}
-                  </VStack>
-
-                  {/* Submit Button */}
-                  <HStack mt={3} w={"100%"}>
-                    <Button
-                      size="sm"
-                      colorPalette="blue"
-                      w={"100%"}
-                      variant={"outline"}
-                    >
-                      Submit
-                    </Button>
-                  </HStack>
-                </MenuContent>
-              </MenuRoot>
-              <IconButton padding={3} variant={"outline"}>
-                More Fillters
-                <VscListFilter />
-              </IconButton>
-            </Flex>
-            <InputGroup startElement={<LuSearch />}>
+                    </HStack>
+                  </MenuContent>
+                </MenuRoot>
+                <IconButton padding={3} variant={"outline"}>
+                  More Fillters
+                  <VscListFilter />
+                </IconButton>
+              </Flex>
+            )}
+            <InputGroup startElement={<LuSearch />} flex={1}>
               <Input placeholder="Search Tables" />
             </InputGroup>
           </Flex>
@@ -188,7 +193,9 @@ export const TableWidget = memo(
                       {data.map((e: any, rowIndex) => (
                         <Table.Row key={rowIndex}>
                           {keys.map((key: string, index) => (
-                            <Table.Cell key={index}>{formatValue(e[key])}</Table.Cell>
+                            <Table.Cell key={index}>
+                              {formatValue(e[key])}
+                            </Table.Cell>
                           ))}
 
                           <Table.Cell key={`actions-${rowIndex}`}>

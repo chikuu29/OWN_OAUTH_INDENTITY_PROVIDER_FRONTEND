@@ -1,4 +1,4 @@
-import  { ComponentType } from "react";
+import { ComponentType } from "react";
 import { Subscription } from "rxjs";
 
 // Define the type for a lazy-loaded component
@@ -20,7 +20,12 @@ const componentConfig: ComponentConfig = {
         AdminModule: () => import("./views/modules/admin/AdminView"),
         DatabaseStatistics: () => import("./views/modules/admin/DatabaseStatisticsView"),
         ApplicationClients: () => import("./views/modules/admin/OAuthView"),
+        AuthUsers: () => import("./views/modules/admin/AuthUser"),
     },
+    "AI": {
+        ai: () => import("./views/modules/ai/AiView")
+    },
+
     // "myGym": {
     //     GymView: () => import("./views/modules/gym/GymView"),
     //     AddMember: () => import("./views/modules/gym/AddMember"),

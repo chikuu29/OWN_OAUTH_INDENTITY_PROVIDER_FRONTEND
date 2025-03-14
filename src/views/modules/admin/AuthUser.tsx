@@ -19,8 +19,8 @@ import { IoCreateOutline } from "react-icons/io5";
 import { GETAPI } from "@/app/api";
 import { TableWidget } from "@/ui/components/widget/TableWidget";
 
-const OAuthView = () => {
-  console.log("===CALLING OAUTHVIEW===");
+const AuthUsersView = () => {
+  console.log("===CALLING AuthUsersView===");
   const [isLoading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     client_name: "",
@@ -60,7 +60,7 @@ const OAuthView = () => {
 
   useEffect(() => {
     GETAPI({
-      path: "/applications/clients",
+      path: "/account/auth_users",
       isPrivateApi: true,
     }).subscribe((res: any) => {
       console.log("Applictions Clients", res);
@@ -85,7 +85,7 @@ const OAuthView = () => {
 
   return (
     <>
-      <Flex gap={5} wrap={"wrap"}>
+      {/* <Flex gap={5} wrap={"wrap"}>
         {[1, 3].map((e: any) => (
           <Box
             borderWidth="1px"
@@ -113,25 +113,25 @@ const OAuthView = () => {
             </VStack>
           </Box>
         ))}
-      </Flex>
+      </Flex> */}
       <Box position={"sticky"} top={["7.6rem", "64px", "4rem"]}>
         <Box mt={3} mb={3}>
           <Flex justifyContent={"space-between"}>
             <Stack>
               <Heading size="2xl" letterSpacing="tight">
                 <Highlight query="APPLICATIONS" styles={{ color: "teal.600" }}>
-                  OAUTH APPLICATIONS
+                  AUTH USERS
                 </Highlight>
               </Heading>
               <Text fontSize="sm" color="fg.muted">
-                Create and manage OAuth clients and credentials.
+                Manage Auth users 
               </Text>
             </Stack>
             <HStack>
-              <IconButton padding={5} variant={"solid"} colorPalette={"blue"}>
+              {/* <IconButton padding={5} variant={"solid"} colorPalette={"blue"}>
                 <IoCreateOutline />
                 Create new clients
-              </IconButton>
+              </IconButton> */}
             </HStack>
           </Flex>
         </Box>
@@ -140,7 +140,7 @@ const OAuthView = () => {
           data={tableData}
           paginationRequired={true}
           paginationSettings={paginationSettings}
-          filltersRequired={true}
+          
         />
       </Box>
       {/* <Box
@@ -249,4 +249,4 @@ const OAuthView = () => {
   );
 };
 
-export default OAuthView;
+export default AuthUsersView;
