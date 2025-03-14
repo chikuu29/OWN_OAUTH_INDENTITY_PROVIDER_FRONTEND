@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -54,10 +54,12 @@ import {
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { MdOpenInNew } from "react-icons/md";
 import { GrAction } from "react-icons/gr";
+import { GETAPI } from "@/app/api";
+import { TableWidget } from "@/ui/components/widget/TableWidget";
 
 const OAuthView = () => {
   console.log("===CALLING OAUTHVIEW===");
-  const [isLoading,setLoading]=useState(false)
+  const [isLoading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     client_name: "",
     client_id: "",
@@ -74,7 +76,6 @@ const OAuthView = () => {
     algorithm: "HS256",
   });
 
-
   const {
     handleSubmit,
     register,
@@ -83,6 +84,37 @@ const OAuthView = () => {
     mode: "onChange",
     reValidateMode: "onChange",
   });
+
+  const [tableData, setTableData] = useState<any[]>([]);
+  const [paginationSettings, setPaginationSettings] = useState<{
+    totalPages: number;
+    currentPage: number;
+    pageSize: number;
+  }>({
+    totalPages: 1,
+    currentPage: 1,
+    pageSize: 10,
+  });
+
+  useEffect(() => {
+    GETAPI({
+      path: "/applications/clients",
+      isPrivateApi: true,
+    }).subscribe((res: any) => {
+      console.log("Applictions Clients", res);
+      if (res.success && res["data"].length > 0) {
+       
+
+        
+        setTableData(res["data"]);
+        setPaginationSettings({
+          totalPages: res.total,
+          pageSize: 10,
+          currentPage: 1,
+        });
+      }
+    });
+  }, []);
 
   const onSubmit = handleSubmit(async (formState) => {
     console.log(formState);
@@ -140,170 +172,11 @@ const OAuthView = () => {
           </Flex>
         </Box>
         <Box borderBottom="1px solid" borderColor="gray.700" my={4} />
-        <Box mt={3} mb={3}>
-          <Flex justifyContent={"space-between"} gap={2}>
-            <Flex justifyContent={"space-between"} gap={2}>
-              <MenuRoot>
-                <MenuTrigger asChild>
-                  <IconButton padding={3} variant={"outline"}>
-                    Status
-                    <FaAngleDown />
-                  </IconButton>
-                  {/* <Button variant="outline" size="sm">
-                Status
-              </Button> */}
-                </MenuTrigger>
-                <MenuContent>
-                  <Input
-                    placeholder="Search Value..."
-                    // value={search}
-                    // onChange={handleSearch}
-                    mb={2}
-                  />
-                  <VStack align="start" maxH="150px" overflowY="auto">
-                    {/* <MenuItem>
-                  <Checkbox mr={2}>Open</Checkbox>
-                </MenuItem> */}
-                    {[
-                      { title: "Open", value: "open" },
-                      { title: "Pendding", value: "pendding" },
-                    ].map(({ title, value }) => (
-                      <Button
-                        w={"100%"}
-                        variant={"outline"}
-                        colorPalette={"blue"}
-                      >
-                        <Checkbox
-                          variant={"subtle"}
-                          // colorPalette={"blue"}
-                          cursor={"pointer"}
-                          w={"100%"}
-                          // bg={"blue.100"}
-                          // p={2}
-                          borderRadius={"md"}
-                          // color={"black"}
-                        >
-                          {title}
-                        </Checkbox>
-                      </Button>
-                    ))}
-                  </VStack>
-
-                  {/* Submit Button */}
-                  <HStack mt={3} w={"100%"}>
-                    <Button
-                      size="sm"
-                      colorPalette="blue"
-                      w={"100%"}
-                      variant={"outline"}
-                    >
-                      Submit
-                    </Button>
-                  </HStack>
-                </MenuContent>
-              </MenuRoot>
-              <IconButton padding={3} variant={"outline"}>
-                More Fillters
-                <VscListFilter />
-              </IconButton>
-            </Flex>
-            <InputGroup startElement={<LuSearch />}>
-              <Input placeholder="Search Tables" />
-            </InputGroup>
-          </Flex>
-        </Box>
-
-        <Box mt={2} borderWidth="1px" borderRadius="lg" padding={3}>
-          <Box position={"relative"}>
-            <Table.ScrollArea height="50vh">
-              <Table.Root stickyHeader>
-                <Table.Header>
-                  <Table.Row borderRadius={"md"} bg={"bg.subtle"} >
-                    <Table.ColumnHeader
-                      display={"flex"}
-                      alignItems={"center"}
-                      gap={2}
-                      cursor={'pointer'}
-                    >
-                      SN <FaArrowDownShortWide />
-                    </Table.ColumnHeader>
-                    <Table.ColumnHeader>Client ID</Table.ColumnHeader>
-                    <Table.ColumnHeader>Client Name</Table.ColumnHeader>
-                    <Table.ColumnHeader>Client Secreat</Table.ColumnHeader>
-                    <Table.ColumnHeader>Created At</Table.ColumnHeader>
-                    <Table.ColumnHeader>Actions <GrAction /></Table.ColumnHeader>
-                  </Table.Row>
-                </Table.Header>
-                <Table.Body>
-                  {[
-                    1, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1,
-                    2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1,
-                    2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1,
-                    2, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2,
-                    1, 2, 1, 2, 1, 2, 1, 2, 1, 2,
-                  ].map((e: any) => (
-                    <Table.Row>
-                      <Table.Cell>1</Table.Cell>
-                      <Table.Cell>DEVELOPER_ORGANTISATIONy</Table.Cell>
-                      <Table.Cell>DEVELOPER_ORGANTISATIONy</Table.Cell>
-                      <Table.Cell>DEVELOPER_ORGANTISATIONy</Table.Cell>
-                      <Table.Cell>DEVELOPER_ORGANTISATIONy</Table.Cell>
-                      <Table.Cell>
-                        <HStack>
-                          <IconButton
-                            variant={"outline"}
-                            colorPalette={"blue"}
-                            p={5}
-                          >
-                            <MdOpenInNew />
-                          </IconButton>
-                          <IconButton
-                            variant={"outline"}
-                            colorPalette={"yellow"}
-                            p={5}
-                          >
-                            <TiEdit />
-                          </IconButton>
-                          <IconButton
-                            variant={"outline"}
-                            colorPalette="red"
-                            p={5}
-                          >
-                            <RiDeleteBin5Line />
-                          </IconButton>
-                        </HStack>
-                      </Table.Cell>
-                    </Table.Row>
-                  ))}
-                </Table.Body>
-              </Table.Root>
-            </Table.ScrollArea>
-            <PaginationRoot
-              count={20}
-              pageSize={2}
-              defaultPage={1}
-              mt={5}
-              colorPalette={"blue"}
-              variant="solid"
-            >
-              <HStack justifyContent={"flex-end"}>
-                <PaginationPrevTrigger />
-                <PaginationItems />
-                <PaginationNextTrigger />
-              </HStack>
-            </PaginationRoot>
-            {isLoading && (
-              <Box pos="absolute" inset="0" bg="bg/80">
-                <Center h="full">
-                  <VStack colorPalette="teal">
-                    <Spinner color="teal.500" />
-                    <Text color="colorPalette.600">Loading...</Text>
-                  </VStack>
-                </Center>
-              </Box>
-            )}
-          </Box>
-        </Box>
+        <TableWidget
+          data={tableData}
+          paginationRequired={true}
+          paginationSettings={paginationSettings}
+        />
       </Box>
       {/* <Box
         maxW="500px"
