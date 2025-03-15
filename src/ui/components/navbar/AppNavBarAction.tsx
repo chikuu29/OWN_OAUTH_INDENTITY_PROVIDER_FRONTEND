@@ -80,7 +80,7 @@ export default function PanelNavBarAction() {
       <MenuRoot>
         <MenuTrigger asChild>
           <HStack>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" display={['none','block']}>
               {auth.loginInfo ? auth.loginInfo.userFullName : "GUEST"}
             </Button>
             <Avatar.Root shape="rounded" size="sm" cursor="pointer">
@@ -90,7 +90,7 @@ export default function PanelNavBarAction() {
               <Avatar.Fallback>
                 {auth.loginInfo ? auth.loginInfo.userFullName.charAt(0) : "G"}
               </Avatar.Fallback>
-              <Avatar.Image src="https://bit.ly/sage-adebayo" />
+              {/* <Avatar.Image src="https://bit.ly/sage-adebayo" /> */}
             </Avatar.Root>
           </HStack>
         </MenuTrigger>

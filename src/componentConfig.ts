@@ -17,13 +17,14 @@ interface ComponentConfig {
 // Define the componentConfig object
 const componentConfig: ComponentConfig = {
     "AdminModules": {
-        AdminModule: () => import("./views/modules/admin/AdminView"),
+        home: () => import("./views/modules/admin/AdminView"),
         DatabaseStatistics: () => import("./views/modules/admin/DatabaseStatisticsView"),
         ApplicationClients: () => import("./views/modules/admin/OAuthView"),
         AuthUsers: () => import("./views/modules/admin/AuthUser"),
+        Tenants: () => import("./views/modules/admin/TenantView"),
     },
     "AI": {
-        ai: () => import("./views/modules/ai/AiView")
+        home: () => import("./views/modules/ai/AiView")
     },
 
     // "myGym": {

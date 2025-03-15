@@ -1,13 +1,5 @@
-import {
-  Flex,
-  Icon,
-  useBreakpointValue,
-  Text,
-  Tooltip,
-  Image,
-  Box,
-} from "@chakra-ui/react";
-import { GrDocumentStore } from "react-icons/gr";
+import { Text, Box } from "@chakra-ui/react";
+
 import { useNavigate } from "react-router";
 
 export default function Brand() {
@@ -63,11 +55,11 @@ export default function Brand() {
     //     {/* </Text> */}
     //   </Text>
     // </Box>
-    <Box textAlign="center" onClick={onClickLogo}  cursor={'pointer'}>
-      <Text fontSize="2xl" fontWeight="bold" color="blue.500">
+    <Box textAlign="center" onClick={onClickLogo} cursor={"pointer"}>
+      <Text fontSize="xl" fontWeight="bold" color="blue.500">
         OAuth Provider
       </Text>
-      <Text fontSize="sm" color="gray.500">
+      <Text fontSize="xs"  color="fg.muted" fontFamily={"cursive"}>
         Powered by My App
       </Text>
     </Box>

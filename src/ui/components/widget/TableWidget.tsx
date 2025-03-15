@@ -193,7 +193,7 @@ export const TableWidget = memo(
                       {data.map((e: any, rowIndex) => (
                         <Table.Row key={rowIndex}>
                           {keys.map((key: string, index) => (
-                            <Table.Cell key={index}>
+                            <Table.Cell key={index} textAlign={'center'}>
                               {formatValue(e[key])}
                             </Table.Cell>
                           ))}
@@ -245,7 +245,7 @@ export const TableWidget = memo(
                   </PaginationRoot>
                 )}
               </>
-            ) : (
+            ) : !isLoading &&  (
               <VStack gap={4} align="center" justify="center" py={10}>
                 <Box
                   w={16}

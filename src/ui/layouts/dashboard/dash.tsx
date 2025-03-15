@@ -7,6 +7,7 @@ import { useSelector } from "react-redux";
 import { APP_CONFIG_STATE } from "../../../app/interfaces/app.interface";
 import { RootState } from "../../../app/store";
 import AppFooter from "../../components/footer/AppFooter";
+import Appbreadcurmb from "@/ui/components/navbar/Appbreadcurmb";
 
 const dash=()=> {
   console.log("%c====EXECUTE DASHBOARD LAYOUT=====", "color:white");
@@ -27,6 +28,7 @@ console.log("features",FEATURE);
         FEATURE={FEATURE}
         DISPLAY_TYPE={DISPLAY_TYPE}
       />
+      <Appbreadcurmb />
       {/* Main Content */}
       {/* <Flex flex="1" > */}
         {/* <PanelSideBar showSidebar={showSidebar} togglesidebar={toggleSidebar} /> */}

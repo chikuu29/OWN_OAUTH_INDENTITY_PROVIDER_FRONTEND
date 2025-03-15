@@ -11,7 +11,10 @@ export default function AdminView(params: any) {
   const navigate = useNavigate(); // Move useNavigate here
   const items = [
     { id: 1, name: "OAUTH APPLICATION", image: "../assets/icons/oauth.png" ,path:"/ApplicationClients?app=AdminModules"},
-    { id: 2, name: "AUTH USERS", image: "../assets/icons/3d-casual-life-user-interface-elements.gif",path:"/AuthUsers?app=AdminModules" },
+    { id: 2, name: "Tenants", image: "../assets/icons/finance-manager.png",path:"/Tenants?app=AdminModules" },
+
+    { id: 3, name: "AUTH USERS", image: "../assets/icons/3d-casual-life-user-interface-elements.gif",path:"/AuthUsers?app=AdminModules" },
+
     // { id: 3, name: "APPLICATION", image: "https://via.placeholder.com/150" },
     // { id: 4, name: "MONITORE", image: "https://via.placeholder.com/150" },
     // { id: 5, name: "REPORT", image: "https://via.placeholder.com/150" },
@@ -89,7 +92,7 @@ export default function AdminView(params: any) {
           }
         >
           <Image src={item.image} alt={item.name} boxSize="100px" />
-          <Text fontSize="md" fontWeight="bold" mt="auto">
+          <Text fontSize="sm" fontWeight="bold" mt="auto"  color={'fg.muted'}>
             {item.name}
           </Text>
         </Flex>

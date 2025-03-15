@@ -63,7 +63,7 @@ const initialState: AppConfig = {
             id: "ADMIN_MODULES",
             hidden: false,
             name: "Admin Module",
-            target: "/AdminModule?app=AdminModules",
+            target: "/home?app=AdminModules",
             actions: {
               onClick: "",
             },
@@ -114,7 +114,7 @@ const initialState: AppConfig = {
             id: "AI_CHAT_BOT",
             hidden: false,
             name: "AI CHATBOT",
-            target: "/ai?app=AI",
+            target: "/home?app=AI",
             actions: {
               onClick: "",
             },
