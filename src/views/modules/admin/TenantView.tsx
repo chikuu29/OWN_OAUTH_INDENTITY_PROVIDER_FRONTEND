@@ -46,7 +46,7 @@ const TenantView = () => {
 
   useEffect(() => {
     GETAPI({
-      path: "/account/tenant",
+      path: "/account/tenants",
       isPrivateApi: true,
     }).subscribe((res: any) => {
       console.log("Applictions Clients", res);

@@ -92,13 +92,6 @@ const system = createSystem(defaultConfig, {
                     800: { value: "#212121" },
                     900: { value: "#171717" },
                     950: { value: "#0d0d0d" },
-                },
-
-                dark: {
-                    100: { value: "#09090B" },
-                    200: { value: "#191919" },
-                    300: { value: "#212121" },
-                    400: { value: "#676767" }
                 }
             }
         },
@@ -113,7 +106,8 @@ const system = createSystem(defaultConfig, {
             margin: 0,
             padding: 0,
             //    fontFamily: "DM Sans",
-            // background: "{base: 'blue.100', _dark: 'dark.100'}"
+            // bg: "{base: '#F5F5F5', _dark: 'red'}"
+            // background: "pageBackground"
 
         },
 

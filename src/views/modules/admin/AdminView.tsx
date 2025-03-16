@@ -10,10 +10,11 @@ export default function AdminView(params: any) {
   console.log("===CALLING ADMIN VIEW===", params);
   const navigate = useNavigate(); // Move useNavigate here
   const items = [
-    { id: 1, name: "OAUTH APPLICATION", image: "../assets/icons/oauth.png" ,path:"/ApplicationClients?app=AdminModules"},
+    { id: 1, name: "OAUTH APPLICATION", image: "../assets/icons/authentication.png" ,path:"/ApplicationClients?app=AdminModules"},
     { id: 2, name: "Tenants", image: "../assets/icons/finance-manager.png",path:"/Tenants?app=AdminModules" },
 
     { id: 3, name: "AUTH USERS", image: "../assets/icons/3d-casual-life-user-interface-elements.gif",path:"/AuthUsers?app=AdminModules" },
+    { id: 4, name: "Access Control", image: "../assets/icons/access-control.png",path:"/AccessControl?app=AdminModules" },
 
     // { id: 3, name: "APPLICATION", image: "https://via.placeholder.com/150" },
     // { id: 4, name: "MONITORE", image: "https://via.placeholder.com/150" },

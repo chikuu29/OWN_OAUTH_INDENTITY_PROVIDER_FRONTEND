@@ -22,6 +22,8 @@ const componentConfig: ComponentConfig = {
         ApplicationClients: () => import("./views/modules/admin/OAuthView"),
         AuthUsers: () => import("./views/modules/admin/AuthUser"),
         Tenants: () => import("./views/modules/admin/TenantView"),
+        AccessControl: () => import("./views/modules/admin/AccessControlView"),
+
     },
     "AI": {
         home: () => import("./views/modules/ai/AiView")
