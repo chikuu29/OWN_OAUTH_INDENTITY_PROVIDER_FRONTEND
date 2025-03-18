@@ -1,4 +1,5 @@
 import { GETAPI } from "@/app/api";
+import { RootState } from "@/app/store";
 import { Tooltip } from "@/components/ui/tooltip";
 import {
   Box,
@@ -11,9 +12,10 @@ import {
   HStack,
   Switch,
   Float,
+  Flex,
 } from "@chakra-ui/react";
 import path from "path";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { IconType } from "react-icons";
 import {
   FaUserShield,
@@ -23,30 +25,13 @@ import {
   FaCircle,
 } from "react-icons/fa";
 import { MdBusiness } from "react-icons/md";
+import { useSelector } from "react-redux";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 
 const AccessControlView = () => {
   const roles = ["Administrator", "Editor", "Viewer", "Contributor", "Guest"];
-  const tenantsWithRoles: any[] = [
-    {
-      id: 1,
-      name: "Tenant A",
-      roles: ["Admin", "Manager", "Viewer", "Analyst"],
-      isActive: true,
-    },
-    {
-      id: 2,
-      name: "Tenant B",
-      roles: ["Admin", "Editor"],
-      isActive: false,
-    },
-    {
-      id: 3,
-      name: "Tenant C",
-      roles: ["Viewer", "Moderator", "Supervisor", "Support", "Assistant"],
-      isActive: true,
-    },
-  ];
-
+  const [tenantsWithRoles, setTenantWithRoles] = useState<any[]>([]);
+  const auth = useSelector((state: RootState) => state.auth);
   // Map specific roles to their corresponding icons
   const roleIcons: Record<string, IconType> = {
     Admin: FaUserShield,
@@ -55,26 +40,40 @@ const AccessControlView = () => {
     Editor: FaUsers,
     Moderator: FaUserCheck,
   };
+  const navigate = useNavigate();
 
   // Maximum roles to display before showing "more"
   const MAX_DISPLAY_ROLES = 3;
 
   useEffect(() => {
-
     GETAPI({
-      path: "/account/tenants",
+      path: "/account/tenants-with-roles",
       isPrivateApi: true,
+    }).subscribe((res: any) => {
+      console.log("===ROLES===", res);
+      setTenantWithRoles(res);
+    });
+  }, []);
 
-    }).subscribe((res:any) => {
-      console.log("===ROLES===", res.data);
-      if(res.success){
-        
-      }
-    })
-
-  },[])
+  const { view, secondaryView} = useParams(); // Access the `view` and `params` from the URL
+  const [searchParams] = useSearchParams();
+  const appName = searchParams.get("app") || "Default";
 
 
+  const handleDefaultNavigate = (tenant: any) => {
+    console.log(tenant);
+
+    // e.preventDefault();
+    // console.log("On Click handleNavigate", e);
+    if (!auth?.isAuthenticated) return;
+
+    const tenant_name = auth?.loginInfo
+      ? auth.loginInfo["tenant_name"]
+      : "GHOST_TENANT";
+
+    const url = `/${tenant_name}/${view}/manage_role_permissions/${tenant.tenant_id}?app=${appName}`;
+    navigate(url);
+  };
   return (
     <Box p={5}>
       <Heading mb={6} textAlign="center">
@@ -85,17 +84,20 @@ const AccessControlView = () => {
         {tenantsWithRoles.map((tenant) => (
           <Box
             position={"relative"}
-            key={tenant.id}
+            key={tenant.tenant_id}
             p={3}
             shadow="md"
             borderWidth="1px"
             borderRadius="lg"
             _hover={{ transform: "scale(1.03)", transition: "0.3s" }}
+            cursor={"pointer"}
+            onClick={() => handleDefaultNavigate(tenant)}
           >
             <VStack align="start" gap={3} mt={2}>
-              <HStack>
+              <HStack maxW={"300px"} wrap={"wrap"}>
                 <Icon as={MdBusiness} boxSize={6} color="teal.500" />
-                <Text fontSize="md" fontWeight="bold">
+
+                <Text fontSize="md" fontWeight="bold" truncate>
                   {tenant.name}
                 </Text>
               </HStack>
@@ -116,6 +118,7 @@ const AccessControlView = () => {
                       display="flex"
                       alignItems="center"
                       _hover={{ transform: "scale(1.05)", transition: "0.3s" }}
+                      textTransform={'uppercase'}
                     >
                       <Icon
                         as={roleIcons[role] || FaUsers}

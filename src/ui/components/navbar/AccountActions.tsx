@@ -13,10 +13,11 @@ import {
 } from "@chakra-ui/react";
 import { FiLogOut, FiSettings } from "react-icons/fi";
 import { useSelector } from "react-redux";
+import { memo } from "react";
 
-export default function AccountsActions() {
+const AccountsActions = () => {
   const auth = useSelector((state: any) => state.auth);
-  console.log(auth);
+ 
 
   const {logoutUser}=useAuth()
 
@@ -63,3 +64,4 @@ export default function AccountsActions() {
     </Box>
   );
 }
+export default memo(AccountsActions);

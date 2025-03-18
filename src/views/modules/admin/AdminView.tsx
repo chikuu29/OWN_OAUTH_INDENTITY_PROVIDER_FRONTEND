@@ -14,7 +14,7 @@ export default function AdminView(params: any) {
     { id: 2, name: "Tenants", image: "../assets/icons/finance-manager.png",path:"/Tenants?app=AdminModules" },
 
     { id: 3, name: "AUTH USERS", image: "../assets/icons/3d-casual-life-user-interface-elements.gif",path:"/AuthUsers?app=AdminModules" },
-    { id: 4, name: "Access Control", image: "../assets/icons/access-control.png",path:"/AccessControl?app=AdminModules" },
+    { id: 4, name: "Access Control", image: "../assets/icons/access-control.png",path:"/accesscontrol?app=AdminModules" },
 
     // { id: 3, name: "APPLICATION", image: "https://via.placeholder.com/150" },
     // { id: 4, name: "MONITORE", image: "https://via.placeholder.com/150" },

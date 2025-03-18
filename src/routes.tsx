@@ -141,7 +141,7 @@ const routes: RouteObject[] = [
         ),
       },
       {
-        path: ":params/*", // Child route for `params`
+        path: ":secondaryView/:r/*", // Child route for `params`
         element: (
           // <Suspense fallback={<AppLoader />}>
             <HandleDynamicView />

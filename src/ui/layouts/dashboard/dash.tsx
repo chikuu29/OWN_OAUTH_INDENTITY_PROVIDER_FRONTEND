@@ -28,7 +28,7 @@ console.log("features",FEATURE);
         FEATURE={FEATURE}
         DISPLAY_TYPE={DISPLAY_TYPE}
       />
-      <Appbreadcurmb />
+      
       {/* Main Content */}
       {/* <Flex flex="1" > */}
         {/* <PanelSideBar showSidebar={showSidebar} togglesidebar={toggleSidebar} /> */}

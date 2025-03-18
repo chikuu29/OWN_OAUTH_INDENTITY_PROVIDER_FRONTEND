@@ -7,6 +7,7 @@ import Brand from "../Brand/Brand";
 // import TopNavMenuBuilder from "./TopNavMenuBuilder";
 import { memo } from "react";
 import { ColorModeButton, useColorModeValue } from "@/components/ui/color-mode";
+import Appbreadcurmb from "./Appbreadcurmb";
 // import React from "react";
 interface AppNavType {
   DISPLAY_TYPE: any[];
@@ -25,7 +26,7 @@ const AppNav = ({
   console.log("===CALLING NAVBAR===");
   const bgColor = useColorModeValue("white", "dark.100");
   return (
-    <Box minH="50px">
+    <Box minH="69px">
       <Box
         w="100%"
         boxShadow="md"
@@ -79,7 +80,9 @@ const AppNav = ({
             <PanelNavBarAction />
           </Flex>
         </Flex>
+        <Appbreadcurmb />
       </Box>
+     
     </Box>
   );
 };

@@ -16,7 +16,7 @@ interface ConfigItem {
 }
 const Appbreadcurmb = forwardRef((props, ref) => {
   console.log("===CALLING Appbreadcurmb===");
-  const { view } = useParams(); // Access the `view` and `params` from the URL
+  const { view, secondaryView } = useParams(); // Access the `view` and `params` from the URL
   const [searchParams] = useSearchParams();
   const appName = searchParams.get("app") || "Default";
   const { pathname } = useLocation();
@@ -40,7 +40,21 @@ const Appbreadcurmb = forwardRef((props, ref) => {
         label: appName,
       });
       if (view != "home") {
-        newConfig.push({ path: `${pathname}?app=${appName}`, label: view });
+        if (secondaryView) {
+          // console.log(pathname.split("/").slice(0, 3).join("/"));
+          newConfig.push({
+            path: `${pathname.split("/").slice(0, 3).join("/")}?app=${appName}`,
+            label: view,
+          });
+        } else {
+          newConfig.push({ path: `${pathname}?app=${appName}`, label: view });
+        }
+      }
+      if (secondaryView) {
+        newConfig.push({
+          path: `${pathname}?app=${appName}`,
+          label: secondaryView,
+        });
       }
     }
 
@@ -57,17 +71,17 @@ const Appbreadcurmb = forwardRef((props, ref) => {
   return (
     <Box minH={"4vh"}>
       <Box
-        top={"3.1rem"}
+        // top={"3.1rem"}
         // top={"9%"}
-        position={"fixed"}
+        // position={"fixed"}
         w={"100%"}
         bg={bgColor}
         zIndex={999}
         p={"2"}
-        boxShadow={"md"}
-        borderRadius={"md"}
+        // boxShadow={"md"}
+        // borderRadius={"md"}
       >
-        <Breadcrumb.Root ms={2} variant={'plain'} size={'sm'}>
+        <Breadcrumb.Root ms={2} variant={"plain"} size={"sm"}>
           <Breadcrumb.List>
             {config.map((c: ConfigItem, index) => {
               const isLast = index === config.length - 1;
@@ -81,7 +95,7 @@ const Appbreadcurmb = forwardRef((props, ref) => {
                     _hover={!isLast ? { textDecoration: "underline" } : {}}
                     color={isLast ? "teal.500" : "fg.muted"}
                   >
-                    {index === 0 && <RiHome9Line  color="teal.500" />} {c.label}
+                    {index === 0 && <RiHome9Line color="teal.500" />} {c.label}
                   </Breadcrumb.Item>
                   {!isLast && <Breadcrumb.Separator />}
                 </React.Fragment>

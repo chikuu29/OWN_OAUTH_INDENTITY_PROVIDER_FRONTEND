@@ -22,7 +22,8 @@ const componentConfig: ComponentConfig = {
         ApplicationClients: () => import("./views/modules/admin/OAuthView"),
         AuthUsers: () => import("./views/modules/admin/AuthUser"),
         Tenants: () => import("./views/modules/admin/TenantView"),
-        AccessControl: () => import("./views/modules/admin/AccessControlView"),
+        accesscontrol: () => import("./views/modules/admin/AccessControlView"),
+        manage_role_permissions: () => import("./views/modules/admin/RolePermissionView")
 
     },
     "AI": {
