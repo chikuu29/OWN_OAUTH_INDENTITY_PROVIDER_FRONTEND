@@ -36,6 +36,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { formatKey } from "@/utils/formatKey";
 import { formatValue } from "@/utils/formatters";
 
+interface ACTIONTYPES {
+  types: "EDIT" | "DELETE" | "VIEW";
+  title?: string;
+  icon?: any;
+  colorPalette?: string;
+  action?: string;
+}
+
 interface TABLE_WIDGET {
   data?: any[];
   headerConfig?: any[];
@@ -50,11 +58,13 @@ interface TABLE_WIDGET {
   activeLoader?: boolean;
   api?: String;
   fillters?: any[];
+  actionSet?: ACTIONTYPES[];
+  onEvent?: (action: any) => void;
 }
 
 export const TableWidget = memo(
   forwardRef<any, TABLE_WIDGET>((props, ref) => {
-    console.log("===CALLING TABLE ===", props);
+    console.log("===CALLING TABLE ===");
 
     const {
       data = [],
@@ -62,8 +72,32 @@ export const TableWidget = memo(
       paginationRequired = false,
       autoHeader = true,
       activeLoader = true,
-      filltersRequired=false,
+      filltersRequired = false,
       paginationSettings = { totalPages: 1, currentPage: 1, pageSize: 10 },
+      actionSet = [
+        {
+          types: "VIEW",
+          title: "Open",
+          icon: <MdOpenInNew />,
+          colorPalette: "blue",
+          action: "openAction",
+        },
+        {
+          types: "EDIT",
+          title: "Edit",
+          icon: <TiEdit />,
+          colorPalette: "yellow",
+          action: "editAction",
+        },
+        {
+          types: "DELETE",
+          title: "Delete",
+          icon: <RiDeleteBin5Line />,
+          colorPalette: "red",
+          action: "deleteAction",
+        },
+      ],
+      onEvent,
       ...rest
     } = props;
     const [isLoading, setLoading] = useState<boolean>(activeLoader);
@@ -76,6 +110,17 @@ export const TableWidget = memo(
         setLoading(false);
       }
     }, [data]);
+
+    const sendEvent = (e: any, action: ACTIONTYPES, rowData: any) => {
+      const actions = {
+        eventType: e.type,
+        action: action.types,
+        data: rowData,
+      };
+      if (onEvent) {
+        onEvent(actions);
+      }
+    };
 
     return (
       <Box>
@@ -175,54 +220,49 @@ export const TableWidget = memo(
                             </IconButton>
                           </Table.ColumnHeader>
                         ))}
-                        <Table.ColumnHeader>
-                          {/* Actions <GrAction /> */}
+                        {actionSet.length > 0 && (
+                          <Table.ColumnHeader>
+                            {/* Actions <GrAction /> */}
 
-                          <IconButton
-                            variant={"outline"}
-                            p={4}
-                            colorPalette={"red"}
-                            w={"100%"}
-                          >
-                            Actions <GrAction />
-                          </IconButton>
-                        </Table.ColumnHeader>
+                            <IconButton
+                              variant={"outline"}
+                              p={4}
+                              colorPalette={"red"}
+                              w={"100%"}
+                            >
+                              Actions <GrAction />
+                            </IconButton>
+                          </Table.ColumnHeader>
+                        )}
                       </Table.Row>
                     </Table.Header>
                     <Table.Body>
-                      {data.map((e: any, rowIndex) => (
+                      {data.map((row: any, rowIndex) => (
                         <Table.Row key={rowIndex}>
                           {keys.map((key: string, index) => (
-                            <Table.Cell key={index} textAlign={'center'}>
-                              {formatValue(e[key])}
+                            <Table.Cell key={index} textAlign={"center"}>
+                              {formatValue(row[key])}
                             </Table.Cell>
                           ))}
-
-                          <Table.Cell key={`actions-${rowIndex}`}>
-                            <HStack justifyContent={"center"}>
-                              <IconButton
-                                variant={"outline"}
-                                colorPalette={"blue"}
-                                p={5}
-                              >
-                                <MdOpenInNew />
-                              </IconButton>
-                              <IconButton
-                                variant={"outline"}
-                                colorPalette={"yellow"}
-                                p={5}
-                              >
-                                <TiEdit />
-                              </IconButton>
-                              <IconButton
-                                variant={"outline"}
-                                colorPalette="red"
-                                p={5}
-                              >
-                                <RiDeleteBin5Line />
-                              </IconButton>
-                            </HStack>
-                          </Table.Cell>
+                          {actionSet.length > 0 && (
+                            <Table.Cell key={`actions-${rowIndex}`}>
+                              <HStack justifyContent={"center"}>
+                                {actionSet.map((action: ACTIONTYPES, index) => (
+                                  <IconButton
+                                    key={"action-" + index}
+                                    variant={"outline"}
+                                    colorPalette={action.colorPalette}
+                                    p={5}
+                                    onClick={(e) => {
+                                      sendEvent(e, action, row);
+                                    }}
+                                  >
+                                    {action.icon}
+                                  </IconButton>
+                                ))}
+                              </HStack>
+                            </Table.Cell>
+                          )}
                         </Table.Row>
                       ))}
                     </Table.Body>
@@ -245,23 +285,25 @@ export const TableWidget = memo(
                   </PaginationRoot>
                 )}
               </>
-            ) : !isLoading &&  (
-              <VStack gap={4} align="center" justify="center" py={10}>
-                <Box
-                  w={16}
-                  h={16}
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                  borderRadius="full"
-                  // bg="yellow"
-                >
-                  <Icon as={FaBoxOpen} boxSize={8} />
-                </Box>
-                <Text fontSize="xl" fontWeight="semibold" color="fg.muted">
-                  {"No Data Found"}
-                </Text>
-              </VStack>
+            ) : (
+              !isLoading && (
+                <VStack gap={4} align="center" justify="center" py={10}>
+                  <Box
+                    w={16}
+                    h={16}
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    borderRadius="full"
+                    // bg="yellow"
+                  >
+                    <Icon as={FaBoxOpen} boxSize={8} />
+                  </Box>
+                  <Text fontSize="xl" fontWeight="semibold" color="fg.muted">
+                    {"No Data Found"}
+                  </Text>
+                </VStack>
+              )
             )}
 
             {isLoading && (

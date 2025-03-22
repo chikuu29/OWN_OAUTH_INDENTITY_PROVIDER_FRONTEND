@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -15,13 +15,20 @@ import {
   Input,
   Select,
   createListCollection,
+  Tag,
+  Clipboard,
+  CheckboxGroup,
+  Fieldset,
+  Checkbox,
+  RadioGroup,
+  For,
 } from "@chakra-ui/react";
-
+import { Toaster, toaster } from "@/components/ui/toaster";
 import { Controller, useForm } from "react-hook-form";
 
 import { IoCreateOutline } from "react-icons/io5";
 
-import { GETAPI, POSTAPI } from "@/app/api";
+import { GETAPI, POSTAPI, PUTAPI } from "@/app/api";
 import { TableWidget } from "@/ui/components/widget/TableWidget";
 import { CloseButton } from "@/components/ui/close-button";
 import { Field } from "@/components/ui/field";
@@ -30,13 +37,32 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { TbPasswordFingerprint } from "react-icons/tb";
 import { LuUser } from "react-icons/lu";
 import { GrSystem } from "react-icons/gr";
+import { FaCheck, FaRegCopy } from "react-icons/fa6";
+import { MdOutlineClear } from "react-icons/md";
+import { CiBookmarkCheck } from "react-icons/ci";
+import APIErrorScreen from "@/ui/components/Error/ApiErrosDisplay";
 
 const OAuthView = () => {
   console.log("===CALLING OAUTHVIEW===");
   const [isLoading, setLoading] = useState(false);
-
+  const [formData, setFormData] = useState<any>({
+    algorithm: "",
+    allowedOrigins: [], //dyanmic text field
+    authorizationGrantTypes: [], //multiselect
+    clientId: "",
+    clientName: "",
+    clientType: "",
+    grantTypes: [], //multiselect
+    postLogoutRedirectUrls: [],
+    redirectUrls: [],
+    responseTypes: [], //multiselect
+    scope: [], //multiselect
+    skipAuthorization: false,
+    tokenEndpointAuthMethod: "",
+  });
+  const [actionMode, setActionMode] = useState<string>("NEW");
   const {
-    handleSubmit,
+    // handleSubmit,
     register,
     control,
     formState: { errors },
@@ -45,7 +71,7 @@ const OAuthView = () => {
     reValidateMode: "onChange",
   });
   const [openDialog, setOpenDialog] = useState<boolean>(false);
-  const [tableData, setTableData] = useState<any[]>([]);
+  const [tableData, setTableData] = useState<any>({});
   const [paginationSettings, setPaginationSettings] = useState<{
     totalPages: number;
     currentPage: number;
@@ -55,6 +81,7 @@ const OAuthView = () => {
     currentPage: 1,
     pageSize: 10,
   });
+  const [error, setErrors] = useState<any | null>(null);
 
   useEffect(() => {
     GETAPI({
@@ -73,37 +100,81 @@ const OAuthView = () => {
     });
   }, []);
   const contentRef = useRef<HTMLDivElement>(null);
-  const onSubmit = handleSubmit(async (formState) => {
-    console.log(formState);
 
-    POSTAPI({
-      path: "applications/register",
-      data: formState,
+  const addEventListener = useCallback((e: any) => {
+    console.log(e);
+    setActionMode(e.action);
+    setFormData(e.data);
+    switch (e.action) {
+      case "VIEW":
+        break;
+
+      case "EDIT":
+        setOpenDialog(true);
+        break;
+      case "DELETE":
+        break;
+    }
+  }, []);
+
+  const handleChange = (e: any) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+  const replaceObjectByKey = (key: any, newObj: any) => {
+    setTableData((prevData: any) =>
+      prevData.map((item: any) =>
+        item[key] === newObj[key] ? { ...item, ...newObj } : item
+      )
+    );
+  };
+
+  const handleSubmit = (e: any) => {
+    e.preventDefault();
+    console.log("Form Data:", formData);
+
+    PUTAPI({
+      path: `/applications/clients/${formData.client_id}`,
+      data: formData,
       isPrivateApi: true,
     }).subscribe((res: any) => {
-      console.log(res);
+      console.log("API", res);
+      if (res.success) {
+        toaster.create({
+          title: "Success",
+          description: "Client Updated Successfully",
+          type: "success",
+          duration: 5000,
+        });
+        replaceObjectByKey("client_id", res["data"][0]);
+        setOpenDialog(false);
+      } else {
+        setErrors(res);
+      }
     });
+  };
+  const handleArrayChange = (e: any) => {
+    console.log(e);
 
-    //   e.preventDefault();
-    //   console.log("userCredentials", userCredentials);
-    //   setLoading(true);
-  });
-  const frameworks = createListCollection({
-    items: [
-      { label: "Public", value: "public" },
-      { label: "Confidential", value: "confidential" },
-    ],
-  });
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+        ? [...formData[e.target.name], e.target.value]
+        : formData[e.target.name],
+    });
+  };
+  const removeArrayItem = (name: string, index: number) => {
+    setFormData((prev: any) => ({
+      ...prev,
+      [name]: prev[name].filter((_: any, i: number) => i !== index),
+    }));
+  };
+  if (error && error.success == false) {
+    return <APIErrorScreen errors={error} setErrors={setErrors} />;
+  }
 
-  const scopes = createListCollection({
-    items: [
-      { value: "openId", label: "Open ID" },
-      { value: "profile", label: "Profile" },
-      { value: "email", label: "Email" },
-    ],
-  })
   return (
     <>
+      <Toaster />
       <Flex gap={5} wrap={"wrap"}>
         {[1, 3].map((e: any) => (
           <Box
@@ -148,8 +219,8 @@ const OAuthView = () => {
             </Stack>
             <HStack>
               <IconButton
-                padding={5}
-                variant={"solid"}
+                padding={2}
+                variant={"outline"}
                 colorPalette={"blue"}
                 onClick={() => {
                   setOpenDialog(true);
@@ -167,10 +238,11 @@ const OAuthView = () => {
           paginationRequired={true}
           paginationSettings={paginationSettings}
           filltersRequired={true}
+          onEvent={addEventListener}
         />
       </Box>
       <Dialog.Root
-        // size="cover"
+        size="full"
         placement="center"
         motionPreset="slide-in-bottom"
         open={openDialog}
@@ -188,52 +260,46 @@ const OAuthView = () => {
                   textTransform={"uppercase"}
                   textAlign={"center"}
                 >
-                  Create New Oauth Clients
+                  {actionMode == "EDIT"
+                    ? "EDIT OAUTH DETAILS"
+                    : "Create New Oauth Clients"}
                 </Dialog.Title>
-                {/* <Dialog.CloseTrigger asChild>
-                  <CloseButton size="sm" />
-                </Dialog.CloseTrigger> */}
               </Dialog.Header>
               <Dialog.Body>
-                {/* <Box
-                  maxW="500px"
-                  mx="auto"
-                  mt={10}
-                  p={5}
-                  boxShadow="lg"
-                  borderRadius="md"
-                > */}
-                <form onSubmit={onSubmit} id="client-form">
+                <form id="client-form" onSubmit={handleSubmit}>
                   <VStack gap={4}>
                     <Field
                       label="Client ID"
-                      required
+                      // required
                       w="100%"
-                      errorText={errors.client_id?.message?.toString()}
-                      invalid={!!errors.client_id}
+                      color={"fg.muted"}
+                      disabled
                     >
                       <InputGroup flex="1" w="100%" startElement={<GrSystem />}>
                         <Input
-                          {...register("client_id", {
-                            required: "Client ID is required",
-                          })}
+                          // {...register("client_id", {
+                          //   required: "Client ID is required",
+                          // })}
+
+                          name="client_id"
+                          value={formData.client_id}
+                          onChange={handleChange}
                           placeholder="Enter Client ID"
                         />
                       </InputGroup>
                     </Field>
-
                     <Field
                       label="Client Secret"
-                      required
+                      color={"fg.muted"}
                       w="100%"
                       errorText={errors.client_secret?.message?.toString()}
                       invalid={!!errors.client_secret}
                     >
                       <InputGroup flex="1" w="100%">
                         <PasswordInput
-                          {...register("client_secret", {
-                            required: "Client Secret is required",
-                          })}
+                          name="client_secret"
+                          value={formData.client_secret}
+                          onChange={handleChange}
                           placeholder="Enter Client Secret"
                           rootProps={{
                             startElement: <TbPasswordFingerprint />,
@@ -242,168 +308,366 @@ const OAuthView = () => {
                       </InputGroup>
                     </Field>
 
-                    {/* Client Name */}
                     <Field
                       label="Client Name"
-                      required
+                      color={"fg.muted"}
+                      // required
                       w="100%"
-                      errorText={errors.client_name?.message?.toString()}
-                      invalid={!!errors.client_name}
+                      // errorText={errors.client_id?.message?.toString()}
+                      // invalid={!!errors.client_id}
                     >
                       <InputGroup flex="1" w="100%">
                         <Input
-                          {...register("client_name", {
-                            required: "Client Name is required",
-                          })}
+                          // {...register("client_id", {
+                          //   required: "Client ID is required",
+                          // })}
+                          name="client_name"
+                          value={formData.client_name}
+                          onChange={handleChange}
                           placeholder="Enter Client Name"
                         />
                       </InputGroup>
                     </Field>
 
-                    {/* Client Type */}
                     <Field
-                      label="Client Type"
-                      required
+                      label="Redirect Urls"
+                      color={"fg.muted"}
+                      // required
                       w="100%"
-                      errorText={errors.client_type?.message?.toString()}
-                      invalid={!!errors.client_type}
+                      // errorText={errors.client_id?.message?.toString()}
+                      // invalid={!!errors.client_id}
                     >
-                      <Controller
-                        control={control}
+                      <InputGroup flex="1" w="100%">
+                        <Input
+                          // {...register("client_id", {
+                          //   required: "Client ID is required",
+                          // })}
+                          name="redirect_urls"
+                          // value={formData.redirect_urls}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleArrayChange(e);
+                              e.currentTarget.value = "";
+                            }
+                          }}
+                          placeholder="Redirect Urls"
+                        />
+                      </InputGroup>
+
+                      <HStack wrap={"wrap"}>
+                        {formData.redirect_urls &&
+                          formData.redirect_urls.map(
+                            (urls: string, index: any) => (
+                              <Tag.Root
+                                key={"redirect_urls" + index}
+                                colorPalette={"green"}
+                                cursor={"pointer"}
+                                variant={"outline"}
+                                p={3}
+                              >
+                                <Tag.Label>{urls}</Tag.Label>
+                                <Tag.EndElement>
+                                  <Tag.CloseTrigger
+                                    cursor={"pointer"}
+                                    colorPalette={"red"}
+                                    onClick={() => {
+                                      removeArrayItem("redirect_urls", index);
+                                    }}
+                                  />
+                                </Tag.EndElement>
+                              </Tag.Root>
+                            )
+                          )}
+                      </HStack>
+                    </Field>
+                    <Fieldset.Root>
+                      <Fieldset.Legend fontSize="sm" mb="2" color="fg.muted">
+                        Skip Authorization
+                      </Fieldset.Legend>
+                      <RadioGroup.Root
+                        variant={"subtle"}
+                        colorPalette={"blue"}
+                        value={formData.skip_authorization}
+                        name="skip_authorization"
+                        onValueChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            skip_authorization: e.value,
+                          })
+                        }
+                      >
+                        <HStack gap="6">
+                          {[
+                            { value: true, label: "Yes" },
+                            { value: false, label: "No" },
+                          ].map((item: any) => (
+                            <RadioGroup.Item
+                              key={item.value}
+                              value={item.value}
+                            >
+                              <RadioGroup.ItemHiddenInput />
+                              <RadioGroup.ItemIndicator />
+                              <RadioGroup.ItemText>
+                                {item.label}
+                              </RadioGroup.ItemText>
+                            </RadioGroup.Item>
+                          ))}
+                        </HStack>
+                      </RadioGroup.Root>
+                    </Fieldset.Root>
+                    <Fieldset.Root>
+                      <CheckboxGroup
+                        value={formData.authorization_grant_types}
+                        name="authorization_grant_types"
+                        onValueChange={(value) =>
+                          setFormData({
+                            ...formData,
+                            authorization_grant_types: value,
+                          })
+                        }
+                      >
+                        <Fieldset.Legend fontSize="sm" mb="2" color="fg.muted">
+                          Authorization Grant Types
+                        </Fieldset.Legend>
+                        <Fieldset.Content>
+                          <For each={["authorization_code", "refresh_token"]}>
+                            {(value) => (
+                              <Checkbox.Root
+                                key={value}
+                                value={value}
+                                variant={"outline"}
+                                colorPalette={"blue"}
+                                cursor={"pointer"}
+                              >
+                                <Checkbox.HiddenInput />
+                                <Checkbox.Control>
+                                  <FaCheck />
+                                </Checkbox.Control>
+
+                                <Checkbox.Label>{value}</Checkbox.Label>
+                              </Checkbox.Root>
+                            )}
+                          </For>
+                        </Fieldset.Content>
+                      </CheckboxGroup>
+                    </Fieldset.Root>
+                    <Fieldset.Root>
+                      <Fieldset.Legend fontSize="sm" mb="2" color="fg.muted">
+                        Client Type
+                      </Fieldset.Legend>
+                      <RadioGroup.Root
+                        variant={"subtle"}
+                        colorPalette={"blue"}
+                        value={formData.client_type}
                         name="client_type"
-                        render={({ field }) => (
-                          <Select.Root
-                            // open={true}
-                            // {...register("client_type", {
-                            //   required: "Client Type is required",
-                            // })}
-                            value={field.value}
-                            onValueChange={({ value }) => field.onChange(value)}
-                            onInteractOutside={() => field.onBlur()}
-                            collection={frameworks}
+                        onValueChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            client_type: e.value,
+                          })
+                        }
+                      >
+                        <HStack gap="6">
+                          {[
+                            { value: "password", label: "Password" },
+                            { value: "confidential", label: "Confidential" },
+                          ].map((item: any) => (
+                            <RadioGroup.Item
+                              key={item.value}
+                              value={item.value}
+                            >
+                              <RadioGroup.ItemHiddenInput />
+                              <RadioGroup.ItemIndicator />
+                              <RadioGroup.ItemText>
+                                {item.label}
+                              </RadioGroup.ItemText>
+                            </RadioGroup.Item>
+                          ))}
+                        </HStack>
+                      </RadioGroup.Root>
+                    </Fieldset.Root>
+                    <Fieldset.Root>
+                      <Fieldset.Legend fontSize="sm" mb="2" color="fg.muted">
+                        Algorithm
+                      </Fieldset.Legend>
+                      <RadioGroup.Root
+                        variant={"subtle"}
+                        colorPalette={"blue"}
+                        value={formData.algorithm}
+                        name="skip_authorization"
+                        onValueChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            algorithm: e.value,
+                          })
+                        }
+                      >
+                        <HStack gap="6">
+                          {[{ value: "HS256", label: "HS256" }].map(
+                            (item: any) => (
+                              <RadioGroup.Item
+                                key={item.value}
+                                value={item.value}
+                              >
+                                <RadioGroup.ItemHiddenInput />
+                                <RadioGroup.ItemIndicator />
+                                <RadioGroup.ItemText>
+                                  {item.label}
+                                </RadioGroup.ItemText>
+                              </RadioGroup.Item>
+                            )
+                          )}
+                        </HStack>
+                      </RadioGroup.Root>
+                    </Fieldset.Root>
+                    <Fieldset.Root>
+                      <CheckboxGroup
+                        value={formData.grant_types}
+                        name="grant_types"
+                        onValueChange={(value) =>
+                          setFormData({ ...formData, grant_types: value })
+                        }
+                      >
+                        <Fieldset.Legend fontSize="sm" mb="2" color="fg.muted">
+                          Grant Types
+                        </Fieldset.Legend>
+                        <Fieldset.Content>
+                          {["authorization_code", "refresh_token"].map(
+                            (value) => (
+                              <Checkbox.Root
+                                key={value}
+                                value={value}
+                                variant={"outline"}
+                                colorPalette={"blue"}
+                                cursor={"pointer"}
+                              >
+                                <Checkbox.HiddenInput />
+                                <Checkbox.Control>
+                                  <FaCheck />
+                                </Checkbox.Control>
+                                <Checkbox.Label>{value}</Checkbox.Label>
+                              </Checkbox.Root>
+                            )
+                          )}
+                        </Fieldset.Content>
+                      </CheckboxGroup>
+                    </Fieldset.Root>
+
+                    <Fieldset.Root>
+                      <CheckboxGroup
+                        value={formData.response_types}
+                        name="response_types"
+                        onValueChange={(value) =>
+                          setFormData({ ...formData, response_types: value })
+                        }
+                      >
+                        <Fieldset.Legend fontSize="sm" mb="2" color="fg.muted">
+                          Response Types
+                        </Fieldset.Legend>
+                        <Fieldset.Content>
+                          {["code", "refresh_token"].map((value) => (
+                            <Checkbox.Root
+                              key={value}
+                              value={value}
+                              variant={"outline"}
+                              colorPalette={"blue"}
+                              cursor={"pointer"}
+                            >
+                              <Checkbox.HiddenInput />
+                              <Checkbox.Control>
+                                <FaCheck />
+                              </Checkbox.Control>
+                              <Checkbox.Label>{value}</Checkbox.Label>
+                            </Checkbox.Root>
+                          ))}
+                        </Fieldset.Content>
+                      </CheckboxGroup>
+                    </Fieldset.Root>
+
+                    <Fieldset.Root>
+                      <CheckboxGroup
+                        value={formData.scope}
+                        name="scope"
+                        onValueChange={(value) =>
+                          setFormData({ ...formData, scope: value })
+                        }
+                      >
+                        <Fieldset.Legend fontSize="sm" mb="2" color="fg.muted">
+                          scopes
+                        </Fieldset.Legend>
+                        <Fieldset.Content>
+                          {["openid", "profile", "email"].map((value) => (
+                            <Checkbox.Root
+                              key={value}
+                              value={value}
+                              variant={"outline"}
+                              colorPalette={"blue"}
+                              cursor={"pointer"}
+                            >
+                              <Checkbox.HiddenInput />
+                              <Checkbox.Control>
+                                <FaCheck />
+                              </Checkbox.Control>
+                              <Checkbox.Label>{value}</Checkbox.Label>
+                            </Checkbox.Root>
+                          ))}
+                        </Fieldset.Content>
+                      </CheckboxGroup>
+                    </Fieldset.Root>
+                    {/* <Field
+                      label="Scope"
+                      required
+                      w="100%"
+                      errorText={errors.scope?.message?.toString()}
+                      invalid={!!errors.scope}
+                    >
+                      <Select.Root
+                        multiple
+                        value={formData.scope}
+                        onValueChange={(value) =>
+                          setFormData({ ...formData, scope: value })
+                        }
+                        collection={scopes}
+                        size="sm"
+                        // width="320px"
+                        positioning={{ placement: "top-start", flip: false }}
+                      >
+                        <Select.HiddenSelect />
+                        <Select.Control>
+                          <Select.Trigger>
+                            <Select.ValueText placeholder="Select Scopes" />
+                          </Select.Trigger>
+                          <Select.IndicatorGroup>
+                            <Select.ClearTrigger>
+                              <MdOutlineClear />
+                            </Select.ClearTrigger>
+                            <Select.Indicator />
+                          </Select.IndicatorGroup>
+                        </Select.Control>
+                        <Portal container={contentRef}>
+                          <Select.Positioner
+                            w={"200px"}
+                            overflow={"hidden"}
+                            maxHeight={"200px"}
                           >
-                            <Select.HiddenSelect />
-                            <Select.Control>
-                              <Select.Trigger>
-                                <Select.ValueText placeholder="Select framework" />
-                              </Select.Trigger>
-                              <Select.IndicatorGroup>
-                                <Select.Indicator />
-                              </Select.IndicatorGroup>
-                            </Select.Control>
-                            <Portal container={contentRef}>
-                              <Select.Positioner>
-                                <Select.Content>
-                                  {frameworks.items.map((framework) => (
-                                    <Select.Item
-                                      item={framework}
-                                      key={framework.value}
-                                    >
-                                      {framework.label}
-                                      <Select.ItemIndicator />
-                                    </Select.Item>
-                                  ))}
-                                </Select.Content>
-                              </Select.Positioner>
-                            </Portal>
-                          </Select.Root>
-                        )}
-                      />
-                    </Field>
-
-                    {/* Authorization Grant Types */}
-                    <Field
-                      label="Authorization Grant Types (comma separated)"
-                      required
-                      w="100%"
-                      errorText={errors.authorization_grant_types?.message?.toString()}
-                      invalid={!!errors.authorization_grant_types}
-                    >
-                      <InputGroup flex="1" w="100%">
-                        <Input
-                          {...register("authorization_grant_types", {
-                            required: "Grant Types are required",
-                          })}
-                          placeholder="Enter Grant Types (comma separated)"
-                        />
-                      </InputGroup>
-                    </Field>
-
-                    {/* Redirect URLs */}
-                    <Field
-                      label="Redirect URLs (comma separated)"
-                      required
-                      w="100%"
-                      errorText={errors.redirect_urls?.message?.toString()}
-                      invalid={!!errors.redirect_urls}
-                    >
-                      <InputGroup flex="1" w="100%">
-                        <Input
-                          {...register("redirect_urls", {
-                            required: "Redirect URLs are required",
-                          })}
-                          placeholder="Enter Redirect URLs"
-                        />
-                      </InputGroup>
-                    </Field>
-
-                    {/* Post Logout Redirect URLs */}
-                    <Field
-                      label="Post Logout Redirect URLs (comma separated)"
-                      required
-                      w="100%"
-                      errorText={errors.post_logout_redirect_urls?.message?.toString()}
-                      invalid={!!errors.post_logout_redirect_urls}
-                    >
-                      <InputGroup flex="1" w="100%">
-                        <Input
-                          {...register("post_logout_redirect_urls", {
-                            required: "Post Logout Redirect URLs are required",
-                          })}
-                          placeholder="Enter Post Logout Redirect URLs"
-                        />
-                      </InputGroup>
-                    </Field>
-
-                    {/* Allowed Origins */}
-                    <Field
-                      label="Allowed Origins (comma separated)"
-                      required
-                      w="100%"
-                      errorText={errors.allowed_origins?.message?.toString()}
-                      invalid={!!errors.allowed_origins}
-                    >
-                      <InputGroup flex="1" w="100%">
-                        <Input
-                          {...register("allowed_origins", {
-                            required: "Allowed Origins are required",
-                          })}
-                          placeholder="Enter Allowed Origins"
-                        />
-                      </InputGroup>
-                    </Field>
-
-                    {/* Token Endpoint Auth Method */}
-                    <Field
-                      label="Token Endpoint Auth Method"
-                      required
-                      w="100%"
-                      errorText={errors.token_endpoint_auth_method?.message?.toString()}
-                      invalid={!!errors.token_endpoint_auth_method}
-                    >
-                      <InputGroup flex="1" w="100%">
-                        <Input
-                          {...register("token_endpoint_auth_method", {
-                            required: "Auth Method is required",
-                          })}
-                          placeholder="Enter Token Endpoint Auth Method"
-                        />
-                      </InputGroup>
-                    </Field>
-
-                    {/* Scope */}
-
-                    <Field
+                            <Select.Content>
+                              {scopes.items.map((scope, index) => (
+                                <Select.Item
+                                  item={scope}
+                                  key={scope.value + index}
+                                  cursor={"pointer"}
+                                >
+                                  {scope.label}
+                                  <Select.ItemIndicator />
+                                </Select.Item>
+                              ))}
+                            </Select.Content>
+                          </Select.Positioner>
+                        </Portal>
+                      </Select.Root>
+                    </Field> */}
+                    {/* <Field
                       label="Scope"
                       required
                       w="100%"
@@ -415,8 +679,7 @@ const OAuthView = () => {
                         name="scope"
                         render={({ field }) => (
                           <Select.Root
-                          multiple
-                        
+                            multiple
                             value={field.value}
                             onValueChange={({ value }) => field.onChange(value)}
                             onInteractOutside={() => field.onBlur()}
@@ -428,7 +691,7 @@ const OAuthView = () => {
                                 <Select.ValueText placeholder="Select Scopes" />
                               </Select.Trigger>
                               <Select.IndicatorGroup>
-                                <Select.ClearTrigger/>
+                                <Select.ClearTrigger />
                                 <Select.Indicator />
                               </Select.IndicatorGroup>
                             </Select.Control>
@@ -447,17 +710,21 @@ const OAuthView = () => {
                           </Select.Root>
                         )}
                       />
-                    </Field>
+                    </Field> */}
                   </VStack>
                 </form>
-                {/* </Box> */}
               </Dialog.Body>
               <Dialog.Footer>
                 <Dialog.ActionTrigger asChild>
                   <Button variant="outline">Cancel</Button>
                 </Dialog.ActionTrigger>
-                <Button type="submit" form="client-form">
-                  Save
+                <Button
+                  type="submit"
+                  form="client-form"
+                  colorPalette={"blue"}
+                  variant={"outline"}
+                >
+                  UPDATE
                 </Button>
               </Dialog.Footer>
             </Dialog.Content>

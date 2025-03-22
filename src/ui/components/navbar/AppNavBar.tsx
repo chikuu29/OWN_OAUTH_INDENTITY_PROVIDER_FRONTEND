@@ -24,9 +24,9 @@ const AppNav = ({
   ...rest
 }: AppNavType & any) => {
   console.log("===CALLING NAVBAR===");
-  const bgColor = useColorModeValue("white", "dark.100");
+  const bgColor = useColorModeValue("white", 'gray.950');
   return (
-    <Box minH="69px">
+    <Box minH="69px"     bg={bgColor}>
       <Box
         w="100%"
         boxShadow="md"

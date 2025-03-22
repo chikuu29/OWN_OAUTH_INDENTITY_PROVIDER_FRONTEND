@@ -177,6 +177,78 @@ const POSTAPI = ({
 };
 
 
+
+/**
+ * Makes an HTTP PUT request to the specified API endpoint and returns an observable with the response.
+ * Supports file upload with FormData.
+ * 
+ * @param path - The API endpoint path.
+ * @param data - The data payload to include with the POST request.
+ * @param isPrivateApi - Indicates whether to use private API authentication (default: false).
+ * @param files - Files to be uploaded.
+ * @example
+ * POSTAPI({
+ *   path: '/users',
+ *   data: { name: 'John Doe', age: 30 },
+ *   isPrivateApi: true,
+ * });
+ * 
+ * @returns An observable that emits a success or error response.
+ * 
+ * @author Suryanarayan Biswal
+ * @since 25-08-2024
+ */
+
+const PUTAPI = ({
+    path,
+    data = {},
+    isPrivateApi = false,
+    files = undefined  // Optional files to upload
+
+}: POSTAPI_INTERFACE) => {
+    // console.log("params", { path, data, enableCache, cacheTTL });
+    // Select the API handler based on the apiType
+    const apiHandler = isPrivateApi ? privateAPI : publicAPI;
+    // Create FormData if files are provided
+
+    let apiData: any = data
+    // Append files to FormData
+    if (files) {
+        const formData = new FormData();
+        Array.from(files).forEach((file, index) => {
+            formData.append('files', file, file.name);  // 'files' is the key used in the backend to access files
+        });
+
+
+        // Append non-file data to FormData
+        Object.keys(data).forEach(key => {
+            formData.append(key, data[key]);
+        });
+        console.log("FORMDATA", formData);
+        apiData = formData
+    }
+    return from(
+        // apiHandler.post(path, JSON.stringify(data)).then(response => response.data)
+        apiHandler.put(path, apiData).then(response => response.data)
+        // axios.post(url, data).then(response => response.data)
+    ).pipe(
+        // map(data => ({ success: true, data })), // Transform successful response
+        catchError(error => {
+            // Ensure error.response.status is treated as a number
+            const statusCode = error.response?.status as number;
+            // Determine the custom message based on error status code
+            const message = errorMessages[statusCode] || 'An unknown error occurred';
+            // Format the error response
+            return of({
+                data: error['response']['data'],
+                success: false,
+                message: message || 'An unknown error occurred',
+                errorInfo: error
+            });
+        })
+    );
+};
+
 type PostOptions = {
     headers?: Record<string, string>;
     body: URLSearchParams | FormData | string;
@@ -285,7 +357,7 @@ const POSTWITHOAUTH = async <T>(
 
 
 
-export { GETAPI, POSTAPI, POSTWITHOAUTH }
+export { GETAPI, POSTAPI, POSTWITHOAUTH,PUTAPI }
 
 
 
