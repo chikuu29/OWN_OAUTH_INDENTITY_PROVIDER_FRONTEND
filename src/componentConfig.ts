@@ -17,6 +17,7 @@ interface ComponentConfig {
 // Define the componentConfig object
 const componentConfig: ComponentConfig = {
     "AdminModules": {
+        layout: () => import("./ui/layouts/dashboard/dash"),
         home: () => import("./views/modules/admin/AdminView"),
         DatabaseStatistics: () => import("./views/modules/admin/DatabaseStatisticsView"),
         ApplicationClients: () => import("./views/modules/admin/OAuthView"),
@@ -27,6 +28,7 @@ const componentConfig: ComponentConfig = {
 
     },
     "AI": {
+        layout: () => import("./ui/layouts/ChatLayout"),
         home: () => import("./views/modules/ai/AiView")
     },
 
@@ -37,6 +39,7 @@ const componentConfig: ComponentConfig = {
     //     ListMember: () => import("./views/modules/gym/Members")
     // },
     "Default": {
+        layout: () => import("./ui/layouts/dashboard/dash"),
         myApps: () => import("./views/myApps/MyApps"),
         pageNotFound: () => import("./pages/NoPageFound"),
     }

@@ -8,6 +8,7 @@ import {
 import { Suspense, lazy } from "react";
 import { AppLoader } from "./ui/components/Loader/Loader";
 import HandleDynamicView from "./utils/app/HandleDynamicView";
+import DynamicLayout from "./utils/app/DynamicLayout";
 // import { AppLoader } from "./ui/components/Loader/Loader";
 // // const AppLoader=lazy(()=>import("./ui/components/Loader/Loader"))
 // import HandleDynamicView from "./utils/app/HandleDynamicView";
@@ -126,7 +127,8 @@ const routes: RouteObject[] = [
       <Suspense fallback={<AppLoader />}>
         <AuthProvider>
           <PrivateRoute>
-            <DashLayout />
+            {/* <DashLayout /> */}
+             <DynamicLayout /> 
           </PrivateRoute>
         </AuthProvider>
       </Suspense>
