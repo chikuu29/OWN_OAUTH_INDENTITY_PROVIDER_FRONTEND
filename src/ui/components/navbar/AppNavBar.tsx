@@ -29,7 +29,7 @@ const AppNav = ({
     <Box minH="69px"     bg={bgColor}>
       <Box
         w="100%"
-        boxShadow="md"
+        // boxShadow="md"
         // position="fixed"
         // position="sticky"
         // top="1"
@@ -44,7 +44,7 @@ const AppNav = ({
         <Flex
           w="100%"
           // zIndex={999}
-          px={4}
+          p={2}
           align={"center"}
           justify={"space-between"}
           // px={4}

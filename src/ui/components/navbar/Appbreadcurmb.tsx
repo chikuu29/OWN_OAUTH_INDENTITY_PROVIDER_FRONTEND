@@ -74,12 +74,18 @@ const Appbreadcurmb = forwardRef((props, ref) => {
         // top={"3.1rem"}
         // top={"9%"}
         // position={"fixed"}
-        w={"100%"}
+        // w={"30%"}
         bg={bgColor}
         zIndex={999}
         p={"2"}
-        // boxShadow={"md"}
-        // borderRadius={"md"}
+        boxShadow={"md"}
+        // border={'black'}
+        // borderRadius={'4xl'}
+        // display="inline-block"
+        borderTopRightRadius="sm"
+        borderBottomRightRadius="sm"
+        width="fit-content"
+        maxW="100%" // optional: prevents overflow
       >
         <Breadcrumb.Root ms={2} variant={"plain"} size={"sm"}>
           <Breadcrumb.List>

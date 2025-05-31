@@ -1,8 +1,9 @@
-import { ChakraProvider, createSystem, defaultConfig } from "@chakra-ui/react"
+import { createSystem, defaultConfig } from "@chakra-ui/react"
 
 
 const system = createSystem(defaultConfig, {
     theme: {
+        
         tokens: {
             colors: {
                 brand: {
@@ -93,13 +94,16 @@ const system = createSystem(defaultConfig, {
                     900: { value: "#171717" },
                     950: { value: "#0d0d0d" },
                 }
+              
             }
         },
         textStyles: {
 
 
-        }
+        },
+
     },
+
 
     globalCss: {
         "html, body": {

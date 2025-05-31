@@ -1,17 +1,37 @@
 import { RootState } from "@/app/store";
 import router from "@/routes";
-import { Button, Text, Flex, Grid, SimpleGrid, Image } from "@chakra-ui/react";
+import {
+  Button,
+  Text,
+  Flex,
+  Grid,
+  SimpleGrid,
+  Image,
+  Box,
+  Container,
+} from "@chakra-ui/react";
 import { ifError } from "assert";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router";
+import MessageInput from "./MessageInput";
 
 export default function AIView(params: any) {
   console.log("===CALLING AI VIEW===", params);
   const navigate = useNavigate(); // Move useNavigate here
   const items = [
-    { id: 1, name: "OAUTH APPLICATION", image: "../assets/icons/oauth.png" ,path:"/ApplicationClients?app=AdminModules"},
-    { id: 2, name: "AUTH USERS", image: "../assets/icons/3d-casual-life-user-interface-elements.gif",path:"/AuthUsers?app=AdminModules" },
+    {
+      id: 1,
+      name: "OAUTH APPLICATION",
+      image: "../assets/icons/oauth.png",
+      path: "/ApplicationClients?app=AdminModules",
+    },
+    {
+      id: 2,
+      name: "AUTH USERS",
+      image: "../assets/icons/3d-casual-life-user-interface-elements.gif",
+      path: "/AuthUsers?app=AdminModules",
+    },
     // { id: 3, name: "APPLICATION", image: "https://via.placeholder.com/150" },
     // { id: 4, name: "MONITORE", image: "https://via.placeholder.com/150" },
     // { id: 5, name: "REPORT", image: "https://via.placeholder.com/150" },
@@ -63,7 +83,90 @@ export default function AIView(params: any) {
     // }
     // }
   };
+  const messages = [
+    { sender: "User1", text: "Hello 👋" },
+    {
+      sender: "User2",
+      text: "How can i help you today my name is ella Hello 👋",
+    },
+    { sender: "User1", text: "Hello 👋" },
+    { sender: "User2", text: "Hey there!" },
+    { sender: "User1", text: "Hello 👋" },
+    { sender: "User2", text: "Hey there!" },
+    { sender: "User1", text: "Hello 👋" },
+    { sender: "User2", text: "Hey there!" },
+    { sender: "User1", text: "Hello 👋" },
+    { sender: "User2", text: "Hey there!" },
+    { sender: "User1", text: "Hello 👋" },
+    { sender: "User2", text: "Hey there!" },
+    { sender: "User1", text: "Hello 👋" },
+    { sender: "User2", text: "Hey there!" },
+    { sender: "User1", text: "Hello 👋" },
+    { sender: "User2", text: "Hey there!" },
+    { sender: "User1", text: "Hello 👋" },
+    { sender: "User2", text: "Hey there!" },
+    { sender: "User1", text: "Hello 👋" },
+    { sender: "User2", text: "Hey there!" },
+    { sender: "User1", text: "Hello 👋" },
+    { sender: "User2", text: "Hey there!" },
+    { sender: "User1", text: "Hello 👋" },
+    { sender: "User2", text: "Hey there!" },
+    { sender: "User1", text: "Hello 👋" },
+    { sender: "User2", text: "Hey there!" },
+    { sender: "User1", text: "Hello 👋" },
+    { sender: "User2", text: "Hey there!" },
+    { sender: "User1", text: "Hello 👋" },
+    { sender: "User2", text: "Hey there!" },
+    { sender: "User1", text: "Hello 👋" },
+    { sender: "User2", text: "Hey there!" },
+    { sender: "User1", text: "Hello 👋" },
+    { sender: "User2", text: "Hey there!" },
+    { sender: "User1", text: "Hello 👋" },
+    { sender: "User2", text: "Hey there!" },
+    { sender: "User1", text: "Hello 👋" },
+    { sender: "User2", text: "Hey there!" },
+    { sender: "User1", text: "Hello 👋" },
+    { sender: "User2", text: "Hey there!" },
+  ];
+  const currentUser = "User2";
   return (
-   <h1>AI CHAT BOT</h1>
+    <>
+      <Flex
+        direction="column"
+        height="100%"
+        maxHeight="100vh"
+        overflow="hidden"
+        // bg={'gray.800'}
+        p={0}
+      >
+        <Box flex="1" overflowY="auto" p={4}>
+          <Container maxW="container.md" height="100vh" p={0}>
+            {messages.map((msg, idx) => {
+              const isCurrentUser = msg.sender === currentUser;
+              return (
+                <Flex
+                  key={idx}
+                  justify={isCurrentUser ? "flex-end" : "flex-start"}
+                  mb={2}
+                >
+                  <Box
+                    bg={isCurrentUser ? "blue.500" : "gray.200"}
+                    color={isCurrentUser ? "white" : "black"}
+                    px={4}
+                    py={2}
+                    borderRadius="md"
+                    maxW="70%"
+                  >
+                    <Text fontSize="sm">{msg.text}</Text>
+                  </Box>
+                </Flex>
+              );
+            })}
+          </Container>
+        </Box>
+
+        <MessageInput />
+      </Flex>
+    </>
   );
 }

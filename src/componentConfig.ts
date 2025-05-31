@@ -1,5 +1,4 @@
 import { ComponentType } from "react";
-import { Subscription } from "rxjs";
 
 // Define the type for a lazy-loaded component
 type LazyComponent = () => Promise<{ default: ComponentType<any> }>;

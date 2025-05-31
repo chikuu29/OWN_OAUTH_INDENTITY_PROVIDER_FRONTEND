@@ -59,9 +59,9 @@ export default function Brand() {
       <Text fontSize="xl" fontWeight="bold" color="blue.500">
         OAuth Provider
       </Text>
-      <Text fontSize="xs"  color="fg.muted" fontFamily={"cursive"}>
+      {/* <Text fontSize="xs"  color="fg.muted" fontFamily={"cursive"}>
         Powered by My App
-      </Text>
+      </Text> */}
     </Box>
     // </Tooltip>
   );

@@ -1,16 +1,10 @@
-import { Flex, Text, Box, Image, Input } from "@chakra-ui/react";
+import { Flex, Text, Box, Image, Input, SimpleGrid } from "@chakra-ui/react";
 import { useNavigate } from "react-router";
 import * as dynamicFunctions from "../../script/myAppsScript";
 
 import { useSelector } from "react-redux";
 import { RootState } from "../../app/store";
-// import ErrorComponent from "../../ui/components/Error/ErrorComponent";
-// import Loader from "../../ui/components/Loader/Loader";
-import {
-  BreadcrumbCurrentLink,
-  BreadcrumbLink,
-  BreadcrumbRoot,
-} from "@/components/ui/breadcrumb";
+
 import { useEffect, useState } from "react";
 import { InputGroup } from "@/components/ui/input-group";
 import { useColorModeValue } from "@/components/ui/color-mode";
@@ -38,10 +32,11 @@ export default function MyApps() {
   const handleDefaultNavigate = (e: React.MouseEvent, appConfig: any) => {
     e.preventDefault();
     console.log("On Click handleNavigate", e);
-    if(!auth?.isAuthenticated)return
+    if (!auth?.isAuthenticated) return;
 
-    const tenant_name = auth?.loginInfo ? auth.loginInfo['tenant_name'] : "GHOST_TENANT";
-
+    const tenant_name = auth?.loginInfo
+      ? auth.loginInfo["tenant_name"]
+      : "GHOST_TENANT";
 
     if (Object.keys(appConfig.actions || {}).length > 0) {
       if (appConfig.actions["onClick"] && appConfig.actions["onClick"] !== "") {
@@ -56,7 +51,6 @@ export default function MyApps() {
       } else {
         console.log(auth);
 
-        
         if (appConfig.target && appConfig.target !== "") {
           console.log("app", appConfig);
           // navigate('')
@@ -72,7 +66,7 @@ export default function MyApps() {
       }
     }
   };
-  const bgColor = useColorModeValue("#FFFFFF", "dark.100");
+  const bgColor = useColorModeValue("#FFFFFF", "gray.950");
 
   // if (loading === "loading") return <Loader loaderText="Loading App Configuration..."/>;
   return (
@@ -84,20 +78,20 @@ export default function MyApps() {
         w="100%"
         bg={bgColor}
         zIndex={999}
-        // boxShadow="sm"
-        px={4}
-        py={2}
+        p={2}
+        borderRadius={"md"}
+        boxShadow={"md"}
       >
         <Input
           placeholder="Search Apps..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          mb={4}
+          border={"none"}
         />
       </Box>
       {/* {error && <ErrorComponent errorMessage={error}></ErrorComponent>} */}
 
-      <Box mt={["7.3rem", "64px", "3.8rem"]}>
+      <Box mt={["7.3rem", "64px", "0.8rem"]}>
         {!error && (
           <AppList apps={filteredApps} handleNavigate={handleDefaultNavigate} />
         )}
@@ -122,15 +116,16 @@ const AppItem: React.FC<AppItemProps> = ({
   if (appConfig && appConfig.hidden) return null;
   return (
     <Box
-      w={{ base: "45%", md: "200px" }}
+      // w={{ base: "50%", md: "200px" }}
       // h="250px"
-      // bg={useColorModeValue("white", "gray.950")}
+      // maxW={'200px'}
+      bg={useColorModeValue("white", "gray.950")}
       p="4"
       borderWidth="1px"
       borderRadius="lg"
-      // boxShadow="md"
+      boxShadow="md"
       // boxShadow={"2xl"}
-      m="2"
+      // m="2"
       transition="all 0.3s ease"
       _hover={{
         transform: "scale(1.05)",
@@ -169,7 +164,7 @@ interface AppListProps {
 }
 
 const AppList: React.FC<AppListProps> = ({ apps, handleNavigate }) => (
-  <Flex wrap="wrap" justify="center">
+  <SimpleGrid columns={[1, 2, 3,4]} gap={3} alignItems={'center'}>
     {apps.map((app, index) => (
       <AppItem
         key={index}
@@ -179,5 +174,5 @@ const AppList: React.FC<AppListProps> = ({ apps, handleNavigate }) => (
         handleNavigate={handleNavigate} // Pass the handler
       />
     ))}
-  </Flex>
+  </SimpleGrid>
 );
