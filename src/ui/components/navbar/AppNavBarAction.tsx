@@ -20,7 +20,7 @@ import React, { lazy, Suspense } from "react";
 import MenuLink from "../sidebar/components/MenuLink";
 // import NotificationMenu from "./NotificationMenu";
 import { ColorModeButton } from "@/components/ui/color-mode";
-const AccountActions=lazy(()=>import("./AccountActions"))
+const AccountActions = lazy(() => import("./AccountActions"));
 import {
   MenuContent,
   MenuItem,
@@ -28,34 +28,13 @@ import {
   MenuRoot,
   MenuTrigger,
 } from "@/components/ui/menu";
-export default function PanelNavBarAction() {
-  // const navbarIcon = useColorModeValue("gray.400", "white");
-  // // let menuBg = useColorModeValue("white", "navy.800");
-  // let bg = useColorModeValue("white", "gray.950");
-  // const textColor = useColorModeValue("secondaryGray.900", "white");
-  // const borderColor = useColorModeValue("#E6ECFA", "rgba(135, 140, 189, 0.3)");
-  // const shadow = useColorModeValue(
-  //   "14px 17px 40px 4px rgba(112, 144, 176, 0.18)",
-  //   "14px 17px 40px 4px rgba(112, 144, 176, 0.06)"
-  // );
-  // const { colorMode } = useColorMode();
-  const auth = useSelector((state: any) => state.auth);
+import { NavBarActionProps } from "@/app/interfaces/app.interface";
 
+export default function PanelNavBarAction({
+  showAuthFullName = true,
+}: NavBarActionProps) {
+  const auth = useSelector((state: any) => state.auth);
   const { logoutUser } = useAuth();
-  const actionList = [
-    {
-      label: "User Account",
-      icon: "FiUser",
-      // path: "/user/account",
-    },
-    {
-      label: "Logout",
-      icon: "FiLogOut",
-      actions: {
-        onClick: logoutUser,
-      },
-    },
-  ];
 
   return (
     <Flex
@@ -75,14 +54,16 @@ export default function PanelNavBarAction() {
         />
       </Menu> */}
       {/* <NotificationMenu /> */}
-     
-      <ColorModeButton variant={'outline'}></ColorModeButton>
+
+      <ColorModeButton variant={"outline"}></ColorModeButton>
       <MenuRoot>
         <MenuTrigger asChild>
           <HStack>
-            <Button variant="outline" size="sm" display={['none','block']}>
-              {auth.loginInfo ? auth.loginInfo.userFullName : "GUEST"}
-            </Button>
+            {showAuthFullName && (
+              <Button variant="outline" size="sm" display={["none", "block"]}>
+                {auth.loginInfo ? auth.loginInfo.userFullName : "GUEST"}
+              </Button>
+            )}
             <Avatar.Root shape="rounded" size="sm" cursor="pointer">
               {/* <Avatar.Fallback
                 name={auth.loginInfo ? auth.loginInfo.userFullName : "GUEST"}

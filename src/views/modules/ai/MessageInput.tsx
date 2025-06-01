@@ -19,7 +19,7 @@ type MessageInputProps = {
 };
 
 const MessageInput: React.FC<MessageInputProps> = ({
-  placeholder = "Type your message...",
+  placeholder = "Ask Anything About You Data",
   isLoading = false,
 }) => {
   const [message, setMessage] = useState("");
@@ -48,9 +48,9 @@ const MessageInput: React.FC<MessageInputProps> = ({
   };
 
   return (
-    <Box m={2}>
+    <Box m={1} >
       <Box
-        p={2}
+        p={3}
         bg={useColorModeValue("#FFFFFF", "gray.800")}
         borderRadius={"4xl"}
         boxShadow={"md"}
@@ -60,25 +60,26 @@ const MessageInput: React.FC<MessageInputProps> = ({
         {/* <HStack> */}
         <Textarea
           maxHeight={'200px'}
-          rows={2}
+          // rows={2}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder={placeholder}
           onKeyDown={handleKeyDown}
           color={useColorModeValue("black", "white")}
-          size="lg"
+          size="sm"
           outline="none"
           border="none"
           overflowX="hidden" // Prevent horizontal scroll
           whiteSpace="pre-wrap" // Preserve line breaks and wrap long lines
           wordBreak="break-word" // Break long words if needed
         />
-        <Flex justifyContent={"space-between"} mt={3}>
+        <Flex justifyContent={"space-between"} mt={1}>
           <IconButton
             aria-label="Send message"
             onClick={handleSend}
-            colorPalette="blue"
+            // colorPalette="blue"
             variant={"solid"}
+             size={'sm'}
             //   isLoading={isLoading}
           >
             <MdAutoFixHigh />
@@ -87,17 +88,16 @@ const MessageInput: React.FC<MessageInputProps> = ({
           <IconButton
             aria-label="Send message"
             onClick={handleSend}
-            colorPalette="blue"
+            // colorPalette="blue"
             variant={"solid"}
+            size={'sm'}
             //   isLoading={isLoading}
           >
             <FaArrowUp />
           </IconButton>
         </Flex>
         {/* <HStack alignItems={'center'}> */}
-        <Text color={"gray.500"} textAlign={"center"}>
-          AI can make mistakes. Check important info. See Cookie Preferences.
-        </Text>
+     
         {/* </HStack> */}
         {/* </HStack> */}
       </Box>

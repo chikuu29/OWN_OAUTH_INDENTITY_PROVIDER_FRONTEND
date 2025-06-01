@@ -30,3 +30,8 @@ export interface AlertProps {
     isVisible: boolean;
     onClose?: () => void;
 }
+
+
+export interface NavBarActionProps {
+   showAuthFullName?:boolean
+}

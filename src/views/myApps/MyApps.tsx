@@ -128,7 +128,7 @@ const AppItem: React.FC<AppItemProps> = ({
       // m="2"
       transition="all 0.3s ease"
       _hover={{
-        transform: "scale(1.05)",
+        transform: "scale(1.02)",
         boxShadow: "xl",
       }}
       onClick={(e) => handleNavigate(e, appConfig)} // Pass the handler
