@@ -1,4 +1,5 @@
 import { useColorModeValue } from "@/components/ui/color-mode";
+import { useAppNavigate } from "@/utils/services/appServices";
 import {
   Box,
   Flex,
@@ -14,6 +15,7 @@ import { FaIoxhost } from "react-icons/fa";
 import { MdOutlineHistoryToggleOff } from "react-icons/md";
 import { PiSidebar } from "react-icons/pi";
 
+
 interface AIChatSideBarProps {
   isSidebarOpen: boolean;
   onToggleSidebar: () => void;
@@ -22,6 +24,7 @@ const AIChatSideBar = ({
   isSidebarOpen,
   onToggleSidebar,
 }: AIChatSideBarProps) => {
+  const appNavigate = useAppNavigate();
   const chatHistory = {
     "2025-05-31": [
       { id: 1, title: "Chat with John" },
@@ -77,10 +80,10 @@ const AIChatSideBar = ({
       { id: 4, title: "Bug Report" },
     ],
   };
+
   return (
     <Box
       w="250px"
-     
       // bg="gray.100"
       // boxShadow="md"
       h="100vh"
@@ -92,7 +95,6 @@ const AIChatSideBar = ({
       transition="transform 0.3s ease-in-out"
       boxShadow="md"
       p={2}
-   
     >
       <Flex
         alignItems={"center"}
@@ -133,6 +135,7 @@ const AIChatSideBar = ({
           w="100%"
           justifyContent="flex-start"
           ps={1}
+          onClick={(e) => appNavigate("home")} // Pass the handler
         >
           <CiEdit /> New Chat
         </IconButton>

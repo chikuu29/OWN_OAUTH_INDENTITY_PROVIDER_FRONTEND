@@ -62,7 +62,7 @@ export default function AdminView(params: any) {
     // if (appConfig.target && appConfig.target !== "") {
     console.log(`/${tenant_name}${url}`);
 
-    navigate(`/${tenant_name}y${url}`);
+    navigate(`/${tenant_name}${url}`);
 
     // }
     // }

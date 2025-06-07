@@ -12,7 +12,8 @@ const HandleDynamicView = () => {
   const appName = searchParams.get("app") || "Default";
 
   const appConfig = componentConfig[appName];
- ;
+ console.log(view);
+ 
 
   // Safely access the component based on the view
   const Component = useMemo(() => {

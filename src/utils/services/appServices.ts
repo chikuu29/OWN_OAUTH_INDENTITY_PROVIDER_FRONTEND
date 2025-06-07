@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useSearchParams } from "react-router";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 import { AppDispatch, RootState } from "../../app/store";
 import { SET_APP_CONFIG_STATE } from "../../app/slices/appConfig/appConfigSlice";
 import { useEffect } from "react";
@@ -56,4 +56,37 @@ export const GetNavMenuConfig = () => {
     console.log("%c====SET APP_SIDEBAR_CONFIG====", "color:green");
     dispatch(SET_APP_CONFIG_STATE(loadedFeature));
   }, [appName]);
+};
+
+// appservice.ts
+
+
+export const useAppNavigate = () => {
+  const navigate = useNavigate();
+  const location = useLocation()
+  const params = useParams()
+
+
+
+  const appNavigate = (path: string) => {
+    console.log("Navigating to:", path);
+    console.log(params);
+    const newPath = `/${params.tenant_name}/${path}${location.search}`
+    const currectPath = `${location.pathname}${location.search}`
+    console.log(
+      "newPath", newPath
+    );
+    console.log(
+      "currectPath", currectPath
+    );
+    if (newPath != currectPath) {
+      navigate(newPath);
+    }
+
+
+    console.log(location);
+
+  };
+
+  return appNavigate;
 };

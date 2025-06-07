@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Box,
   Input,
@@ -46,20 +46,38 @@ const MessageInput: React.FC<MessageInputProps> = ({
       handleSend();
     }
   };
+  
+  const textareaRef:any = useRef(null);
+  // Adjust textarea height whenever message changes
+  useEffect(() => {
+    if (textareaRef.current) {
+      // Reset height to auto to get correct scrollHeight
+      textareaRef.current.style.height = "auto";
+      // Set new height based on content (min 30px, max 200px)
+      const newHeight = Math.min(
+        Math.max(textareaRef.current.scrollHeight, 20),
+        200
+      );
+      textareaRef.current.style.height = `${newHeight}px`;
+    }
+  }, [message]);
+
 
   return (
-    <Box m={1} >
+    <Box m={1}>
       <Box
         p={3}
-        bg={useColorModeValue("#FFFFFF", "gray.800")}
-        borderRadius={"4xl"}
+        bg={useColorModeValue("#e3e3e3", "gray.800")}
+        borderRadius={"2xl"}
         boxShadow={"md"}
-        width={"70%"}
+        width={"90%"}
+        // width='auto'
         m="auto"
       >
         {/* <HStack> */}
-        <Textarea
+        {/* <Textarea
           maxHeight={'200px'}
+          minHeight={"30px"}
           // rows={2}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
@@ -72,14 +90,31 @@ const MessageInput: React.FC<MessageInputProps> = ({
           overflowX="hidden" // Prevent horizontal scroll
           whiteSpace="pre-wrap" // Preserve line breaks and wrap long lines
           wordBreak="break-word" // Break long words if needed
+        /> */}
+        <Textarea
+          ref={textareaRef}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Type your message..."
+          minH="20px"
+          maxH="200px"
+          color={useColorModeValue("black", "white")}
+          size="sm"
+          outline="none"
+          border="none"
+          // overflow="hidden" // Hide all scrollbars
+          whiteSpace="pre-wrap"
+          wordBreak="break-word"
+          resize="none" // Disable manual resizing
         />
         <Flex justifyContent={"space-between"} mt={1}>
           <IconButton
             aria-label="Send message"
             onClick={handleSend}
-            // colorPalette="blue"
-            variant={"solid"}
-             size={'sm'}
+            colorPalette="blue"
+            variant={"outline"}
+            size={"sm"}
             //   isLoading={isLoading}
           >
             <MdAutoFixHigh />
@@ -88,16 +123,17 @@ const MessageInput: React.FC<MessageInputProps> = ({
           <IconButton
             aria-label="Send message"
             onClick={handleSend}
-            // colorPalette="blue"
-            variant={"solid"}
-            size={'sm'}
+            colorPalette="blue"
+            variant={"outline"}
+            // variant={"solid"}
+            size={"sm"}
             //   isLoading={isLoading}
           >
             <FaArrowUp />
           </IconButton>
         </Flex>
         {/* <HStack alignItems={'center'}> */}
-     
+
         {/* </HStack> */}
         {/* </HStack> */}
       </Box>

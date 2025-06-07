@@ -49,7 +49,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [authInfo, setAuthInfo] = useState(null);
   const [reloginRequired, setReloginRequired] = useState(true);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
