@@ -1,192 +1,200 @@
 import { RootState } from "@/app/store";
-import router from "@/routes";
-import { SlLike } from "react-icons/sl";
 import {
-  Button,
+  Box,
   Text,
   Flex,
-  Grid,
-  SimpleGrid,
-  Image,
-  Box,
   Container,
   IconButton,
-  Heading,
+  VStack,
+  HStack,
 } from "@chakra-ui/react";
-import { ifError } from "assert";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import MessageInput from "./MessageInput";
-import { GoCopy } from "react-icons/go";
-import { MdOutlineAnalytics } from "react-icons/md";
-import { useColorMode, useColorModeValue } from "@/components/ui/color-mode";
+import { CiEdit } from "react-icons/ci";
+import { FaUser, FaRobot } from "react-icons/fa";
+import { useColorModeValue } from "@/components/ui/color-mode";
+import { Avatar } from "@/components/ui/avatar";
+
 export default function AIView(params: any) {
   console.log("===CALLING AI VIEW===", params);
-  const navigate = useNavigate(); // Move useNavigate here
-  const items = [
-    {
-      id: 1,
-      name: "OAUTH APPLICATION",
-      image: "../assets/icons/oauth.png",
-      path: "/ApplicationClients?app=AdminModules",
-    },
-    {
-      id: 2,
-      name: "AUTH USERS",
-      image: "../assets/icons/3d-casual-life-user-interface-elements.gif",
-      path: "/AuthUsers?app=AdminModules",
-    },
-    // { id: 3, name: "APPLICATION", image: "https://via.placeholder.com/150" },
-    // { id: 4, name: "MONITORE", image: "https://via.placeholder.com/150" },
-    // { id: 5, name: "REPORT", image: "https://via.placeholder.com/150" },
-  ];
-  const [searchTerm, setSearchTerm] = useState("");
-
-  // const filteredItems = items.filter((item) =>
-  //   item.name.toLowerCase().includes(searchTerm.toLowerCase())
-  // );
+  const navigate = useNavigate();
   const auth: any = useSelector((state: RootState) => state.auth);
-  console.log("auth", auth);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
 
-  // const handleDefaultNavigate = (url: string) => {
-  //   // e.preventDefault();
-  //   // console.log("On Click handleNavigate", e);
-  //   if (!auth?.isAuthenticated) return;
+  const messages = [
+    { sender: "User1", text: "Hello 👋" },
+    {
+      sender: "AI",
+      text: "Of course! Here's a short and sweet English poem for you:\n\n---\n\n**Whispers of the Sky**  \nThe sun peeks out with a golden smile,  \nPainting the world in light for a while.  \nBirds sing songs in a gentle breeze,  \nDancing with leaves on quiet trees.  \n\nThe clouds drift by in cotton white,  \nTelling tales in the soft daylight.  \nAnd as the stars begin to gleam,  \nThe night arrives like a peaceful dream.\n\n---\n\nWould you like the poem to be about something specific—like love, nature, friendship, or dreams?",
+    },
+    {
+      sender: "User1",
+      text: "Give me in table format",
+    },
+    {
+      sender: "AI",
+      text: "Sure! Here's the poem from above presented in a **table format** for easier reading or formatting:\n\n| **Line Number** | **Poem Line**                              |\n|-----------------|---------------------------------------------|\n| 1               | The sun peeks out with a golden smile,     |\n| 2               | Painting the world in light for a while.   |\n| 3               | Birds sing songs in a gentle breeze,       |\n| 4               | Dancing with leaves on quiet trees.        |\n| 5               | The clouds drift by in cotton white,       |\n| 6               | Telling tales in the soft daylight.        |\n| 7               | And as the stars begin to gleam,           |\n| 8               | The night arrives like a peaceful dream.   |\n\nWould you like this in a downloadable table format (like PDF or Excel), or should I generate a different style of poem in a table?",
+    },
+    {
+      sender: "User1",
+      text: "This is the last message that should be visible",
+    }
+  ];
 
-  //   const tenant_name = auth?.loginInfo
-  //     ? auth.loginInfo["tenant_name"]
-  //     : "GHOST_TENANT";
+  const currentUser = "User1";
 
-  //   // if (Object.keys(appConfig.actions || {}).length > 0) {
-  //   //   if (appConfig.actions["onClick"] && appConfig.actions["onClick"] !== "") {
-  //   //     // Handle onClick action if necessary
-  //   //     const actionName = appConfig.actions["onClick"];
-  //   //     if (actionName in dynamicFunctions) {
-  //   //       // Call the dynamic function
-  //   //       (dynamicFunctions as any)[actionName](e, appConfig); // Cast to any to access the function
-  //   //     } else {
-  //   //       console.log("====CHECK YOUR METHOD NAME NOT FOUND====");
-  //   //     }
-  //   //   } else {
-  //   //     console.log(auth);
+  // Fixed: Better scroll control that doesn't affect the entire page
+  useEffect(() => {
+    if (messagesContainerRef.current && messagesEndRef.current) {
+      // Use scrollTop instead of scrollIntoView to control scrolling within container
+      const container = messagesContainerRef.current;
+      const scrollHeight = container.scrollHeight;
+      const clientHeight = container.clientHeight;
+      
+      // Smooth scroll to bottom within the container only
+      container.scrollTo({
+        top: scrollHeight - clientHeight,
+        behavior: "smooth"
+      });
+    }
+  }, [messages]);
 
-  //   //     if (appConfig.target && appConfig.target !== "") {
-  //   //       console.log("app", appConfig);
-  //   //       // navigate('')
-  //   //       // navigate(`/GymView?app=myGym`);
-  //   //       // console.log("/GymView?app=myGym");
-  //   //       navigate(`/${tenant_name}${appConfig.target}`);
-  //   //     }
-  //   //   }
-  //   // } else {
-  //   // Handle cases where actions are empty or undefined
-  //   // if (appConfig.target && appConfig.target !== "") {
-  //   console.log(`/${tenant_name}${url}`);
-
-  //   navigate(`/${tenant_name}y${url}`);
-
-  //   // }
-  //   // }
-  // };
-  // const messages = [
-  //   { sender: "User1", text: "Hello 👋" },
-  //   {
-  //     sender: "Give poem in english",
-  //     text: "Of course! Here's a short and sweet English poem for you:\n\n---\n\n**Whispers of the Sky**  \nThe sun peeks out with a golden smile,  \nPainting the world in light for a while.  \nBirds sing songs in a gentle breeze,  \nDancing with leaves on quiet trees.  \n\nThe clouds drift by in cotton white,  \nTelling tales in the soft daylight.  \nAnd as the stars begin to gleam,  \nThe night arrives like a peaceful dream.\n\n---\n\nWould you like the poem to be about something specific—like love, nature, friendship, or dreams?",
-  //   },
-  //   {
-  //     sender: "Give me in table ",
-  //     text: "Sure! Here's the poem from above presented in a **table format** for easier reading or formatting:\n\n| **Line Number** | **Poem Line**                              |\n|-----------------|---------------------------------------------|\n| 1               | The sun peeks out with a golden smile,     |\n| 2               | Painting the world in light for a while.   |\n| 3               | Birds sing songs in a gentle breeze,       |\n| 4               | Dancing with leaves on quiet trees.        |\n| 5               | The clouds drift by in cotton white,       |\n| 6               | Telling tales in the soft daylight.        |\n| 7               | And as the stars begin to gleam,           |\n| 8               | The night arrives like a peaceful dream.   |\n\nWould you like this in a downloadable table format (like PDF or Excel), or should I generate a different style of poem in a table?",
-  //   },
-  // ];
-  // const currentUser = "User1";
   return (
-    <>
-      <Flex
-        direction="column"
-        // height="100%"
-        // maxHeight="100vh"
-        height={"100vh"}
-        overflow="hidden"
-        // bg={'gray.800'}
-        justifyContent={"center"}
-        p={0}
+    <Flex
+      direction="column"
+      height="100vh"
+      bg={useColorModeValue("gray.50", "gray.900")}
+    >
+     
+
+      {/* Messages Container - Fixed height calculation */}
+      <Box
+        ref={messagesContainerRef}
+        flex="1"
+        overflowY="auto"
+        css={{
+          "&::-webkit-scrollbar": {
+            width: "8px",
+          },
+          "&::-webkit-scrollbar-track": {
+            width: "8px",
+            background: useColorModeValue("gray.100", "gray.700"),
+          },
+          "&::-webkit-scrollbar-thumb": {
+            background: useColorModeValue("gray.300", "gray.600"),
+            borderRadius: "24px",
+          },
+          "&::-webkit-scrollbar-thumb:hover": {
+            background: useColorModeValue("gray.400", "gray.500"),
+          },
+        }}
       >
-        {/* <Container maxW="container.sm" height="100vh" p={0}> */}
-        {/* {messages.map((msg, idx) => {
+        <Container maxW="xl" p={4}>
+          <VStack align="stretch" gap={6}>
+            {messages.map((msg, idx) => {
               const isCurrentUser = msg.sender === currentUser;
+              const isAI = msg.sender === "AI";
+              
               return (
-                <>
-                  <Box p={5} mb={2}>
-                    <Flex
-                      key={idx}
-                      justify={isCurrentUser ? "flex-end" : "flex-start"}
-                    >
-                      <Box
-                        // bg={isCurrentUser ? "gray.700" : ""}
-                        // bg={'gray.700'}
-                        // color={isCurrentUser ? "white" : "black"}
-                        color={useColorModeValue("black", "white")}
-                        px={4}
-                        py={2}
-                        borderRadius="md"
-                        boxShadow={"md"}
-                        maxW="70%"
-                      >
-                        <Text fontSize="sm">{msg.text}</Text>
-                      </Box>
-                    </Flex>
+                <Box key={idx}>
+                  <HStack 
+                    align="flex-start" 
+                    justify={isCurrentUser ? "flex-end" : "flex-start"}
+                    gap={3}
+                  >
+                    {/* Avatar for AI (left side) */}
                     {!isCurrentUser && (
-                      <Box
-                        // ms={2}
-                        p={1}
-                        mt={1}
-                        borderRadius={'md'}
-                        display={"flex"}
-                        gap={2}
-                        boxShadow={"md"}
-                        width="fit-content"
-                        maxW="100%"
-                      >
-                        <IconButton size={"2xs"} variant={"outline"}>
-                          <GoCopy />{" "}
-                        </IconButton>
-                        <IconButton size={"2xs"} variant={"outline"}>
-                          <MdOutlineAnalytics />{" "}
-                        </IconButton>
-                        <IconButton size={"2xs"} variant={"outline"}>
-                          <SlLike  />{" "}
-                        </IconButton>
-                      </Box>
+                      <Avatar
+                        size="sm"
+                        bg={isAI ? "blue.500" : "gray.500"}
+                        icon={isAI ? <FaRobot /> : <FaUser />}
+                        color="white"
+                      />
                     )}
-                  </Box>
-                </>
+                    
+                    {/* Message Content */}
+                    <Box
+                      bg={isCurrentUser
+                        ? useColorModeValue("blue.500", "blue.600")
+                        : useColorModeValue("white", "gray.700")
+                      }
+                      color={
+                        isCurrentUser
+                          ? "white"
+                          : useColorModeValue("black", "white")
+                      }
+                      px={4}
+                      py={3}
+                      borderRadius="xl"
+                      boxShadow="md"
+                      maxW="75%"
+                      wordBreak="break-word"
+                      border={!isCurrentUser ? "1px" : "none"}
+                      borderColor={useColorModeValue("gray.200", "gray.600")}
+                    >
+                      <Text fontSize="sm" whiteSpace="pre-wrap" lineHeight="1.5">
+                        {msg.text}
+                      </Text>
+                    </Box>
+                    
+                    {/* Avatar for User (right side) */}
+                    {isCurrentUser && (
+                      <Avatar
+                        size="sm"
+                        bg="green.500"
+                        icon={<FaUser />}
+                        color="white"
+                      />
+                    )}
+                  </HStack>
+                </Box>
               );
-            })} */}
-        {/* </Container> */}
+            })}
 
-        <Container maxW="container.md" textAlign={"center"} height="30vh" p={0}>
-          <Heading
-            p={4}
-            color={useColorModeValue("black", "white")}
-            size={"4xl"}
-            fontFamily={"monospace"}
-          >
-            Hello,&nbsp;
-            {auth.loginInfo ? auth.loginInfo.firstName : "Guest"}
-          </Heading>
-          <Text color={useColorModeValue("gray.800", "white")}>
-            How can I help you today?
-          </Text>
-         
+             {/* New Chat Button */}
+            <Box textAlign="center" py={4}>
+              <IconButton
+                aria-label="New Chat"
+                colorPalette="blue"
+                variant="solid"
+                size="sm"
+                borderRadius="full"
+                px={4}
+                py={2}
+              >
+                <CiEdit />
+                New Chat
+              </IconButton>
+            </Box>
+            
+            {/* Scroll anchor - this ensures the last message is visible */}
+            <div ref={messagesEndRef} style={{ height: '20px' }} />
+          </VStack>
         </Container>
+      </Box>
 
-         <MessageInput />
-        <Text color={"gray.500"} textAlign={"center"} p={2}>
-          AI can make mistakes. Check important info.
-        </Text>
-      </Flex>
-    </>
+      {/* Fixed Input Container */}
+      <Box
+        position="sticky"
+        bottom={0}
+        width="100%"
+        display="flex"
+        justifyContent="center"
+        padding={4}
+        // bg={useColorModeValue("white", "gray.800")}
+        borderTop="1px"
+        borderColor={useColorModeValue("gray.200", "gray.700")}
+        // boxShadow="0 -4px 6px -1px rgba(0, 0, 0, 0.1)"
+        zIndex={10}
+      >
+        <Container maxW="xl" width="100%">
+          <MessageInput />
+        </Container>
+      </Box>
+    </Flex>
   );
 }
