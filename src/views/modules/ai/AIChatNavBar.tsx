@@ -26,6 +26,8 @@ import {
 } from "react-icons/md";
 import { PiSidebar, PiSparkle } from "react-icons/pi";
 import { RiRobot2Fill } from "react-icons/ri";
+import { SiHomepage } from "react-icons/si";
+import { useNavigate } from "react-router";
 
 interface AIChatNavBarProps {
   isSidebarOpen: boolean;
@@ -53,10 +55,9 @@ const AIChatNavBar = ({
   const textColor = useColorModeValue("gray.800", "gray.100");
   const subtextColor = useColorModeValue("gray.600", "gray.400");
   const hoverBg = useColorModeValue("gray.50", "gray.800");
-
+  const navigate = useNavigate();
   return (
     <Box
-    
       // bg={bgColor}
       // borderBottom="1px solid"
       // borderColor={borderColor}
@@ -65,9 +66,8 @@ const AIChatNavBar = ({
       // zIndex={10}
       // backdropFilter="blur(10px)"
       boxShadow="sm"
-
     >
-      <Flex align="center" justify="space-between" px={4} py={3} maxW="100%" >
+      <Flex align="center" justify="space-between" px={4} py={3} maxW="100%">
         {/* Left Section */}
         <HStack gap={3}>
           {/* Sidebar Toggle - only show when sidebar is closed */}
@@ -144,6 +144,20 @@ const AIChatNavBar = ({
         {/* Right Section */}
         <HStack gap={2}>
           {/* Bookmark Button */}
+          <Tooltip content={"Go To Application Home Page"}>
+            <IconButton
+              aria-label="Go To Application Home Page"
+              onClick={() => navigate("/")}
+              variant="ghost"
+              size="sm"
+              // _hover={{ bg: "orange.100" }}
+              borderRadius="lg"
+              // color={isBookmarked ? "yellow.500" : subtextColor}
+              colorPalette={"orange"}
+            >
+              <SiHomepage size={18} />
+            </IconButton>
+          </Tooltip>
           <Tooltip content={isBookmarked ? "Remove bookmark" : "Bookmark chat"}>
             <IconButton
               aria-label="Bookmark"
