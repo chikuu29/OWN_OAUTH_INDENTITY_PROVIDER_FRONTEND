@@ -55,12 +55,12 @@ export default function PanelNavBarAction({
       </Menu> */}
       {/* <NotificationMenu /> */}
 
-      <ColorModeButton variant={"outline"}></ColorModeButton>
+      <ColorModeButton variant={"solid"} colorPalette="blue"></ColorModeButton>
       <MenuRoot>
         <MenuTrigger asChild>
           <HStack>
             {showAuthFullName && (
-              <Button variant="outline" size="sm" display={["none", "block"]}>
+              <Button variant="solid" colorPalette="blue" size="sm" display={["none", "block"]}>
                 {auth.loginInfo ? auth.loginInfo.userFullName : "GUEST"}
               </Button>
             )}

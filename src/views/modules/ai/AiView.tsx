@@ -54,6 +54,7 @@ export default function AIView(params: any) {
       const container = messagesContainerRef.current;
       const scrollHeight = container.scrollHeight;
       const clientHeight = container.clientHeight;
+      console.log("container",container);
       
       // Smooth scroll to bottom within the container only
       container.scrollTo({

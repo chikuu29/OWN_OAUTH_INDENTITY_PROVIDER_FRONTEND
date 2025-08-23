@@ -237,7 +237,6 @@ const AIChatSideBar = ({
 
         {/* New Chat Button */}
         <Button
-          // leftIcon={<CiEdit />}
           w="100%"
           colorPalette="blue"
           variant="solid"
@@ -247,6 +246,7 @@ const AIChatSideBar = ({
           _hover={{ transform: "translateY(-1px)", boxShadow: "lg" }}
           transition="all 0.2s"
         >
+          <CiEdit />
           Start New Chat
         </Button>
       </Box>

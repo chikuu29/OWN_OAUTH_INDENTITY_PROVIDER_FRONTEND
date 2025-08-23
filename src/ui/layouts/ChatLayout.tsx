@@ -5,7 +5,7 @@ import { Outlet } from "react-router";
 import AIChatSideBar from "@/views/modules/ai/AIChatSideBar";
 import AIChatNavBar from "@/views/modules/ai/AIChatNavBar";
 
-const SIDEBAR_WIDTH = "250px";
+const SIDEBAR_WIDTH = "320px";
 
 const ChatLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -14,7 +14,8 @@ const ChatLayout = () => {
     () => (isSidebarOpen ? SIDEBAR_WIDTH : "0"),
     [isSidebarOpen]
   );
-
+  console.log(contentMargin);
+  
   return (
     <Box h="100vh" w="100vw" overflow="hidden">
       <Flex h="calc(100vh - 64px)" position="relative">

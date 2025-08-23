@@ -74,10 +74,13 @@ const AIChatNavBar = ({
               <IconButton
                 aria-label="Toggle sidebar"
                 onClick={onToggleSidebar}
-                variant="ghost"
-                size="md"
-                _hover={{ bg: hoverBg }}
-                borderRadius="xl"
+                variant="solid"
+                size="sm"
+                colorPalette="blue"
+                // _hover={{ bg: hoverBg }}
+                _hover={{ transform: "translateY(-1px)", boxShadow: "lg" }}
+                transition="all 0.2s"
+                borderRadius="sm"
               >
                 <FiSidebar size={18} />
               </IconButton>
@@ -91,44 +94,47 @@ const AIChatNavBar = ({
                 <IconButton
                   aria-label="New chat"
                   onClick={onNewChat}
-                  variant="ghost"
-                  size="md"
-                  _hover={{ bg: hoverBg }}
-                  borderRadius="xl"
-                  color="blue.500"
+                  variant="solid"
+                  size="sm"
+                  // _hover={{ bg: hoverBg }}
+                  borderRadius="sm"
+                  colorPalette="blue"
+                  // color="blue.500"
                 >
                   <CiEdit size={20} />
                 </IconButton>
               </Tooltip>
 
               {/* Chat Info */}
-              <HStack gap={3} flex={1} minW={0}>
-                <Box
-                  p={2}
-                  borderRadius="lg"
-                  bg={useColorModeValue("blue.50", "blue.900")}
-                  color="blue.500"
-                >
-                  <RiRobot2Fill size={16} />
-                </Box>
-                <VStack align="start" gap={0} minW={0}>
-                  <Text
-                    fontSize="md"
-                    fontWeight="semibold"
-                    color={textColor}
-                    // noOfLines={1}
-                    maxW="300px"
+              <Box display={{ base: "none", sm: "none", xl: "block" }}>
+                <HStack gap={3} flex={1} minW={0}>
+                  <Box
+                    p={2}
+                    borderRadius="lg"
+                    bg={useColorModeValue("blue.50", "blue.900")}
+                    color="blue.500"
                   >
-                    {chatTitle}
-                  </Text>
-                  <HStack gap={1} align="center">
-                    <Box w={2} h={2} borderRadius="full" bg="green.400" />
-                    <Text fontSize="xs" color={subtextColor}>
-                      Online • Claude Sonnet 4
+                    <RiRobot2Fill size={16} />
+                  </Box>
+                  <VStack align="start" gap={0} minW={0}>
+                    <Text
+                      fontSize="md"
+                      fontWeight="semibold"
+                      color={textColor}
+                      // noOfLines={1}
+                      maxW="300px"
+                    >
+                      {chatTitle}
                     </Text>
-                  </HStack>
-                </VStack>
-              </HStack>
+                    <HStack gap={1} align="center">
+                      <Box w={2} h={2} borderRadius="full" bg="green.400" />
+                      <Text fontSize="xs" color={subtextColor}>
+                        Online • Claude Sonnet 4
+                      </Text>
+                    </HStack>
+                  </VStack>
+                </HStack>
+              </Box>
             </>
           )}
         </HStack>
