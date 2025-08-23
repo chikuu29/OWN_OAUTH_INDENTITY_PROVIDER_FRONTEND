@@ -17,6 +17,8 @@ import { FaUser, FaRobot } from "react-icons/fa";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { Avatar } from "@/components/ui/avatar";
 import { BiMessageDetail } from "react-icons/bi";
+import { POSTAPI } from "@/app/api";
+import { API_SERVICES } from "@/config/api.config";
 
 // Add CSS animations
 const aiShimmer = `
@@ -104,6 +106,21 @@ export default function AIView(params: any) {
       });
     }
   }, [messages]);
+
+  const send = (userInput: string, selectedTools: any) => {
+    // Implement your send logic here
+    // For now, just log to console
+    console.log("Send triggered", userInput, selectedTools);
+
+    POSTAPI({
+      path: "chat/conversation",
+      data: { message: userInput, tools: selectedTools },
+      service:API_SERVICES.AI,
+      isPrivateApi: true,
+    }).subscribe((response: any) => {
+      console.log("===response from api", response);
+    });
+  };
 
   return (
     <Flex
@@ -277,7 +294,7 @@ export default function AIView(params: any) {
         zIndex={10}
       >
         <Container maxW="xl" width="100%">
-          <MessageInput />
+          <MessageInput onSend={send} />
         </Container>
       </Box>
     </Flex>
