@@ -243,9 +243,9 @@ const MessageInput: React.FC<MessageInputProps> = ({
               <Menu.Trigger asChild>
                 <IconButton
                   aria-label="Select MCP Tools"
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
-                  colorPalette="gray"
+                  colorPalette="green"
                   _hover={{ bg: hoverBg }}
                 >
                   <FaTools />
@@ -303,7 +303,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
             {/* Attach File Button */}
             <IconButton
               aria-label="Attach file"
-              variant="ghost"
+              variant="outline"
               size="sm"
               colorPalette="gray"
               _hover={{ bg: hoverBg }}
@@ -314,7 +314,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
             {/* AI Enhance Button */}
             <IconButton
               aria-label="AI enhance"
-              variant="ghost"
+              variant="outline"
               size="sm"
               colorPalette="purple"
               _hover={{ bg: useColorModeValue("purple.50", "purple.900") }}

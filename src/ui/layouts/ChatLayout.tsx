@@ -25,7 +25,7 @@ const ChatLayout = () => {
         />
         <Box
           flex="1"
-          color="darkblue"
+          // color="darkblue"
           ml={contentMargin}
           transition="margin-left 0.3s ease-in-out"
         >

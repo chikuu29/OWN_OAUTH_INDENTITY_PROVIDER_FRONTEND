@@ -56,16 +56,18 @@ const AIChatNavBar = ({
 
   return (
     <Box
-      bg={bgColor}
-      borderBottom="1px solid"
-      borderColor={borderColor}
+    
+      // bg={bgColor}
+      // borderBottom="1px solid"
+      // borderColor={borderColor}
       position="sticky"
-      top={0}
-      zIndex={10}
-      backdropFilter="blur(10px)"
+      // top={0}
+      // zIndex={10}
+      // backdropFilter="blur(10px)"
       boxShadow="sm"
+
     >
-      <Flex align="center" justify="space-between" px={4} py={3} maxW="100%">
+      <Flex align="center" justify="space-between" px={4} py={3} maxW="100%" >
         {/* Left Section */}
         <HStack gap={3}>
           {/* Sidebar Toggle - only show when sidebar is closed */}
@@ -201,7 +203,7 @@ const AIChatNavBar = ({
       </Flex>
 
       {/* Optional: Secondary toolbar for additional actions */}
-      <Box
+      {/* <Box
         px={4}
         py={2}
         borderTop="1px solid"
@@ -245,7 +247,7 @@ const AIChatNavBar = ({
             Auto-save enabled
           </Badge>
         </HStack>
-      </Box>
+      </Box> */}
     </Box>
   );
 };
