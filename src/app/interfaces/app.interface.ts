@@ -1,3 +1,5 @@
+import { API_SERVICES } from "@/config/api.config"
+
 export interface LOGIN_CREDENTIAL {
     username?: string
     password?: string
@@ -35,3 +37,33 @@ export interface AlertProps {
 export interface NavBarActionProps {
    showAuthFullName?:boolean
 }
+
+
+
+
+export interface APIConfig {
+  baseURL: string;
+  timeout?: number;
+  headers?: Record<string, string>;
+}
+
+export interface ServiceEndpoints {
+  [key: string]: string;
+}
+
+export interface POSTAPI_INTERFACE {
+  path: string;
+  data?: Record<string, any>;
+  service?: string; // New: specify which microservice
+  isPrivateApi?: boolean;
+  files?: FileList | File[];
+}
+
+export interface GETAPI_INTERFACE {
+  path: string;
+  service?: string;
+  isPrivateApi?: boolean;
+  params?: Record<string, any>;
+}
+
+export type ServiceType = typeof API_SERVICES[keyof typeof API_SERVICES];

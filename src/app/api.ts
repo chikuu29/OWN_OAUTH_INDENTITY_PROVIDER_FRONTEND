@@ -1,14 +1,17 @@
 // import { catchError, from } from "rxjs";
 import { from, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { privateAPI, publicAPI } from "./handlers/axiosHandlers";
+import { apiClientManager, privateAPI, publicAPI } from "./handlers/axiosHandlers";
 import { getFromCache, saveToCache } from './handlers/dexieHandles';
 import { RootState, store } from './store';
+import { API_SERVICES } from '@/config/api.config';
+import { ServiceType } from './interfaces/app.interface';
 
 const API_BASE_URL = import.meta.env.DEV ? '/api' : import.meta.env.VITE_API_URL;
 interface GETAPI_INTERFACE {
     path: string
     params?: any
+    service?: string;
     isPrivateApi?: boolean
     enableCache?: boolean
     cacheTTL?: number
@@ -51,54 +54,79 @@ const errorMessages: Record<number, string> = {
 const GETAPI = ({
     path,
     params = {},
+    service = API_SERVICES.MAIN,
     isPrivateApi = false,          // Default to an empty object
     enableCache = false,      // Default to false
     cacheTTL = 300            // Default to 300 seconds (or whatever default makes sense)
 }: GETAPI_INTERFACE) => {
     // console.log("params", { path, params, enableCache, cacheTTL });
     // Select the API handler based on the apiType
-    const apiHandler = isPrivateApi ? privateAPI : publicAPI;
-    const cacheKey = `${path}_${JSON.stringify(params)}`;
-    return from(
-        (async () => {
-            if (enableCache) {
-                const cachedData = await getFromCache(cacheKey);
-                if (cachedData) {
-                    return cachedData
-                }
 
-            }
-            const response = await apiHandler.get(path, { params }).then(response => response.data)
-            if (enableCache) {
-                await saveToCache(cacheKey, response, cacheTTL)
-            }
-            return response
-        })()
-        // apiHandler.get(path, { params }).then(response => response.data)
-        // axios.post(url, data).then(response => response.data)
-    ).pipe(
-        // map(data => ({ success: true, data })), // Transform successful response
-        catchError(error => {
-            // Ensure error.response.status is treated as a number
-            const statusCode = error.response?.status as number;
-            // Determine the custom message based on error status code
-            const message = errorMessages[statusCode] || 'An unknown error occurred';
-            // Format the error response
-            return of({
-                data: error.response.data,
-                success: false,
-                message: message || 'An unknown error occurred',
-                errorInfo: error
-            });
-        })
-    );
+    try {
+        const client = isPrivateApi
+            ? apiClientManager.getClient(service as ServiceType)
+            : apiClientManager.getPublicClient(service as ServiceType);
+
+        // const apiHandler = isPrivateApi ? privateAPI : publicAPI;
+        const cacheKey = `${path}_${JSON.stringify(params)}`;
+        return from(
+            (async () => {
+                if (enableCache) {
+                    const cachedData = await getFromCache(cacheKey);
+                    if (cachedData) {
+                        return cachedData
+                    }
+
+                }
+                const response = await client.get(path, { params }).then(response => response.data)
+                if (enableCache) {
+                    await saveToCache(cacheKey, response, cacheTTL)
+                }
+                return response
+            })()
+            // apiHandler.get(path, { params }).then(response => response.data)
+            // axios.post(url, data).then(response => response.data)
+        ).pipe(
+            // map(data => ({ success: true, data })), // Transform successful response
+            catchError(error => {
+                // Ensure error.response.status is treated as a number
+                const statusCode = error.response?.status as number;
+                // Determine the custom message based on error status code
+                const message = errorMessages[statusCode] || 'An unknown error occurred';
+                // Format the error response
+                // return of({
+                //     data: error.response.data,
+                //     success: false,
+                //     message: message || 'An unknown error occurred',
+                //     errorInfo: error
+                // });
+
+                return of({
+                    data: error.response?.data || null,
+                    success: false,
+                    message,
+                    errorInfo: error,
+                    service
+                });
+            })
+        );
+    } catch (error) {
+        return of({
+            data: null,
+            success: false,
+            message: `Failed to initialize API client for service: ${service}`,
+            errorInfo: error,
+            service
+        });
+    }
 };
 
 
 // Define the interface for the POSTAPI function parameters
 interface POSTAPI_INTERFACE {
     path: string;
-    data?: any;
+    data?: Record<string, any>;
+    service?: string;
     isPrivateApi?: boolean;
     enableCache?: boolean;
     cacheTTL?: number;
@@ -129,51 +157,71 @@ interface POSTAPI_INTERFACE {
 const POSTAPI = ({
     path,
     data = {},
+    service = API_SERVICES.MAIN,
     isPrivateApi = false,
     files = undefined  // Optional files to upload
 
 }: POSTAPI_INTERFACE) => {
-    // console.log("params", { path, data, enableCache, cacheTTL });
-    // Select the API handler based on the apiType
-    const apiHandler = isPrivateApi ? privateAPI : publicAPI;
-    // Create FormData if files are provided
-
-    let apiData: any = data
-    // Append files to FormData
-    if (files) {
-        const formData = new FormData();
-        Array.from(files).forEach((file, index) => {
-            formData.append('files', file, file.name);  // 'files' is the key used in the backend to access files
-        });
 
 
-        // Append non-file data to FormData
-        Object.keys(data).forEach(key => {
-            formData.append(key, data[key]);
-        });
-        console.log("FORMDATA", formData);
-        apiData = formData
-    }
-    return from(
-        // apiHandler.post(path, JSON.stringify(data)).then(response => response.data)
-        apiHandler.post(path, apiData).then(response => response.data)
-        // axios.post(url, data).then(response => response.data)
-    ).pipe(
-        // map(data => ({ success: true, data })), // Transform successful response
-        catchError(error => {
-            // Ensure error.response.status is treated as a number
-            const statusCode = error.response?.status as number;
-            // Determine the custom message based on error status code
-            const message = errorMessages[statusCode] || 'An unknown error occurred';
-            // Format the error response
-            return of({
-                data: error['response']['data'],
-                success: false,
-                message: message || 'An unknown error occurred',
-                errorInfo: error
+    try {
+
+
+        // console.log("params", { path, data, enableCache, cacheTTL });
+        // Select the API handler based on the apiType
+        // const apiHandler = isPrivateApi ? privateAPI : publicAPI;
+        const client = isPrivateApi
+            ? apiClientManager.getClient(service as ServiceType)
+            : apiClientManager.getPublicClient(service as ServiceType);
+        // Create FormData if files are provided
+        let apiData: any = data
+        // Append files to FormData
+        if (files) {
+            const formData = new FormData();
+            Array.from(files).forEach((file, index) => {
+                formData.append('files', file, file.name);  // 'files' is the key used in the backend to access files
             });
-        })
-    );
+            // Append non-file data to FormData
+            Object.keys(data).forEach(key => {
+                const value = data[key];
+                if (typeof value === 'object' && value !== null) {
+                    formData.append(key, JSON.stringify(value));
+                } else {
+                    formData.append(key, String(value));
+                }
+            });
+            console.log("FORMDATA", formData);
+            apiData = formData
+        }
+        return from(
+            // apiHandler.post(path, JSON.stringify(data)).then(response => response.data)
+            client.post(path, apiData).then(response => response.data)
+            // axios.post(url, data).then(response => response.data)
+        ).pipe(
+            // map(data => ({ success: true, data })), // Transform successful response
+            catchError(error => {
+                // Ensure error.response.status is treated as a number
+                const statusCode = error.response?.status as number;
+                // Determine the custom message based on error status code
+                const message = errorMessages[statusCode] || 'An unknown error occurred';
+                // Format the error response
+                return of({
+                    data: error['response']['data'],
+                    success: false,
+                    message: message || 'An unknown error occurred',
+                    errorInfo: error
+                });
+            })
+        );
+    } catch (error) {
+        return of({
+            data: null,
+            success: false,
+            message: `Failed to initialize API client for service: ${service}`,
+            errorInfo: error,
+            service
+        });
+    }
 };
 
 
@@ -202,13 +250,17 @@ const POSTAPI = ({
 const PUTAPI = ({
     path,
     data = {},
+    service=API_SERVICES.MAIN,
     isPrivateApi = false,
     files = undefined  // Optional files to upload
 
 }: POSTAPI_INTERFACE) => {
     // console.log("params", { path, data, enableCache, cacheTTL });
     // Select the API handler based on the apiType
-    const apiHandler = isPrivateApi ? privateAPI : publicAPI;
+    // const apiHandler = isPrivateApi ? privateAPI : publicAPI;
+     const client = isPrivateApi
+            ? apiClientManager.getClient(service as ServiceType)
+            : apiClientManager.getPublicClient(service as ServiceType);
     // Create FormData if files are provided
 
     let apiData: any = data
@@ -229,7 +281,7 @@ const PUTAPI = ({
     }
     return from(
         // apiHandler.post(path, JSON.stringify(data)).then(response => response.data)
-        apiHandler.put(path, apiData).then(response => response.data)
+        client.put(path, apiData).then(response => response.data)
         // axios.post(url, data).then(response => response.data)
     ).pipe(
         // map(data => ({ success: true, data })), // Transform successful response
@@ -259,7 +311,7 @@ type PostResponse<T = any> = {
     success: boolean;
     data?: T;
     message?: string;
-    errorInfo?:any
+    errorInfo?: any
 
 };
 
@@ -308,9 +360,9 @@ const POSTWITHOAUTH = async <T>(
     let accessToken = localStorage.getItem("access_token");
     const authState: RootState = store.getState()
     if (authState && authState.auth && authState.auth.isAuthenticated) {
-           
+
         const { token } = authState.auth
-        accessToken=token
+        accessToken = token
     }
 
     try {
@@ -344,11 +396,11 @@ const POSTWITHOAUTH = async <T>(
         if (res.ok && resJson.success) {
             return { success: true, data: resJson.data };
         } else {
-            return { success: false, message: "Unknown error" ,data:resJson};
+            return { success: false, message: "Unknown error", data: resJson };
         }
     } catch (error: any) {
         console.error("Fetch error:", error);
-        return { success: false, message:"Network error" ,errorInfo:error};
+        return { success: false, message: "Network error", errorInfo: error };
     }
 };
 
@@ -357,7 +409,7 @@ const POSTWITHOAUTH = async <T>(
 
 
 
-export { GETAPI, POSTAPI, POSTWITHOAUTH,PUTAPI }
+export { GETAPI, POSTAPI, POSTWITHOAUTH, PUTAPI }
 
 
 
