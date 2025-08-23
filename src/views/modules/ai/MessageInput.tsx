@@ -13,22 +13,24 @@ import {
   MenuContent,
   MenuItem,
   Separator,
+  Input,
 } from "@chakra-ui/react";
-import { 
-  FaArrowUp, 
-  FaPlus, 
-  FaCode, 
-  FaDatabase, 
-  FaSearch, 
-  FaFileAlt, 
+import {
+  FaArrowUp,
+  FaPlus,
+  FaCode,
+  FaDatabase,
+  FaSearch,
+  FaFileAlt,
   FaCalculator,
   FaImage,
   FaGlobe,
-  FaTools
+  FaTools,
 } from "react-icons/fa";
 import { MdAutoFixHigh, MdAttachFile } from "react-icons/md";
 import { RiRobot2Fill } from "react-icons/ri";
 import { useColorModeValue } from "@/components/ui/color-mode";
+import { InputGroup } from "@/components/ui/input-group";
 
 type MCPTool = {
   id: string;
@@ -50,50 +52,50 @@ const mcpTools: MCPTool[] = [
     name: "Code Analyzer",
     icon: <FaCode />,
     description: "Analyze and review code snippets",
-    color: "purple"
+    color: "purple",
   },
   {
     id: "database_query",
     name: "Database Query",
     icon: <FaDatabase />,
     description: "Execute database queries and operations",
-    color: "blue"
+    color: "blue",
   },
   {
     id: "web_search",
     name: "Web Search",
     icon: <FaSearch />,
     description: "Search the web for information",
-    color: "green"
+    color: "green",
   },
   {
     id: "document_reader",
     name: "Document Reader",
     icon: <FaFileAlt />,
     description: "Read and analyze documents",
-    color: "orange"
+    color: "orange",
   },
   {
     id: "calculator",
     name: "Calculator",
     icon: <FaCalculator />,
     description: "Perform mathematical calculations",
-    color: "red"
+    color: "red",
   },
   {
     id: "image_analyzer",
     name: "Image Analyzer",
     icon: <FaImage />,
     description: "Analyze and describe images",
-    color: "pink"
+    color: "pink",
   },
   {
     id: "api_connector",
     name: "API Connector",
     icon: <FaGlobe />,
     description: "Connect to external APIs",
-    color: "cyan"
-  }
+    color: "cyan",
+  },
 ];
 
 const MessageInput: React.FC<MessageInputProps> = ({
@@ -102,6 +104,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
   isLoading = false,
 }) => {
   const [message, setMessage] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedTools, setSelectedTools] = useState<MCPTool[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -114,7 +117,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
   const handleSend = () => {
     const trimmed = message.trim();
     if (!trimmed) return;
-    
+
     onSend?.(trimmed, selectedTools);
     setMessage("");
     setSelectedTools([]);
@@ -128,10 +131,10 @@ const MessageInput: React.FC<MessageInputProps> = ({
   };
 
   const toggleTool = (tool: MCPTool) => {
-    setSelectedTools(prev => {
-      const exists = prev.find(t => t.id === tool.id);
+    setSelectedTools((prev) => {
+      const exists = prev.find((t) => t.id === tool.id);
       if (exists) {
-        return prev.filter(t => t.id !== tool.id);
+        return prev.filter((t) => t.id !== tool.id);
       } else {
         return [...prev, tool];
       }
@@ -139,7 +142,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
   };
 
   const removeTool = (toolId: string) => {
-    setSelectedTools(prev => prev.filter(t => t.id !== toolId));
+    setSelectedTools((prev) => prev.filter((t) => t.id !== toolId));
   };
 
   // Auto-resize textarea
@@ -154,12 +157,23 @@ const MessageInput: React.FC<MessageInputProps> = ({
     }
   }, [message]);
 
+  const filteredTools = mcpTools.filter(
+    (tool) =>
+      tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      tool.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <Box width="100%" maxW="4xl" mx="auto">
       {/* Selected Tools Display */}
       {selectedTools.length > 0 && (
         <Box mb={3}>
-          <Text fontSize="xs" color={placeholderColor} mb={2} fontWeight="medium">
+          <Text
+            fontSize="xs"
+            color={placeholderColor}
+            mb={2}
+            fontWeight="medium"
+          >
             Selected MCP Tools:
           </Text>
           <HStack wrap="wrap" gap={2}>
@@ -181,7 +195,9 @@ const MessageInput: React.FC<MessageInputProps> = ({
               >
                 {tool.icon}
                 <Text fontSize="xs">{tool.name}</Text>
-                <Text fontSize="xs" opacity={0.7}>×</Text>
+                <Text fontSize="xs" opacity={0.7}>
+                  ×
+                </Text>
               </Badge>
             ))}
           </HStack>
@@ -198,11 +214,11 @@ const MessageInput: React.FC<MessageInputProps> = ({
         transition="all 0.2s"
         _hover={{
           borderColor: useColorModeValue("blue.300", "blue.500"),
-          boxShadow: "xl"
+          boxShadow: "xl",
         }}
         _focusWithin={{
           borderColor: "blue.500",
-          boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.1)"
+          boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.1)",
         }}
       >
         {/* Textarea */}
@@ -228,10 +244,10 @@ const MessageInput: React.FC<MessageInputProps> = ({
         />
 
         {/* Bottom Controls */}
-        <Flex 
-          justify="space-between" 
-          align="center" 
-          px={3} 
+        <Flex
+          justify="space-between"
+          align="center"
+          px={3}
           py={2}
           borderTop="1px solid"
           borderTopColor={useColorModeValue("gray.100", "gray.700")}
@@ -252,8 +268,10 @@ const MessageInput: React.FC<MessageInputProps> = ({
                 </IconButton>
               </Menu.Trigger>
               <Menu.Positioner>
-                <Menu.Content 
-                  maxH="300px"
+                <Menu.Content
+                  // minH={"100px"}
+                  // maxH="300px"
+                  w={"400px"}
                   overflowY="auto"
                   // placement="top-start"
                   css={{
@@ -268,34 +286,62 @@ const MessageInput: React.FC<MessageInputProps> = ({
                       Select tools to enhance your query
                     </Text>
                   </Box>
+                  <Box
+                    p={4}
+                    borderBottom="1px solid"
+                    borderColor={borderColor}
+                    w={"100%"}
+                  >
+                    <InputGroup w={"100%"}>
+                      <Input
+                        placeholder="Search conversations..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        borderRadius="lg"
+                        // leftElement={<CiSearch color={subtextColor} />}
+                      />
+                    </InputGroup>
+                  </Box>
                   <Separator />
-                  {mcpTools.map((tool) => (
-                    <Menu.Item
-                      key={tool.id}
-                      value={tool.id}
-                      onClick={() => toggleTool(tool)}
-                      bg={selectedTools.find(t => t.id === tool.id) ? 
-                          useColorModeValue("blue.50", "blue.900") : "transparent"
-                      }
-                    >
-                      <HStack gap={3} width="100%">
-                        <Box color={`${tool.color}.500`}>
-                          {tool.icon}
-                        </Box>
-                        <VStack align="start" gap={0} flex={1}>
-                          <Text fontSize="sm" fontWeight="medium">
-                            {tool.name}
-                          </Text>
-                          <Text fontSize="xs" color={placeholderColor}>
-                            {tool.description}
-                          </Text>
-                        </VStack>
-                        {selectedTools.find(t => t.id === tool.id) && (
-                          <Box color="blue.500" fontSize="sm">✓</Box>
-                        )}
-                      </HStack>
-                    </Menu.Item>
-                  ))}
+                  <VStack
+                    align="stretch"
+                    gap={2}
+                    overflowY={"scroll"}
+                    maxH="300px"
+                    minH={"300px"}
+                    p={3}
+                  >
+                    {filteredTools.map((tool) => (
+                      <Menu.Item
+                        cursor={"pointer"}
+                        key={tool.id}
+                        value={tool.id}
+                        onClick={() => toggleTool(tool)}
+                        bg={
+                          selectedTools.find((t) => t.id === tool.id)
+                            ? useColorModeValue("blue.50", "blue.900")
+                            : "transparent"
+                        }
+                      >
+                        <HStack gap={4} width="100%">
+                          <Box color={`${tool.color}.500`}>{tool.icon}</Box>
+                          <VStack align="start" gap={0} flex={1}>
+                            <Text fontSize="sm" fontWeight="medium">
+                              {tool.name}
+                            </Text>
+                            <Text fontSize="xs" color={placeholderColor}>
+                              {tool.description}
+                            </Text>
+                          </VStack>
+                          {selectedTools.find((t) => t.id === tool.id) && (
+                            <Box color="blue.500" fontSize="sm">
+                              ✓
+                            </Box>
+                          )}
+                        </HStack>
+                      </Menu.Item>
+                    ))}
+                  </VStack>
                 </Menu.Content>
               </Menu.Positioner>
             </Menu.Root>
@@ -335,7 +381,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
             // isLoading={isLoading}
             _hover={{
               transform: "scale(1.05)",
-              boxShadow: "lg"
+              boxShadow: "lg",
             }}
             transition="all 0.2s"
           >
@@ -345,23 +391,30 @@ const MessageInput: React.FC<MessageInputProps> = ({
       </Box>
 
       {/* Helper Text */}
-      <Text 
-        fontSize="xs" 
-        color={placeholderColor} 
-        textAlign="center" 
-        mt={2}
-      >
-        Press <kbd style={{ 
-          background: useColorModeValue("gray.100", "gray.700"),
-          padding: "2px 6px",
-          borderRadius: "4px",
-          fontSize: "11px"
-        }}>Enter</kbd> to send, <kbd style={{ 
-          background: useColorModeValue("gray.100", "gray.700"),
-          padding: "2px 6px",
-          borderRadius: "4px",
-          fontSize: "11px"
-        }}>Shift + Enter</kbd> for new line
+      <Text fontSize="xs" color={placeholderColor} textAlign="center" mt={2}>
+        Press{" "}
+        <kbd
+          style={{
+            background: useColorModeValue("gray.100", "gray.700"),
+            padding: "2px 6px",
+            borderRadius: "4px",
+            fontSize: "11px",
+          }}
+        >
+          Enter
+        </kbd>{" "}
+        to send,{" "}
+        <kbd
+          style={{
+            background: useColorModeValue("gray.100", "gray.700"),
+            padding: "2px 6px",
+            borderRadius: "4px",
+            fontSize: "11px",
+          }}
+        >
+          Shift + Enter
+        </kbd>{" "}
+        for new line
       </Text>
     </Box>
   );

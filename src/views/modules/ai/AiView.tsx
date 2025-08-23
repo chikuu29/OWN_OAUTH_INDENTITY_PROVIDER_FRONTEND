@@ -10,7 +10,7 @@ import {
 } from "@chakra-ui/react";
 import { useState, useRef, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import MessageInput from "./MessageInput";
 import { CiEdit } from "react-icons/ci";
 import { FaUser, FaRobot } from "react-icons/fa";
@@ -19,6 +19,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { BiMessageDetail } from "react-icons/bi";
 import { POSTAPI } from "@/app/api";
 import { API_SERVICES } from "@/config/api.config";
+import { log } from "console";
 
 // Add CSS animations
 const aiShimmer = `
@@ -62,33 +63,32 @@ const userFloat = `
 
 export default function AIView(params: any) {
   console.log("===CALLING AI VIEW===", params);
+  const [searchParams] = useSearchParams();
+  const param = useParams();
+  console.log("param", param);
+  console.log("searchParams", searchParams);
+
   const navigate = useNavigate();
   const auth: any = useSelector((state: RootState) => state.auth);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
+  const [messages, setMessages] = useState<
+    Array<{ sender: string; text: string }>
+  >([
+    // {role:'system', text: 'You are a helpful assistant that translates English to French.'},
+    // {
+    //   sender: "user",
+    //   text: 'Translate the following English text to French: "Hello, how are you?"',
+    // },
+    // { sender: "assistant", text: "Bonjour, comment ça va?" },
+    // {
+    //   sender: "user",
+    //   text: 'Translate the following English text to French: "What is your name?"',
+    // },
+  ]);
 
-  const messages = [
-    { sender: "User1", text: "Hello 👋" },
-    {
-      sender: "AI",
-      text: "Of course! Here's a short and sweet English poem for you:\n\n---\n\n**Whispers of the Sky**  \nThe sun peeks out with a golden smile,  \nPainting the world in light for a while.  \nBirds sing songs in a gentle breeze,  \nDancing with leaves on quiet trees.  \n\nThe clouds drift by in cotton white,  \nTelling tales in the soft daylight.  \nAnd as the stars begin to gleam,  \nThe night arrives like a peaceful dream.\n\n---\n\nWould you like the poem to be about something specific—like love, nature, friendship, or dreams?",
-    },
-    {
-      sender: "User1",
-      text: "Give me in table format",
-    },
-    {
-      sender: "AI",
-      text: "Sure! Here's the poem from above presented in a **table format** for easier reading or formatting:\n\n| **Line Number** | **Poem Line**                              |\n|-----------------|---------------------------------------------|\n| 1               | The sun peeks out with a golden smile,     |\n| 2               | Painting the world in light for a while.   |\n| 3               | Birds sing songs in a gentle breeze,       |\n| 4               | Dancing with leaves on quiet trees.        |\n| 5               | The clouds drift by in cotton white,       |\n| 6               | Telling tales in the soft daylight.        |\n| 7               | And as the stars begin to gleam,           |\n| 8               | The night arrives like a peaceful dream.   |\n\nWould you like this in a downloadable table format (like PDF or Excel), or should I generate a different style of poem in a table?",
-    },
-    {
-      sender: "User1",
-      text: "This is the last message that should be visible",
-    },
-  ];
-
-  const currentUser = "User1";
+  const sender = "user";
 
   // Fixed: Better scroll control that doesn't affect the entire page
   useEffect(() => {
@@ -111,11 +111,15 @@ export default function AIView(params: any) {
     // Implement your send logic here
     // For now, just log to console
     console.log("Send triggered", userInput, selectedTools);
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      { sender: "user", text: userInput },
+    ]);
 
     POSTAPI({
       path: "chat/conversation",
       data: { message: userInput, tools: selectedTools },
-      service:API_SERVICES.AI,
+      service: API_SERVICES.AI,
       isPrivateApi: true,
     }).subscribe((response: any) => {
       console.log("===response from api", response);
@@ -160,8 +164,8 @@ export default function AIView(params: any) {
         <Container maxW="xl" p={4}>
           <VStack align="stretch" gap={6}>
             {messages.map((msg, idx) => {
-              const isCurrentUser = msg.sender === currentUser;
-              const isAI = msg.sender === "AI";
+              const isCurrentUser = msg.sender === sender;
+              const isAI = msg.sender === "assistant";
 
               return (
                 <Box key={idx}>
@@ -258,20 +262,22 @@ export default function AIView(params: any) {
             })}
 
             {/* New Chat Button */}
-            <Box textAlign="center" py={4} mb={8}>
-              <IconButton
-                aria-label="New Chat"
-                colorPalette="blue"
-                variant="solid"
-                size="sm"
-                borderRadius="full"
-                px={4}
-                py={2}
-              >
-                <BiMessageDetail />
-                New Chat
-              </IconButton>
-            </Box>
+            {messages.length > 5 && (
+              <Box textAlign="center" py={4} mb={8}>
+                <IconButton
+                  aria-label="New Chat"
+                  colorPalette="blue"
+                  variant="solid"
+                  size="sm"
+                  borderRadius="full"
+                  px={4}
+                  py={2}
+                >
+                  <BiMessageDetail />
+                  New Chat
+                </IconButton>
+              </Box>
+            )}
 
             {/* Scroll anchor - this ensures the last message is visible */}
             <div ref={messagesEndRef} style={{ height: "20px" }} />
@@ -293,9 +299,9 @@ export default function AIView(params: any) {
         // boxShadow="0 -4px 6px -1px rgba(0, 0, 0, 0.1)"
         zIndex={10}
       >
-        <Container maxW="xl" width="100%">
-          <MessageInput onSend={send} />
-        </Container>
+        {/* <Container maxW="xl" width="100%"> */}
+        <MessageInput onSend={send} />
+        {/* </Container> */}
       </Box>
     </Flex>
   );

@@ -184,7 +184,6 @@ const AIChatSideBar = ({
     }
     return acc;
   }, {} as ChatGroup);
-
   return (
     <Box
       w="320px"
@@ -242,7 +241,7 @@ const AIChatSideBar = ({
           variant="solid"
           size="md"
           borderRadius="xl"
-          onClick={() => appNavigate("home")}
+          onClick={() => appNavigate("c")}
           _hover={{ transform: "translateY(-1px)", boxShadow: "lg" }}
           transition="all 0.2s"
         >

@@ -114,7 +114,7 @@ const initialState: AppConfig = {
             id: "AI_CHAT_BOT",
             hidden: false,
             name: "AI CHATBOT",
-            target: "/home?app=AI",
+            target: "/c?app=AI",
             actions: {
               onClick: "",
             },

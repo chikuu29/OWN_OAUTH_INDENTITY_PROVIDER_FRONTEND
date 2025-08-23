@@ -28,7 +28,7 @@ const componentConfig: ComponentConfig = {
     },
     "AI": {
         layout: () => import("./ui/layouts/ChatLayout"),
-        home: () => import("./views/modules/ai/AiView"),
+        c: () => import("./views/modules/ai/AiView"),
         chat: () => import("./views/modules/ai/AiView")
     },
 
