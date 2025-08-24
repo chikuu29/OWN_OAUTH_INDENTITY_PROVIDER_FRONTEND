@@ -377,8 +377,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
             variant="solid"
             size="md"
             borderRadius="xl"
-            // isDisabled={!message.trim() || isLoading}
-            // isLoading={isLoading}
+            disabled={!message.trim() || isLoading}
+            loading={isLoading}
             _hover={{
               transform: "scale(1.05)",
               boxShadow: "lg",

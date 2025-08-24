@@ -8,7 +8,7 @@ import AIChatNavBar from "@/views/modules/ai/AIChatNavBar";
 const SIDEBAR_WIDTH = "320px";
 
 const ChatLayout = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const contentMargin = useMemo(
     () => (isSidebarOpen ? SIDEBAR_WIDTH : "0"),

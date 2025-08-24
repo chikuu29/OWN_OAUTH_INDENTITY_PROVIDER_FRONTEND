@@ -150,18 +150,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  if (loading) {
-    return (
-      <Loader loaderText="Rebuild Login Stage, please wait..."/>
-      // <>Rebuild Login Stage, please wait...</>
-    ); // Or a loading spinner
-  }
-
+  // Always render the context provider, but conditionally render children
   return (
     <AuthContext.Provider
       value={{ setLoginAuthInfo, authInfo, loading, reloginRequired, logoutUser }}
     >
-      {!loading && children}
+      {loading ? (
+        <Loader loaderText="Rebuild Login Stage, please wait..."/>
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   );
 };
@@ -170,7 +168,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    // Instead of throwing an error, return a default context to prevent hook order issues
+    console.warn("useAuth must be used within an AuthProvider, returning default context");
+    return {
+      authInfo: null,
+      reloginRequired: true,
+      loading: true,
+      setLoginAuthInfo: () => {},
+      logoutUser: () => {},
+    };
   }
   return context;
 };

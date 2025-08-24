@@ -33,8 +33,14 @@ import { NavBarActionProps } from "@/app/interfaces/app.interface";
 export default function PanelNavBarAction({
   showAuthFullName = true,
 }: NavBarActionProps) {
+  // All hooks must be called at the top level
   const auth = useSelector((state: any) => state.auth);
   const { logoutUser } = useAuth();
+
+  // Ensure we have valid auth data
+  const isAuthenticated = auth && auth.loginInfo;
+  const userName = isAuthenticated ? auth.loginInfo.userFullName : "GUEST";
+  const userInitial = isAuthenticated ? auth.loginInfo.userFullName.charAt(0) : "G";
 
   return (
     <Flex
@@ -61,15 +67,15 @@ export default function PanelNavBarAction({
           <HStack>
             {showAuthFullName && (
               <Button variant="solid" colorPalette="blue" size="sm" display={["none", "block"]}>
-                {auth.loginInfo ? auth.loginInfo.userFullName : "GUEST"}
+                {userName}
               </Button>
             )}
             <Avatar.Root shape="rounded" size="sm" cursor="pointer">
               {/* <Avatar.Fallback
-                name={auth.loginInfo ? auth.loginInfo.userFullName : "GUEST"}
+                name={userName}
               /> */}
               <Avatar.Fallback>
-                {auth.loginInfo ? auth.loginInfo.userFullName.charAt(0) : "G"}
+                {userInitial}
               </Avatar.Fallback>
               {/* <Avatar.Image src="https://bit.ly/sage-adebayo" /> */}
             </Avatar.Root>

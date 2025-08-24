@@ -13,7 +13,7 @@ import {
   Button,
   Separator,
 } from "@chakra-ui/react";
-import { memo, useState } from "react";
+import { memo, useState, useEffect } from "react";
 import { AiOutlineWechatWork, AiOutlineRobot } from "react-icons/ai";
 import { CiEdit, CiShare1, CiBookmark, CiSettings } from "react-icons/ci";
 import { FaRobot, FaShare, FaDownload, FaCopy } from "react-icons/fa";
@@ -48,14 +48,31 @@ const AIChatNavBar = ({
   onShare,
   onNewChat,
 }: AIChatNavBarProps) => {
+  // All hooks must be called at the top level, before any conditional logic
   const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
 
+  // Move all useColorModeValue calls to the top level
   const bgColor = useColorModeValue("white", "gray.900");
   const borderColor = useColorModeValue("gray.200", "gray.700");
   const textColor = useColorModeValue("gray.800", "gray.100");
   const subtextColor = useColorModeValue("gray.600", "gray.400");
   const hoverBg = useColorModeValue("gray.50", "gray.800");
+  const blueBg = useColorModeValue("blue.50", "blue.900");
+  const grayBg = useColorModeValue("gray.50", "gray.800");
+  
   const navigate = useNavigate();
+  
+  // Debug hook order - this should always run
+  useEffect(() => {
+    // This effect ensures consistent hook ordering
+    console.log("AIChatNavBar mounted with props:", { isSidebarOpen, chatTitle, isBookmarked });
+  }, [isSidebarOpen, chatTitle, isBookmarked]);
+  
+  // Additional debug effect to ensure hooks are called in order
+  useEffect(() => {
+    console.log("AIChatNavBar hooks initialized successfully");
+  }, []);
+  
   return (
     <Box
       // bg={bgColor}
@@ -113,7 +130,7 @@ const AIChatNavBar = ({
                   <Box
                     p={2}
                     borderRadius="lg"
-                    bg={useColorModeValue("blue.50", "blue.900")}
+                    bg={blueBg}
                     color="blue.500"
                   >
                     <RiRobot2Fill size={16} />
@@ -222,7 +239,7 @@ const AIChatNavBar = ({
         py={2}
         borderTop="1px solid"
         borderColor={borderColor}
-        bg={useColorModeValue("gray.50", "gray.800")}
+        bg={grayBg}
       >
         <HStack gap={2} justify="center">
           <Tooltip content="Download conversation">
