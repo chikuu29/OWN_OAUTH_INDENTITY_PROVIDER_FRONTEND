@@ -14,7 +14,7 @@ const ChatLayout = () => {
     () => (isSidebarOpen ? SIDEBAR_WIDTH : "0"),
     [isSidebarOpen]
   );
-  console.log(contentMargin);
+  // console.log(contentMargin);
   
   return (
     <Box h="100vh" w="100vw" overflow="hidden">
