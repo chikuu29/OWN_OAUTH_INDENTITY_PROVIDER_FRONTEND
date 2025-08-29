@@ -58,7 +58,7 @@ const statusAnimation = `@keyframes moveBorder {
   100% {
     background-position: 100% 50%;
   }
-}`
+}`;
 // Simplified types
 interface Message {
   message?: string; // Added optional message field
@@ -349,7 +349,7 @@ export default function AIView(params: any) {
             py={2}
             textAlign="center"
           >
-            <HStack
+            {/* <HStack
               justify="center"
               bg={statusBgColor}
               gap={2}
@@ -373,10 +373,26 @@ export default function AIView(params: any) {
               }}
             >
               <Spinner size="sm" color="green.500" />
-              <Text fontSize="sm" fontWeight="medium" >
+              <Text fontSize="sm" fontWeight="medium">
                 {currentStatus.content}
               </Text>
-            </HStack>
+            </HStack> */}
+
+            <IconButton
+            p={2}
+             bg={statusBgColor}
+              aria-label="Bookmark"
+              variant="ghost"
+              size="sm"
+              // _hover={{ bg: hoverBg }}
+              borderRadius="lg"
+              // color={isBookmarked ? "yellow.500" : subtextColor}
+            >
+              <Spinner size="sm" color="green.500" />
+              <Text fontSize="sm" fontWeight="medium">
+                {currentStatus.content}
+              </Text>
+            </IconButton>
           </Box>
         )}
 
