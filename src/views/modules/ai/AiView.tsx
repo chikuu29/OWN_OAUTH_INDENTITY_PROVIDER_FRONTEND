@@ -465,7 +465,7 @@ export default function AIView(params: any) {
 
             {/* New Chat Button */}
             {messages.length > 5 && (
-              <>
+              
                 <Box textAlign="center" py={4} mb={8}>
                   <IconButton
                     aria-label="New Chat"
@@ -481,7 +481,7 @@ export default function AIView(params: any) {
                     New Chat
                   </IconButton>
                 </Box>
-              </>
+              
             )}
             
 
