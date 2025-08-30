@@ -26,11 +26,13 @@ import {
   FaImage,
   FaGlobe,
   FaTools,
+  FaAngleDoubleDown,
 } from "react-icons/fa";
 import { MdAutoFixHigh, MdAttachFile } from "react-icons/md";
 import { RiRobot2Fill } from "react-icons/ri";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { InputGroup } from "@/components/ui/input-group";
+import { log } from "console";
 
 type MCPTool = {
   id: string;
@@ -44,6 +46,7 @@ type MessageInputProps = {
   onSend?: (message: string, selectedTools: MCPTool[]) => void;
   placeholder?: string;
   isLoading?: boolean;
+  messagesContainerRef?: React.RefObject<HTMLDivElement> | null;
 };
 
 const mcpTools: MCPTool[] = [
@@ -102,7 +105,11 @@ const MessageInput: React.FC<MessageInputProps> = ({
   onSend,
   placeholder = "Ask anything about your data...",
   isLoading = false,
+  messagesContainerRef = null,
 }) => {
+  console.log(messagesContainerRef);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+
   const [message, setMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTools, setSelectedTools] = useState<MCPTool[]>([]);
@@ -144,7 +151,21 @@ const MessageInput: React.FC<MessageInputProps> = ({
   const removeTool = (toolId: string) => {
     setSelectedTools((prev) => prev.filter((t) => t.id !== toolId));
   };
+  const handleScroll = () => {
+    console.log("SCROLLING");
+    const el = messagesContainerRef?.current;
+    if (!el) return;
 
+    const isAtBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 5; // tolerance
+    setShowScrollButton(!isAtBottom);
+  };
+
+  const scrollToBottom = () => {
+    const el = messagesContainerRef?.current;
+    if (el) {
+      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    }
+  };
   // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
@@ -155,6 +176,13 @@ const MessageInput: React.FC<MessageInputProps> = ({
       );
       textareaRef.current.style.height = `${newHeight}px`;
     }
+
+    const el = messagesContainerRef?.current;
+    if (el) el.addEventListener("scroll", handleScroll);
+
+    return () => {
+      if (el) el.removeEventListener("scroll", handleScroll);
+    };
   }, [message]);
 
   const filteredTools = mcpTools.filter(
@@ -166,44 +194,60 @@ const MessageInput: React.FC<MessageInputProps> = ({
   return (
     <Box width="100%" maxW="4xl" mx="auto">
       {/* Selected Tools Display */}
-      {selectedTools.length > 0 && (
-        <Box mb={3}>
-          <Text
-            fontSize="xs"
-            color={placeholderColor}
-            mb={2}
-            fontWeight="medium"
-          >
-            Selected MCP Tools:
-          </Text>
-          <HStack wrap="wrap" gap={2}>
-            {selectedTools.map((tool) => (
-              <Badge
-                key={tool.id}
-                colorPalette={tool.color}
-                variant="subtle"
-                display="flex"
-                alignItems="center"
-                gap={1}
-                px={3}
-                py={1}
-                borderRadius="full"
-                cursor="pointer"
-                onClick={() => removeTool(tool.id)}
-                _hover={{ transform: "scale(0.95)" }}
-                transition="all 0.2s"
+      <Flex justifyContent={"space-between"} alignItems={"center"} mb={3}>
+        <Box>
+          {selectedTools.length > 0 && (
+            <>
+              <Text
+                fontSize="xs"
+                color={placeholderColor}
+                mb={2}
+                fontWeight="medium"
               >
-                {tool.icon}
-                <Text fontSize="xs">{tool.name}</Text>
-                <Text fontSize="xs" opacity={0.7}>
-                  ×
-                </Text>
-              </Badge>
-            ))}
-          </HStack>
+                Selected MCP Tools:
+              </Text>
+              <HStack wrap="wrap" gap={2}>
+                {selectedTools.map((tool) => (
+                  <Badge
+                    key={tool.id}
+                    colorPalette={tool.color}
+                    variant="subtle"
+                    display="flex"
+                    alignItems="center"
+                    gap={1}
+                    px={3}
+                    py={1}
+                    borderRadius="full"
+                    cursor="pointer"
+                    onClick={() => removeTool(tool.id)}
+                    _hover={{ transform: "scale(0.95)" }}
+                    transition="all 0.2s"
+                  >
+                    {tool.icon}
+                    <Text fontSize="xs">{tool.name}</Text>
+                    <Text fontSize="xs" opacity={0.7}>
+                      ×
+                    </Text>
+                  </Badge>
+                ))}
+              </HStack>
+            </>
+          )}
         </Box>
-      )}
-
+        {showScrollButton && (
+          <IconButton
+          borderRadius={"50%"}
+            onClick={scrollToBottom}
+            aria-label="Scroll to Bottom"
+            variant={"outline"}
+            size={"xl"}
+            colorPalette={"blue"}
+            // transform="translateX(-50%)"
+          >
+            <FaAngleDoubleDown />
+          </IconButton>
+        )}
+      </Flex>
       {/* Main Input Container */}
       <Box
         bg={bgColor}

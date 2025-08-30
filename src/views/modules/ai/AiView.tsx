@@ -13,12 +13,13 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import MessageInput from "./MessageInput";
-import { FaUser, FaRobot } from "react-icons/fa";
+import { FaUser, FaRobot, FaAngleDoubleDown } from "react-icons/fa";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { Avatar } from "@/components/ui/avatar";
 import { BiMessageDetail } from "react-icons/bi";
 import { POSTAPI } from "@/app/api";
 import { API_SERVICES } from "@/config/api.config";
+import { log } from "console";
 
 // CSS animations
 const aiShimmer = `
@@ -78,7 +79,6 @@ interface StreamData {
 
 export default function AIView(params: any) {
   console.log("===CALLING AI VIEW===", params);
-
   // All useColorModeValue calls at the top
   const scrollTrackColor = useColorModeValue("gray.100", "gray.700");
   const scrollThumbColor = useColorModeValue("gray.300", "gray.600");
@@ -306,6 +306,8 @@ export default function AIView(params: any) {
 
   const currentStatus = getCurrentStatus();
 
+  
+
   return (
     <Flex direction="column" height="100vh">
       <style>
@@ -335,6 +337,7 @@ export default function AIView(params: any) {
             background: scrollThumbHoverColor,
           },
         }}
+        // position="relative"
       >
         {/* Status Indicator */}
         {currentStatus && (
@@ -342,45 +345,13 @@ export default function AIView(params: any) {
             position="sticky"
             top={0}
             zIndex={5}
-            // bg={statusBgColor}
-            // borderBottom="1px solid"
-            // borderColor={statusBorderColor}
             px={4}
             py={2}
             textAlign="center"
           >
-            {/* <HStack
-              justify="center"
-              bg={statusBgColor}
-              gap={2}
-              borderRadius="full"
-              p={2}
-              display="inline-flex"
-              position="relative"
-              _before={{
-                content: '""',
-                position: "absolute",
-                inset: 0,
-                borderRadius: "full",
-                padding: "2px", // border thickness
-                background: "linear-gradient(90deg, #a8f0c6, #22c55e, #a8f0c6)", // light green → success green → light green
-                backgroundSize: "300% 100%",
-                animation: "moveBorder 3s linear infinite",
-                WebkitMask:
-                  "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-                WebkitMaskComposite: "xor",
-                maskComposite: "exclude",
-              }}
-            >
-              <Spinner size="sm" color="green.500" />
-              <Text fontSize="sm" fontWeight="medium">
-                {currentStatus.content}
-              </Text>
-            </HStack> */}
-
             <IconButton
-            p={2}
-             bg={statusBgColor}
+              p={2}
+              bg={statusBgColor}
               aria-label="Bookmark"
               variant="ghost"
               size="sm"
@@ -416,7 +387,9 @@ export default function AIView(params: any) {
                   <HStack
                     align="flex-start"
                     justify={isAssistant ? "flex-start" : "flex-end"}
+                    justifyItems={"center"}
                     gap={3}
+                    p={2}
                   >
                     {/* Avatar for AI (left side) */}
                     {isAssistant && (
@@ -442,8 +415,6 @@ export default function AIView(params: any) {
                       color={
                         !isAssistant ? userMsgTextColor : assistantMsgTextColor
                       }
-                      px={4}
-                      py={3}
                       borderRadius="xl"
                       maxW="75%"
                       wordBreak="break-word"
@@ -485,38 +456,8 @@ export default function AIView(params: any) {
                             {msg.content}
                           </>
                         )}
-
-                        {/* Show cursor for streaming */}
-                        {msg.status === "streaming" && (
-                          <span
-                            style={{
-                              display: "inline-block",
-                              marginLeft: "4px",
-                              animation: "blink 1s infinite",
-                            }}
-                          >
-                            |
-                          </span>
-                        )}
                       </Text>
                     </Box>
-
-                    {/* Avatar for User (right side) */}
-                    {/* {!isAssistant && (
-                      <Avatar
-                        cursor="pointer"
-                        borderRadius="md"
-                        shape="square"
-                        size="sm"
-                        icon={<FaUser size={20} />}
-                        colorPalette="gray"
-                        css={{
-                          animation: "userFloat 4s ease-in-out infinite",
-                          "&:hover": { transform: "scale(1.1)" },
-                          transition: "all 0.3s ease",
-                        }}
-                      />
-                    )} */}
                   </HStack>
                 </Box>
               );
@@ -524,29 +465,32 @@ export default function AIView(params: any) {
 
             {/* New Chat Button */}
             {messages.length > 5 && (
-              <Box textAlign="center" py={4} mb={8}>
-                <IconButton
-                  aria-label="New Chat"
-                  colorPalette="blue"
-                  variant="solid"
-                  size="sm"
-                  borderRadius="full"
-                  px={4}
-                  py={2}
-                  onClick={clearChat}
-                >
-                  <BiMessageDetail />
-                  New Chat
-                </IconButton>
-              </Box>
+              <>
+                <Box textAlign="center" py={4} mb={8}>
+                  <IconButton
+                    aria-label="New Chat"
+                    colorPalette="blue"
+                    variant="solid"
+                    size="sm"
+                    borderRadius="full"
+                    px={4}
+                    py={2}
+                    onClick={clearChat}
+                  >
+                    <BiMessageDetail />
+                    New Chat
+                  </IconButton>
+                </Box>
+              </>
             )}
+            
 
             <div ref={messagesEndRef} style={{ height: "20px" }} />
           </VStack>
         </Container>
       </Box>
 
-      {/* Input Container */}
+     
       <Box
         position="sticky"
         bottom={0}
@@ -558,7 +502,7 @@ export default function AIView(params: any) {
         borderColor={inputBorderColor}
         zIndex={10}
       >
-        <MessageInput onSend={send} isLoading={isProcessing} />
+        <MessageInput onSend={send} isLoading={isProcessing} messagesContainerRef={messagesContainerRef} />
       </Box>
 
       {/* Add blink animation for cursor */}
