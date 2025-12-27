@@ -2,10 +2,17 @@ import { Box, Flex } from "@chakra-ui/react";
 import { Outlet } from "react-router";
 
 import { ColorModeButton } from "@/components/ui/color-mode";
+import { FullscreenButton } from "@/components/ui/fullscreen-button";
 import Footer from "@/ui/components/footer/FooterAuth";
 
+/**
+ * Auth Layout
+ * 
+ * Main wrapper layout for authentication pages.
+ * Includes illustration, footer, theme toggle, and fullscreen toggle.
+ */
 export default function Auth(props: any) {
-  console.log("===== THIS IS AUTH VIEW =======");
+  // console.log("===== THIS IS AUTH VIEW =======");
   // console.log(props);
   const { illustrationBackground } = props;
   return (
@@ -50,11 +57,12 @@ export default function Auth(props: any) {
         </Box>
         <Footer />
       </Flex>
-      <ColorModeButton
-        position="fixed"
-        bottom="30px"
-        right="10"
-      ></ColorModeButton>
+      
+      {/* Floating Action Buttons */}
+      <Flex position="fixed" bottom="30px" right="10" gap={3}>
+         <FullscreenButton />
+         <ColorModeButton />
+      </Flex>
     </Flex>
   );
 }

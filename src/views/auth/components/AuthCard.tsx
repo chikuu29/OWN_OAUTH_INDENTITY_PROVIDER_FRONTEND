@@ -10,16 +10,16 @@ interface AuthCardProps {
   children: React.ReactNode;
 }
 
-// Modern "Premium Reveal" animation (Scale + Blur + Slide)
+// Apple-style "App Open" animation (Spring Scale + Fade)
 const slideIn = keyframes`
-  from { 
+  0% { 
     opacity: 0; 
-    transform: scale(0.95) translateY(20px); 
-    filter: blur(10px);
+    transform: scale(0.8); 
+    filter: blur(5px);
   }
-  to { 
+  100% { 
     opacity: 1; 
-    transform: scale(1) translateY(0); 
+    transform: scale(1); 
     filter: blur(0px);
   }
 `;
@@ -47,8 +47,8 @@ export const AuthCard: React.FC<AuthCardProps> = ({ icon, title, subtitle, child
   const decorativeBg1 = useColorModeValue("blue.100", "blue.800");
   const decorativeBg2 = useColorModeValue("purple.100", "purple.800");
 
-  // Use cubic-bezier for a smooth, natural "settling" feel
-  const animation = `${slideIn} 0.6s cubic-bezier(0.2, 0.8, 0.2, 1)`;
+  // Snappy spring-like curve typical of macOS interactions
+  const animation = `${slideIn} 0.5s cubic-bezier(0.2, 0.8, 0.2, 1.2)`;
 
   return (
     // ...
@@ -114,7 +114,6 @@ export const AuthCard: React.FC<AuthCardProps> = ({ icon, title, subtitle, child
           bgGradient={headerBg}
           p={8}
           textAlign="center"
-          color="white"
           position="relative"
         >
           <VStack gap={4}>
