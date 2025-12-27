@@ -77,31 +77,15 @@ const routes: RouteObject[] = [
           // </Suspense>
         ),
       },
-      // {
-      //   path: "sign-up",
-      //   element: (
-      //     <Suspense fallback={<AppLoader />}>
-      //       <SignUpPage />
-      //     </Suspense>
-      //   ),
-      // },
-      // {
-      //   path: "callback",
-      //   element: (
-      //     // <Suspense fallback={<AppLoader />}>
-      //       <AuthCallback />
-      //     // </Suspense>
-      //   ),
-      // },
-      // {
-      //   path: "getstarted",
-      //   element: (
-      //     <Suspense fallback={<AppLoader />}>
-      //       <SignInPage />
-      //     </Suspense>
-      //   ),
-      // },
-      // ,
+      {
+        path: "sign-up",
+        element: (
+          // <Suspense fallback={<AppLoader />}>
+            <SignUpPage />
+          // </Suspense>
+        ),
+      },
+      
     ],
   },
   {

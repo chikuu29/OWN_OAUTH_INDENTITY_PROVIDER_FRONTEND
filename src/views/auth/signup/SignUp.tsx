@@ -1,448 +1,230 @@
 import {
   Box,
-  Flex,
-  Stack,
-  Heading,
   Text,
-  Container,
   Input,
   Button,
-  SimpleGrid,
-  Avatar,
-  // AvatarGroup,
-  useBreakpointValue,
-  IconProps,
-  Icon,
-  // FormLabel,
-  // InputGroup,
-  // InputRightElement,
-  Show,
-  // useColorModeValue,
+  VStack,
   Alert,
-  // AlertIcon,
 } from "@chakra-ui/react";
 import { NavLink } from "react-router";
-
-const avatars = [
-  {
-    name: "Ryan Florence",
-    url: "https://bit.ly/ryan-florence",
-  },
-  {
-    name: "Segun Adebayo",
-    url: "https://bit.ly/sage-adebayo",
-  },
-  {
-    name: "Kent Dodds",
-    url: "https://bit.ly/kent-c-dodds",
-  },
-  {
-    name: "Prosper Otemuyiwa",
-    url: "https://bit.ly/prosper-baba",
-  },
-  {
-    name: "Christian Nwamba",
-    url: "https://bit.ly/code-beast",
-  },
-];
-
-const Blur = (props: IconProps) => {
-  return (
-    <Icon
-      width={useBreakpointValue({ base: "100%", md: "40vw", lg: "30vw" })}
-      zIndex={useBreakpointValue({ base: -1, md: -1, lg: 0 })}
-      height="200px"
-      viewBox="0 0 528 560"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      {...props}
-    >
-      <circle cx="71" cy="61" r="111" fill="#F56565" />
-      <circle cx="244" cy="106" r="139" fill="#ED64A6" />
-      <circle cy="291" r="139" fill="#ED64A6" />
-      <circle cx="80.5" cy="189.5" r="101.5" fill="#ED8936" />
-      <circle cx="196.5" cy="317.5" r="101.5" fill="#ECC94B" />
-      <circle cx="70.5" cy="458.5" r="101.5" fill="#48BB78" />
-      <circle cx="426.5" cy="-0.5" r="101.5" fill="#4299E1" />
-    </Icon>
-  );
-};
-// import { motion } from "framer-motion";
-import { MdOutlineRemoveRedEye } from "react-icons/md";
-import { RiEyeCloseLine } from "react-icons/ri";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { POSTAPI } from "../../../app/api";
-import AppOtp from "../../../ui/components/auth/AppOtp";
 import { AlertProps } from "../../../app/interfaces/app.interface";
+import { useColorModeValue } from "@/components/ui/color-mode";
+import { Field } from "@/components/ui/field";
+import { InputGroup } from "@/components/ui/input-group";
+import { BiBuildingHouse } from "react-icons/bi";
+import { MdEmail } from "react-icons/md";
+import { FaBuilding } from "react-icons/fa";
+import { AuthCard } from "../components/AuthCard"; // Shared Layout Component
 
-// const MotionText = motion(Text);
+/**
+ * SignUp Component
+ * 
+ * Allows users to register a new tenant organization.
+ * Uses the shared AuthCard for consistent layout.
+ */
 export default function SignUP() {
-  console.log("===SIGN UP===");
-  // const bg = useColorModeValue("gray.50", "whiteAlpha.200");
-  const [show, setShow] = useState(false);
-
+  // --- State Management ---
   const [showAlert, setShowAlert] = useState<AlertProps>({
     title: "",
     description: "",
     status: "info",
     isVisible: false,
   });
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  // --- Form Hooks ---
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<any>({
-    mode: "onChange",
-  });
+  } = useForm<any>({ mode: "onChange" });
 
+  // --- Handlers ---
   const onFormSubmit = (formData: any) => {
-    console.log(formData);
+    setIsLoading(true);
+    const payload = {
+      tenant_email: formData.tenant_email,
+      tenant_name: formData.tenant_name,
+    };
 
-    POSTAPI({
-      path: "account/register",
-      data: formData,
-      isPrivateApi: false,
-    }).subscribe((res: any) => {
-      console.log("res", res);
+    POSTAPI({ path: "account/register/tenant/", data: payload, isPrivateApi: false }).subscribe((res: any) => {
+      setIsLoading(false);
       if (res.success) {
-        setShowAlert({
-          title: "Success",
-          description: "Account created successfully",
-          status: "success",
-          isVisible: true,
-        });
+        setShowAlert({ title: "Success", description: res?.message || "Tenant created successfully", status: "success", isVisible: true });
       } else {
-
-        setShowAlert({
-          title: "Error",
-          description: res.data.message,
-          status: "error",
-          isVisible: true,
+        // Construct detailed error message
+        let errorDescription = res?.message || "Failed to create tenant";
+        if (res?.error?.detail) {
+          errorDescription = `${errorDescription}: ${res.error.detail}`;
+        }
+        
+        setShowAlert({ 
+          title: "Error", 
+          description: errorDescription, 
+          status: "error", 
+          isVisible: true 
         });
       }
     });
   };
 
-  // return ;
+  // --- Styles ---
+  // (Minimal styles needed here, most are in AuthCard or components)
+  const borderColor = useColorModeValue("gray.200", "gray.600");
+  const textColor = useColorModeValue("gray.800", "white");
+  const subtextColor = useColorModeValue("gray.600", "gray.400");
+  const accentColor = useColorModeValue("blue.500", "blue.400");
 
   return (
-    <></>
-    // <Box position={"relative"}>
-    //   {/* <AppOtp></AppOtp> */}
-    //   <Container
-    //     as={SimpleGrid}
-    //     maxW={"7xl"}
-    //     columns={{ base: 1, md: 2 }}
-    //     // spacing={{ base: 10, lg: 32 }}
-    //     py={{ base: 10, sm: 20, lg: 32 }}
-    //   >
-    //     <Stack >
-    //       <Heading
-    //         lineHeight={1.1}
-    //         fontSize={{ base: "3xl", sm: "4xl", md: "5xl", lg: "6xl" }}
-    //       >
-    //         Welcome to Our{" "}
-    //         <Text
-    //           as={"span"}
-    //           bgGradient="linear(to-r, red.400,pink.400)"
-    //           bgClip="text"
-    //         >
-    //           Platform!
-    //         </Text>{" "}
-    //         {/* Full-Stack Developers */}
-    //       </Heading>
-    //       <MotionText
-    //         size={"sm"}
-    //         m={0}
-    //         fontFamily={"monospace"}
-    //         initial={{ opacity: 0, x: -50 }} // Start off-screen to the left
-    //         animate={{ opacity: 1, x: 0 }} // Fade in and slide into place
-    //         transition={{ duration: 0.8 }} // Animation duration
-    //       >
-    //         <Text
-    //           as={"span"}
-    //           bgGradient="linear(to-r, red.400,pink.400)"
-    //           bgClip="text"
-    //         >
-    //           "
-    //         </Text>
-    //         We're excited to have you here! Sign in to access your personalized
-    //         dashboard and explore all the features we offer. Manage all your
-    //         business categories with just one app, all on a single dashboard.
-    //         Let’s get started!
-    //         <Text
-    //           as={"span"}
-    //           bgGradient="linear(to-r, red.400,pink.400)"
-    //           bgClip="text"
-    //         >
-    //           "
-    //         </Text>
-    //       </MotionText>
-    //       <Stack direction={"row"} spacing={4} align={"center"}>
-    //         <AvatarGroup>
-    //           {avatars.map((avatar) => (
-    //             <Avatar
-    //               key={avatar.name}
-    //               name={avatar.name}
-    //               src={avatar.url}
-    //               // eslint-disable-next-line react-hooks/rules-of-hooks
-    //               size={useBreakpointValue({ base: "md", md: "lg" })}
-    //               position={"relative"}
-    //               zIndex={2}
-    //               _before={{
-    //                 content: '""',
-    //                 width: "full",
-    //                 height: "full",
-    //                 rounded: "full",
-    //                 transform: "scale(1.125)",
-    //                 bgGradient: "linear(to-bl, red.400,pink.400)",
-    //                 position: "absolute",
-    //                 zIndex: -1,
-    //                 top: 0,
-    //                 left: 0,
-    //               }}
-    //             />
-    //           ))}
-    //         </AvatarGroup>
-    //         <Text fontFamily={"heading"} fontSize={{ base: "4xl", md: "6xl" }}>
-    //           +
-    //         </Text>
-    //         <Flex
-    //           align={"center"}
-    //           justify={"center"}
-    //           fontFamily={"heading"}
-    //           fontSize={{ base: "sm", md: "lg" }}
-    //           bg={"gray.800"}
-    //           color={"white"}
-    //           rounded={"full"}
-    //           minWidth={useBreakpointValue({ base: "44px", md: "60px" })}
-    //           minHeight={useBreakpointValue({ base: "44px", md: "60px" })}
-    //           position={"relative"}
-    //           _before={{
-    //             content: '""',
-    //             width: "full",
-    //             height: "full",
-    //             rounded: "full",
-    //             transform: "scale(1.125)",
-    //             bgGradient: "linear(to-bl, orange.400,yellow.400)",
-    //             position: "absolute",
-    //             zIndex: -1,
-    //             top: 0,
-    //             left: 0,
-    //           }}
-    //         >
-    //           YOU
-    //         </Flex>
-    //       </Stack>
-    //     </Stack>
-    //     <Stack
-    //       bg={bg}
-    //       rounded={"xl"}
-    //       p={{ base: 4, sm: 6, md: 8 }}
-    //       spacing={{ base: 8 }}
-    //       maxW={{ lg: "lg" }}
-    //     >
-    //       <Stack spacing={4}>
-    //         <Heading
-    //           lineHeight={1.1}
-    //           fontSize={{ base: "2xl", sm: "3xl", md: "4xl" }}
-    //         >
-    //           Create An Account
-    //           <Text
-    //             as={"span"}
-    //             bgGradient="linear(to-r, red.400,pink.400)"
-    //             bgClip="text"
-    //           >
-    //             !
-    //           </Text>
-    //         </Heading>
-    //         <Text color={"gray.500"} fontSize={{ base: "sm", sm: "md" }}>
-    //           We provide effective IT solutions to help grow and manage your
-    //           business with our advanced and secure app at your fingertips
-    //         </Text>
-    //       </Stack>
-    //       <Box mt={10}>
-    //         <form onSubmit={handleSubmit(onFormSubmit)}>
-    //           <Stack spacing={4}>
-    //             <Input
-    //               placeholder="First Name"
-    //               bg={"gray.100"}
-    //               border={0}
-    //               color={"gray.500"}
-    //               _placeholder={{
-    //                 color: "gray.500",
-    //               }}
-    //               {...register("first_name", {
-    //                 required: "First Name is required",
-    //                 minLength: {
-    //                   value: 4,
-    //                   message:
-    //                     "First Name should be at least 4 characters long",
-    //                 },
-    //               })}
-    //             />
-    //             {errors.first_name && (
-    //               <Text color={"gray.500"}>
-    //                 {errors["first_name"]?.message?.toString()}
-    //               </Text>
-    //             )}
+    <AuthCard
+      title="Create Tenant"
+      subtitle="Start your journey by creating a new tenant"
+      icon={<FaBuilding size={32} color="#4F46E5" />}
+    >
+      <form onSubmit={handleSubmit(onFormSubmit)}>
+        <VStack gap={5}>
+          {/* Tenant Name Field */}
+          <Field
+            label="Tenant Name"
+            required
+            w="100%"
+            errorText={errors.tenant_name?.message?.toString()}
+            invalid={!!errors.tenant_name}
+          >
+            <InputGroup
+              flex="1"
+              w="100%"
+              startElement={
+                <Box color={accentColor}>
+                  <BiBuildingHouse size={20} />
+                </Box>
+              }
+            >
+              <Input
+                placeholder="Enter tenant name"
+                size="lg"
+                borderRadius="xl"
+                borderColor={borderColor}
+                bg={useColorModeValue("white", "gray.700")}
+                color={textColor}
+                _placeholder={{ color: subtextColor }}
+                _focus={{
+                  borderColor: accentColor,
+                  boxShadow: `0 0 0 1px ${accentColor}`,
+                }}
+                _hover={{ borderColor: accentColor }}
+                {...register("tenant_name", {
+                  required: "Tenant name is required",
+                  minLength: { value: 2, message: "Enter a valid tenant name" },
+                })}
+              />
+            </InputGroup>
+          </Field>
 
-    //             <Input
-    //               placeholder="Last Name"
-    //               bg={"gray.100"}
-    //               border={0}
-    //               color={"gray.500"}
-    //               _placeholder={{
-    //                 color: "gray.500",
-    //               }}
-    //               {...register("last_name", {
-    //                 required: "Last Name is required",
-    //               })}
-    //             />
-    //             {errors.last_name && (
-    //               <Text color={"gray.500"}>
-    //                 {errors?.last_name?.message?.toString()}
-    //               </Text>
-    //             )}
+          {/* Tenant Email Field */}
+          <Field
+            label="Tenant Email"
+            required
+            w="100%"
+            errorText={errors.tenant_email?.message?.toString()}
+            invalid={!!errors.tenant_email}
+          >
+            <InputGroup
+              flex="1"
+              w="100%"
+              startElement={
+                <Box color={accentColor}>
+                  <MdEmail size={20} />
+                </Box>
+              }
+            >
+              <Input
+                type="email"
+                placeholder="Enter contact email"
+                size="lg"
+                borderRadius="xl"
+                borderColor={borderColor}
+                bg={useColorModeValue("white", "gray.700")}
+                color={textColor}
+                _placeholder={{ color: subtextColor }}
+                _focus={{
+                  borderColor: accentColor,
+                  boxShadow: `0 0 0 1px ${accentColor}`,
+                }}
+                _hover={{ borderColor: accentColor }}
+                {...register("tenant_email", {
+                  required: "Email is required",
+                  pattern: {
+                    value: /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/,
+                    message: "Enter a valid email address",
+                  },
+                })}
+              />
+            </InputGroup>
+          </Field>
 
-    //             <Input
-    //               placeholder="Email"
-    //               bg={"gray.100"}
-    //               border={0}
-    //               color={"gray.500"}
-    //               _placeholder={{
-    //                 color: "gray.500",
-    //               }}
-    //               type="email"
-    //               {...register("email", {
-    //                 required: "Email is required",
-    //                 pattern: {
-    //                   value: /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/,
-    //                   message: "Enter a valid email address",
-    //                 },
-    //               })}
-    //             />
-    //             {errors.email && (
-    //               <Text color={"gray.500"}>
-    //                 {errors?.email?.message?.toString()}
-    //               </Text>
-    //             )}
+          {/* Alert Display */}
+          {showAlert.isVisible && (
+            <Alert.Root
+              status={showAlert.status}
+              variant="outline"
+              borderRadius="xl"
+              borderWidth="2px"
+              mt={2}
+            >
+              <Alert.Indicator />
+              <Alert.Title fontWeight="semibold">{showAlert.title}</Alert.Title>
+              <Alert.Description>{showAlert.description}</Alert.Description>
+            </Alert.Root>
+          )}
 
-    //             <Input
-    //               placeholder="Phone No"
-    //               bg={"gray.100"}
-    //               border={0}
-    //               color={"gray.500"}
-    //               _placeholder={{
-    //                 color: "gray.500",
-    //               }}
-    //               type="text"
-    //               {...register("phone_number", {
-    //                 required: "Phone number is required",
-    //                 pattern: {
-    //                   value: /^[0-9]{10}$/,
-    //                   message: "Enter a valid 10-digit phone number",
-    //                 },
-    //               })}
-    //             />
-    //             {errors.phone_number && (
-    //               <Text color={"gray.500"}>
-    //                 {errors?.phone_number?.message?.toString()}
-    //               </Text>
-    //             )}
+          {/* Submit Button */}
+          <Button
+            type="submit"
+            width="full"
+            size="xl"
+            // borderRadius="xl"
+            bgGradient="linear(to-r, blue.500, purple.600)"
+            color="white"
+            colorPalette={'blue'}
+            fontWeight="bold"
+            loading={isLoading}
+            loadingText="Creating..."
+            _hover={{
+              bgGradient: "linear(to-r, blue.600, purple.700)",
+              transform: "translateY(-2px)",
+              boxShadow: "lg",
+            }}
+            _active={{ transform: "translateY(0)" }}
+            transition="all 0.2s"
+            mt={4}
+          >
+            <FaBuilding />
+            Create Tenant
+          </Button>
 
-    //             <InputGroup size="md">
-    //               <Input
-    //                 bg={"gray.100"}
-    //                 border={0}
-    //                 color={"gray.500"}
-    //                 _placeholder={{
-    //                   color: "gray.500",
-    //                 }}
-    //                 fontSize="lg"
-    //                 placeholder="Min. 8 characters"
-    //                 type={show ? "text" : "password"}
-    //                 {...register("password", {
-    //                   required: "Password is required",
-    //                   minLength: {
-    //                     value: 8,
-    //                     message:
-    //                       "Password should be at least 8 characters long",
-    //                   },
-    //                 })}
-    //               />
-    //               <InputRightElement
-    //                 display="flex"
-    //                 alignItems="center"
-    //                 mt="2px"
-    //                 onClick={() => setShow(!show)}
-    //               >
-    //                 <Icon
-    //                   color={"black"}
-    //                   _hover={{ cursor: "pointer" }}
-    //                   as={show ? RiEyeCloseLine : MdOutlineRemoveRedEye}
-    //                 />
-    //               </InputRightElement>
-    //             </InputGroup>
-    //             {errors.password && (
-    //               <Text color={"gray.500"}>
-    //                 {errors?.password?.message?.toString()}
-    //               </Text>
-    //             )}
-    //           </Stack>
-    //           <br />
-    //           {showAlert.isVisible && (
-    //             <Alert
-    //               status={showAlert.status}
-    //               marginBottom={"8px"}
-    //               borderRadius={"8px"}
-    //             >
-    //               <AlertIcon />
-
-    //               {showAlert.description}
-    //             </Alert>
-    //           )}
-    //           <Button
-    //             fontFamily={"heading"}
-    //             mt={8}
-    //             w={"full"}
-    //             bgGradient="linear(to-r, red.400,pink.400)"
-    //             color={"white"}
-    //             _hover={{
-    //               bgGradient: "linear(to-r, red.400,pink.400)",
-    //               boxShadow: "xl",
-    //             }}
-    //             type="submit"
-    //           >
-    //             Submit
-    //           </Button>
-    //         </form>
-
-    //         <Text
-    //           mt={5}
-    //           color={"gray.500"}
-    //           fontWeight="400"
-    //           fontSize="14px"
-    //           textAlign={"center"}
-    //         >
-    //           Already Have An
-    //           <NavLink to="/auth/sign-in">
-    //             <Text as="span" ms="5px" fontWeight="600">
-    //               Account
-    //             </Text>
-    //           </NavLink>
-    //         </Text>
-    //       </Box>
-    //       form
-    //     </Stack>
-    //   </Container>
-    //   <Blur
-    //     position={"absolute"}
-    //     top={-10}
-    //     left={-10}
-    //     style={{ filter: "blur(70px)" }}
-    //   />
-    // </Box>
+          {/* Sign In Link */}
+          <Box textAlign="center" pt={2}>
+            <Text fontSize="sm" color={subtextColor}>
+              Already have an account?{" "}
+              <NavLink to="/auth/sign-in">
+                <Text
+                  as="span"
+                  color={accentColor}
+                  fontWeight="600"
+                  _hover={{ textDecoration: "underline" }}
+                >
+                  Sign In
+                </Text>
+              </NavLink>
+            </Text>
+          </Box>
+        </VStack>
+      </form>
+    </AuthCard>
   );
 }

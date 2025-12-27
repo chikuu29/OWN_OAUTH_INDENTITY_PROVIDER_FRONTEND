@@ -161,7 +161,7 @@ export default function AIView(params: any) {
 
     try {
       const response = await fetch(
-        "http://localhost:5173/ai-api/chat/conversation",
+        "http://localhost/ai-api/chat/conversation",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

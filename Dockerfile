@@ -34,7 +34,7 @@ RUN rm /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Copy custom nginx configuration
-COPY nginx/nginx.conf /etc/nginx/conf.d/
+COPY nginx/nginx_load_balancer.conf /etc/nginx/conf.d/
 
 # Expose port 80
 EXPOSE 80
