@@ -8,6 +8,7 @@ interface AuthCardProps {
   title: string;
   subtitle: string;
   children: React.ReactNode;
+  maxW?: string;
 }
 
 // Apple-style "App Open" animation (Spring Scale + Fade)
@@ -28,7 +29,7 @@ const slideIn = keyframes`
  * AuthCard Component
  * ...
  */
-export const AuthCard: React.FC<AuthCardProps> = ({ icon, title, subtitle, children }) => {
+export const AuthCard: React.FC<AuthCardProps> = ({ icon, title, subtitle, children, maxW = "md" }) => {
   // --- Color System ---
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.600");
@@ -88,7 +89,7 @@ export const AuthCard: React.FC<AuthCardProps> = ({ icon, title, subtitle, child
 
       {/* --- Main Card Container --- */}
       <Box
-        maxW="md"
+        maxW={maxW}
         w="full"
         bg={bgColor}
         borderRadius="2xl"

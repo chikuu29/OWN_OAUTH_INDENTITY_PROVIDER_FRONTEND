@@ -20,6 +20,7 @@ const SignInPage = lazy(() => import("./views/auth/signin/SignIn"));
 const SignUpPage = lazy(() => import("./views/auth/signup/SignUp"));
 const PageNotFound = lazy(() => import("./pages/NoPageFound"));
 const AuthorizePage = lazy(() => import("./views/auth/oauth/AuthorizePage"));
+const SetupAccount = lazy(() => import("./views/auth/SetupAccount"));
 const MyApps = lazy(() => import("./views/myApps/MyApps"));
 // const PanelLayout = lazy(() => import("./ui/layouts/dashboard/dash"));
 const PrivateRoute = lazy(() => import("./contexts/PrivateRoute"));
@@ -81,12 +82,20 @@ const routes: RouteObject[] = [
         path: "sign-up",
         element: (
           // <Suspense fallback={<AppLoader />}>
-            <SignUpPage />
+          <SignUpPage />
           // </Suspense>
         ),
       },
-      
+
     ],
+  },
+  {
+    path: "account/setup/:request_code/*",
+    element: (
+
+      <SetupAccount />
+
+    ),
   },
   {
     path: "oauth",
@@ -112,7 +121,7 @@ const routes: RouteObject[] = [
         <AuthProvider>
           <PrivateRoute>
             {/* <DashLayout /> */}
-             <DynamicLayout /> 
+            <DynamicLayout />
           </PrivateRoute>
         </AuthProvider>
       </Suspense>
@@ -122,7 +131,7 @@ const routes: RouteObject[] = [
         path: "", // Child route for `params`
         element: (
           // <Suspense fallback={<AppLoader />}>
-            <HandleDynamicView />
+          <HandleDynamicView />
           // </Suspense>
         ),
       },
@@ -130,7 +139,7 @@ const routes: RouteObject[] = [
         path: ":secondaryView/:r/*", // Child route for `params`
         element: (
           // <Suspense fallback={<AppLoader />}>
-            <HandleDynamicView />
+          <HandleDynamicView />
           // </Suspense>
         ),
       },
