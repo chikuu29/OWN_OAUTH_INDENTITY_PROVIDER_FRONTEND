@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { useParams } from "react-router";
 import {
     SimpleGrid,
     Box,
@@ -47,7 +48,8 @@ const PlanCard = ({
     cardBg,
     apps,
     selectedApps,
-    calculateAppTotal
+    calculateAppTotal,
+    currency = "INR"
 }: any) => {
     const featureBulletBg = useColorModeValue("blue.50", "blue.900");
 
@@ -97,7 +99,11 @@ const PlanCard = ({
                     </Text>
                     <HStack align="baseline">
                         <Text fontSize="4xl" fontWeight="900" letterSpacing="tight">
-                            <FaRupeeSign style={{ display: 'inline', marginRight: '4px', fontSize: '0.6em' }} />
+                            {currency === "INR" ? (
+                                <FaRupeeSign style={{ display: 'inline', marginRight: '4px', fontSize: '0.6em' }} />
+                            ) : (
+                                <Text as="span" fontSize="0.6em" mr={1}>{currency}</Text>
+                            )}
                             {totalPrice.toLocaleString()}
                         </Text>
                         <Text color="gray.500" fontWeight="medium">/mo</Text>
@@ -146,17 +152,49 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
     setIsSubmitting,
     setSubmitHandler
 }) => {
+    const { request_code } = useParams();
+    const STORAGE_KEY = `setup_plan_selection_${request_code}`;
+
     const activeBorder = useColorModeValue("blue.500", "blue.400");
     const borderColor = useColorModeValue("gray.200", "gray.600");
-    const [selectedPlan, setSelectedPlan] = useState("PRO");
-    const [selectedApps, setSelectedApps] = useState<string[]>([]);
-    const [selectedFeatures, setSelectedFeatures] = useState<Record<string, string[]>>({});
+
+    // Initialize states from LOCAL STORAGE if available
+    const [selectedPlan, setSelectedPlan] = useState(() => {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            try { return JSON.parse(saved).selectedPlan || "PRO"; } catch (e) { return "PRO"; }
+        }
+        return "PRO";
+    });
+
+    const [selectedApps, setSelectedApps] = useState<string[]>(() => {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            try { return JSON.parse(saved).selectedApps || []; } catch (e) { return []; }
+        }
+        return [];
+    });
+
+    const [selectedFeatures, setSelectedFeatures] = useState<Record<string, string[]>>(() => {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            try { return JSON.parse(saved).selectedFeatures || {}; } catch (e) { return {}; }
+        }
+        return {};
+    });
+
     const [customizingApp, setCustomizingApp] = useState<any | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const cardBg = useColorModeValue("white", "gray.700");
     const appHighlightBg = useColorModeValue("blue.50", "rgba(66, 153, 225, 0.05)");
     const [plans, setPlans] = useState([]);
     const [apps, setApps] = useState<any[]>([]);
+
+    // PERSIST to localStorage on every change
+    useEffect(() => {
+        const data = { selectedPlan, selectedApps, selectedFeatures };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }, [selectedPlan, selectedApps, selectedFeatures, STORAGE_KEY]);
 
     const filteredApps = useMemo(() => {
         return apps.filter(app =>
@@ -266,9 +304,13 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
                 }
             }
         });
-        const subPlans = GETAPI({ path: '/plans' }).subscribe((res: any) => {
+        const subPlans = GETAPI({ path: 'plans' }).subscribe((res: any) => {
             if (res.success && res.data.length > 0) {
                 setPlans(res.data);
+                const planExists = res.data.some((p: any) => p.plan_code === selectedPlan);
+                if (!planExists || !selectedPlan) {
+                    setSelectedPlan(res.data[0].plan_code);
+                }
             }
         });
         return () => {
@@ -422,23 +464,36 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
                 </VStack>
                 <SimpleGrid columns={{ base: 1, lg: 3 }} gap={8} w="full">
                     {plans.length > 0 ? (
-                        plans.map((plan: any) => (
-                            <PlanCard
-                                key={plan.id}
-                                plan_code={plan.plan_code}
-                                name={plan.plan_name}
-                                totalPrice={calculatePlanPrice(plan.plan_code, plan.price || 0)}
-                                features={["Up to 5 Team Members", "Basic Analytics Dashboard", "Community Support"]}
-                                isSelected={selectedPlan === plan.plan_code}
-                                onClick={() => setSelectedPlan(plan.plan_code)}
-                                activeBorder={activeBorder}
-                                borderColor={borderColor}
-                                cardBg={cardBg}
-                                apps={apps}
-                                selectedApps={selectedApps}
-                                calculateAppTotal={calculateAppTotal}
-                            />
-                        ))
+                        plans.map((plan: any) => {
+                            const currentVersion = plan.current_version;
+                            const basePrice = parseFloat(currentVersion?.price || "0");
+                            const planFeatures = [
+                                `${currentVersion?.max_users} Max Users`,
+                                `${currentVersion?.max_branches} Branches Included`,
+                                `${currentVersion?.storage_limit_gb}GB Cloud Storage`,
+                                `${currentVersion?.billing_cycle.charAt(0).toUpperCase() + currentVersion?.billing_cycle.slice(1)} Billing`
+                            ];
+
+                            return (
+                                <PlanCard
+                                    key={plan.id}
+                                    plan_code={plan.plan_code}
+                                    name={plan.name}
+                                    totalPrice={calculatePlanPrice(plan.plan_code, basePrice)}
+                                    features={planFeatures}
+                                    isSelected={selectedPlan === plan.plan_code}
+                                    onClick={() => setSelectedPlan(plan.plan_code)}
+                                    activeBorder={activeBorder}
+                                    borderColor={borderColor}
+                                    cardBg={cardBg}
+                                    apps={apps}
+                                    selectedApps={selectedApps}
+                                    calculateAppTotal={calculateAppTotal}
+                                    recommended={plan.plan_code.toLowerCase().includes("pro")}
+                                    currency={currentVersion?.currency}
+                                />
+                            );
+                        })
                     ) : (
                         <>
                             <PlanCard
