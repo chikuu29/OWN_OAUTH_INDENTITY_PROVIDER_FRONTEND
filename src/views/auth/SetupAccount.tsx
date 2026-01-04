@@ -277,9 +277,16 @@ export default function SetupAccount() {
 
   // --- Navigation ---
   const handleNext = async () => {
+    console.log(`[Wizard] Moving from step: ${currentStepSlug} (Index: ${currentStepIndex})`);
+
     if (activeSubmitHandler) {
+      console.log(`[Wizard] Executing submit handler for ${currentStepSlug}...`);
       const success = await activeSubmitHandler();
-      if (!success) return;
+      if (!success) {
+        console.warn(`[Wizard] Submit handler for ${currentStepSlug} failed.`);
+        return;
+      }
+      console.log(`[Wizard] Submit handler for ${currentStepSlug} succeeded.`);
     }
 
     const nextIndex = currentStepIndex + 1;
@@ -319,7 +326,12 @@ export default function SetupAccount() {
                 />
               );
             case "plan":
-              return <PlanSelection />;
+              return (
+                <PlanSelection
+                  setIsSubmitting={setIsStepSubmitting}
+                  setSubmitHandler={handleSetSubmitHandler}
+                />
+              );
             case "payment":
               return <PaymentForm />;
             case "complete":

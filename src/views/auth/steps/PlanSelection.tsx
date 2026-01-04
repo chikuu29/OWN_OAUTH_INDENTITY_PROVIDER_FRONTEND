@@ -1,235 +1,578 @@
-import React, { useEffect, useState } from "react";
-import { SimpleGrid, Box, Badge, VStack, HStack, Text, Circle } from "@chakra-ui/react";
+import React, { useEffect, useState, useMemo } from "react";
+import {
+    SimpleGrid,
+    Box,
+    Badge,
+    VStack,
+    HStack,
+    Text,
+    Circle,
+    Separator,
+    Icon,
+    Button,
+} from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
-import { FaCheck, FaRupeeSign } from "react-icons/fa";
+import { FaCheck, FaRupeeSign, FaEdit, FaSearch } from "react-icons/fa";
 import { GETAPI } from "@/app/api";
 import AsyncLoadIcon from "@/utils/hooks/AsyncLoadIcon";
+import { Checkbox } from "@/components/ui/checkbox";
+import { InputGroup } from "@/components/ui/input-group";
+import {
+    DialogBody,
+    DialogCloseTrigger,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogRoot,
+    DialogTitle,
+} from "@/components/ui/dialog";
 
-const PlanSelection = () => {
+import { toaster } from "@/components/ui/toaster";
+
+interface PlanSelectionProps {
+    setIsSubmitting?: (isSubmitting: boolean) => void;
+    setSubmitHandler?: (handler: (() => Promise<boolean>) | null) => void;
+}
+
+const PlanCard = ({
+    plan_code,
+    name,
+    totalPrice,
+    features,
+    recommended = false,
+    isSelected,
+    onClick,
+    activeBorder,
+    borderColor,
+    cardBg,
+    apps,
+    selectedApps,
+    calculateAppTotal
+}: any) => {
+    const featureBulletBg = useColorModeValue("blue.50", "blue.900");
+
+    return (
+        <Box
+            border="2px solid"
+            borderColor={isSelected ? activeBorder : borderColor}
+            p={6}
+            borderRadius="2xl"
+            cursor="pointer"
+            onClick={onClick}
+            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+            _hover={{ borderColor: activeBorder, transform: "translateY(-4px)", boxShadow: "xl" }}
+            bg={cardBg}
+            position="relative"
+            h="full"
+            display="flex"
+            flexDirection="column"
+            transform={isSelected ? "scale(1.02)" : "scale(1)"}
+            zIndex={isSelected ? 1 : 0}
+            shadow={isSelected ? "lg" : "sm"}
+        >
+            {recommended && (
+                <Badge
+                    position="absolute"
+                    top="-3"
+                    right="4"
+                    bgGradient="linear(to-r, purple.500, blue.500)"
+                    color="white"
+                    variant="solid"
+                    px={3}
+                    py={1}
+                    borderRadius="full"
+                    boxShadow="md"
+                    textTransform="uppercase"
+                    letterSpacing="wider"
+                    fontSize="2xs"
+                    fontWeight="bold"
+                >
+                    Best Value
+                </Badge>
+            )}
+            <VStack align="start" gap={5} flex="1">
+                <Box>
+                    <Text fontWeight="bold" fontSize="lg" color={isSelected ? activeBorder : "gray.600"} _dark={{ color: isSelected ? activeBorder : "gray.300" }}>
+                        {name}
+                    </Text>
+                    <HStack align="baseline">
+                        <Text fontSize="4xl" fontWeight="900" letterSpacing="tight">
+                            <FaRupeeSign style={{ display: 'inline', marginRight: '4px', fontSize: '0.6em' }} />
+                            {totalPrice.toLocaleString()}
+                        </Text>
+                        <Text color="gray.500" fontWeight="medium">/mo</Text>
+                    </HStack>
+                </Box>
+
+                <Separator />
+
+                <VStack align="start" gap={3} w="full">
+                    {apps.filter((app: any) => selectedApps.includes(app.id)).map((app: any) => {
+                        const appTotal = calculateAppTotal(app);
+                        return (
+                            <Box key={app.id} w="full">
+                                <HStack justify="space-between" w="full">
+                                    <HStack align="start">
+                                        <Circle size="5" bg="green.100" color="green.600" mt={0.5} _dark={{ bg: "green.900", color: "green.100" }}>
+                                            <FaCheck size={10} />
+                                        </Circle>
+                                        <Text fontSize="sm" fontWeight="bold">
+                                            {app.name}
+                                        </Text>
+                                    </HStack>
+                                    <Text fontSize="xs" color="gray.500">
+                                        ₹{appTotal.toLocaleString()}
+                                    </Text>
+                                </HStack>
+                            </Box>
+                        );
+                    })}
+
+                    {features.map((f: string, i: number) => (
+                        <HStack key={i} align="start">
+                            <Circle size="5" bg={featureBulletBg} color={activeBorder} mt={0.5}>
+                                <FaCheck size={10} />
+                            </Circle>
+                            <Text fontSize="sm" color="gray.500" _dark={{ color: "gray.400" }}>{f}</Text>
+                        </HStack>
+                    ))}
+                </VStack>
+            </VStack>
+        </Box>
+    );
+};
+
+const PlanSelection: React.FC<PlanSelectionProps> = ({
+    setIsSubmitting,
+    setSubmitHandler
+}) => {
     const activeBorder = useColorModeValue("blue.500", "blue.400");
     const borderColor = useColorModeValue("gray.200", "gray.600");
     const [selectedPlan, setSelectedPlan] = useState("PRO");
-    const [selectedApps, setSelectedApps] = useState<string[]>(["gym"]);
+    const [selectedApps, setSelectedApps] = useState<string[]>([]);
+    const [selectedFeatures, setSelectedFeatures] = useState<Record<string, string[]>>({});
+    const [customizingApp, setCustomizingApp] = useState<any | null>(null);
+    const [searchTerm, setSearchTerm] = useState("");
     const cardBg = useColorModeValue("white", "gray.700");
+    const appHighlightBg = useColorModeValue("blue.50", "rgba(66, 153, 225, 0.05)");
     const [plans, setPlans] = useState([]);
     const [apps, setApps] = useState<any[]>([]);
-    // const apps = [
-    //     { id: "gym", name: "Gym Management", icon: <FaDumbbell />, base_price: 999 },
-    //     { id: "oms", name: "Order Management", icon: <FaShoppingCart />, base_price: 1499 },
-    //     { id: "ai", name: "AI Chatbot", icon: <FaRobot />, base_price: 1999 },
-    //     { id: "admin", name: "Enterprise Admin", icon: <FaCogs />, base_price: 2999 }
-    // ];
+
+    const filteredApps = useMemo(() => {
+        return apps.filter(app =>
+            app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            app.description?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [apps, searchTerm]);
 
     const toggleApp = (id: string) => {
         setSelectedApps(prev => {
+            const isRemoving = prev.includes(id);
+            let next;
             if (selectedPlan === 'FREE_TRIAL') {
-                return [id]; // Only 1 app allowed for Starter plan
+                next = isRemoving ? [] : [id];
+            } else {
+                next = isRemoving ? prev.filter(a => a !== id) : [...prev, id];
             }
-            return prev.includes(id)
-                ? (prev.length > 1 ? prev.filter(a => a !== id) : prev)
-                : [...prev, id];
+
+            if (!isRemoving) {
+                const app = apps.find(a => a.id === id);
+                if (app && app.features) {
+                    const baseFeatures = app.features
+                        .filter((f: any) => f.is_base_feature)
+                        .map((f: any) => f.code);
+                    setSelectedFeatures(prevFeat => ({ ...prevFeat, [id]: baseFeatures }));
+                }
+            } else {
+                const { [id]: _, ...rest } = selectedFeatures;
+                setSelectedFeatures(rest);
+            }
+            return next;
         });
     };
 
-    // If user switches to starter plan, prune selection to only the first app
-    useEffect(() => {
-        if (selectedPlan === 'FREE_TRIAL' && selectedApps.length > 1) {
-            setSelectedApps([selectedApps[0]]);
-        }
-    }, [selectedPlan, selectedApps]);
-
-    const calculatePlanPrice = (planId: string, planBasePrice: number) => {
-        if (planId === 'FREE_TRIAL') return "0";
-        const appsTotal = apps
-            .filter(app => selectedApps.includes(app.id))
-            .reduce((sum, app) => sum + parseInt(app.base_price), 0);
-        return (appsTotal + planBasePrice).toLocaleString();
+    const toggleFeature = (appId: string, featureCode: string) => {
+        setSelectedFeatures(prev => {
+            const appFeats = prev[appId] || [];
+            if (appFeats.includes(featureCode)) {
+                return { ...prev, [appId]: appFeats.filter(f => f !== featureCode) };
+            } else {
+                return { ...prev, [appId]: [...appFeats, featureCode] };
+            }
+        });
     };
 
-    const PlanCard = ({ id, plan_code, name, planBasePrice, features, recommended = false }: any) => {
-        const isSelected = selectedPlan === plan_code;
-        const totalPrice = calculatePlanPrice(plan_code, planBasePrice);
+    const calculateAppTotal = (app: any) => {
+        const basePrice = parseFloat(app.base_price) || 0;
+        const selectedForApp = selectedFeatures[app.id] || [];
+        const addonsPrice = app.features
+            ? app.features
+                .filter((f: any) => !f.is_base_feature && selectedForApp.includes(f.code))
+                .reduce((sum: number, f: any) => sum + (parseFloat(f.addon_price) || 0), 0)
+            : 0;
+        return basePrice + addonsPrice;
+    };
 
-        return (
-            <Box
-                border="2px solid"
-                borderColor={isSelected ? activeBorder : borderColor}
-                p={6}
-                borderRadius="xl"
-                cursor="pointer"
-                onClick={() => setSelectedPlan(plan_code)}
-                transition="all 0.2s"
-                _hover={{ borderColor: activeBorder, transform: "translateY(-4px)", boxShadow: "lg" }}
-                bg={cardBg}
-                position="relative"
-                h="full"
-                transform={isSelected ? "scale(1.02)" : "scale(1)"}
-                zIndex={isSelected ? 1 : 0}
-            >
-                {recommended && (
-                    <Badge
-                        position="absolute"
-                        top="-3"
-                        right="4"
-                        colorPalette="purple"
-                        variant="solid"
-                        px={3}
-                        py={1}
-                        borderRadius="full"
-                        boxShadow="md"
-                        textTransform="uppercase"
-                        letterSpacing="wider"
-                        fontSize="xs"
-                    >
-                        Best Value
-                    </Badge>
-                )}
-                <VStack align="start" gap={5}>
-                    <Box>
-                        <Text fontWeight="bold" fontSize="lg" color={isSelected ? activeBorder : "inherit"}>{name}</Text>
-                        <HStack align="baseline">
-                            <Text fontSize="4xl" fontWeight="900">
-                                <FaRupeeSign style={{ display: 'inline', marginRight: '4px' }} />
-                                {totalPrice}
-                            </Text>
-                            <Text color="gray.500" fontWeight="medium">/mo</Text>
-                        </HStack>
-                    </Box>
+    const calculatePlanPrice = (planCode: string, planBasePrice: number) => {
+        if (planCode === 'FREE_TRIAL') return 0;
+        const appsTotal = apps
+            .filter(app => selectedApps.includes(app.id))
+            .reduce((sum, app) => sum + calculateAppTotal(app), 0);
+        return appsTotal + (planBasePrice || 0);
+    };
 
-                    <Box w="full" h="1px" bg={useColorModeValue("gray.100", "gray.600")} />
+    const handleSubmit = async (): Promise<boolean> => {
+        console.log("[PlanSelection] Validating selection...", {
+            selectedPlan,
+            selectedApps,
+            selectedFeatures,
+            estimatedGrandTotal: calculatePlanPrice(selectedPlan, 0)
+        });
 
-                    <VStack align="start" gap={3}>
-                        {/* Selected Apps added as dynamic features */}
-                        {apps.filter(app => selectedApps.includes(app.id)).map(app => (
-                            <HStack key={app.id} align="start">
-                                <Circle size="5" bg="green.50" color="green.500" mt={0.5}>
-                                    <FaCheck size={10} />
-                                </Circle>
-                                <Text fontSize="sm" fontWeight="600" color={useColorModeValue("gray.700", "gray.200")}>
-                                    {app.name} Included
-                                </Text>
-                            </HStack>
-                        ))}
+        if (selectedApps.length === 0) {
+            console.warn("[PlanSelection] Validation failed: No apps selected.");
+            toaster.create({
+                description: "Please select at least one application to proceed.",
+                type: "error",
+            });
+            return false;
+        }
 
-                        {features.map((f: string, i: number) => (
-                            <HStack key={i} align="start">
-                                <Circle size="5" bg={useColorModeValue("blue.50", "whiteAlpha.200")} color={activeBorder} mt={0.5}>
-                                    <FaCheck size={10} />
-                                </Circle>
-                                <Text fontSize="sm" color="gray.500" lineHeight="tall">{f}</Text>
-                            </HStack>
-                        ))}
-                    </VStack>
-                </VStack>
-            </Box>
-        )
-    }
+        console.log("[PlanSelection] Validation successful.");
+        return true;
+    };
+
+    // Register the submit handler with the parent
+    useEffect(() => {
+        if (setSubmitHandler) {
+            setSubmitHandler(handleSubmit);
+        }
+        return () => {
+            if (setSubmitHandler) setSubmitHandler(null);
+        };
+    }, [selectedApps, setSubmitHandler]);
 
     useEffect(() => {
-        GETAPI({
+        const sub = GETAPI({
             path: "saas/get_apps"
         }).subscribe((res: any) => {
-            console.log(res);
-
             if (res.success && res.data.length > 0) {
                 setApps(res.data);
+                if (selectedApps.length === 0) {
+                    setSelectedApps([res.data[0].id]);
+                    const firstApp = res.data[0];
+                    const baseFeats = firstApp.features?.filter((f: any) => f.is_base_feature).map((f: any) => f.code) || [];
+                    setSelectedFeatures({ [firstApp.id]: baseFeats });
+                }
             }
-        })
-        GETAPI({ path: '/plans' }).subscribe((res: any) => {
-
+        });
+        const subPlans = GETAPI({ path: '/plans' }).subscribe((res: any) => {
             if (res.success && res.data.length > 0) {
                 setPlans(res.data);
             }
-        })
+        });
+        return () => {
+            sub.unsubscribe();
+            subPlans.unsubscribe();
+        };
     }, []);
 
     return (
         <VStack gap={10} w="full" align="stretch">
-            <VStack align="start" gap={4}>
+            {/* App Selection Section */}
+            <VStack align="start" gap={6}>
                 <HStack justify="space-between" w="full">
-                    <Text fontWeight="bold" fontSize="lg">1. Select Apps You Need</Text>
+                    <VStack align="start" gap={0}>
+                        <Text fontWeight="bold" fontSize="xl" letterSpacing="tight">1. Choose Your Applications</Text>
+                        <Text fontSize="sm" color="gray.500">Select the apps and customize features for your business.</Text>
+                    </VStack>
                     {selectedPlan === 'FREE_TRIAL' && (
-                        <Badge colorPalette="orange" variant="subtle" borderRadius="full" px={3}>
-                            Free Trial: 1 App Only
+                        <Badge colorPalette="orange" variant="solid" borderRadius="full" px={3} py={1}>
+                            Free Trial: 1 App
                         </Badge>
                     )}
                 </HStack>
-                <SimpleGrid columns={{ base: 2, md: 4 }} gap={4} w="full">
-                    {apps.map((app) => {
-                        const isSelected = selectedApps.includes(app.id);
-                        return (
-                            <Box
-                                key={app.id}
-                                p={4}
-                                borderRadius="xl"
-                                border="2px solid"
-                                borderColor={isSelected ? activeBorder : borderColor}
-                                bg={isSelected ? useColorModeValue("blue.50", "rgba(66, 153, 225, 0.1)") : cardBg}
-                                cursor="pointer"
-                                onClick={() => toggleApp(app.id)}
-                                transition="all 0.2s"
-                                _hover={{ borderColor: activeBorder }}
-                                textAlign="center"
-                            >
-                                <VStack gap={1}>
-                                    <Circle size="10" bg={isSelected ? activeBorder : useColorModeValue("gray.100", "gray.700")} color={isSelected ? "white" : "inherit"}>
-                                        <AsyncLoadIcon iconName={app.icon} />
-                                    </Circle>
-                                    <Text fontSize="xs" fontWeight="bold">{app.name}</Text>
-                                    <Text fontSize="10px" color="gray.500">
-                                        + <FaRupeeSign style={{ display: 'inline' }} size={8} />{app.base_price}
-                                    </Text>
-                                </VStack>
-                            </Box>
-                        );
-                    })}
-                </SimpleGrid>
+
+                <HStack w="full" gap={4}>
+                    <InputGroup flex="1" startElement={<FaSearch color="gray" />}>
+                        <Box position="relative" w="full">
+                            <input
+                                placeholder="Search applications..."
+                                style={{
+                                    width: "100%",
+                                    padding: "10px 12px 10px 40px",
+                                    borderRadius: "12px",
+                                    border: "1px solid",
+                                    borderColor: "var(--chakra-colors-gray-200)",
+                                    fontSize: "14px",
+                                    outline: "none",
+                                    background: "transparent"
+                                }}
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </Box>
+                    </InputGroup>
+                </HStack>
+
+                <Box
+                    w="full"
+                    maxH="500px"
+                    overflowY="auto"
+                    pr={2}
+                    css={{
+                        '&::-webkit-scrollbar': { width: '6px' },
+                        '&::-webkit-scrollbar-track': { background: 'transparent' },
+                        '&::-webkit-scrollbar-thumb': { background: 'var(--chakra-colors-gray-200)', borderRadius: '10px' },
+                        '&::-webkit-scrollbar-thumb:hover': { background: 'var(--chakra-colors-gray-300)' },
+                    }}
+                >
+                    <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={6} w="full">
+                        {filteredApps.map((app) => {
+                            const isSelected = selectedApps.includes(app.id);
+                            const appTotal = calculateAppTotal(app);
+
+                            return (
+                                <Box
+                                    key={app.id}
+                                    borderRadius="2xl"
+                                    border="2px solid"
+                                    borderColor={isSelected ? activeBorder : borderColor}
+                                    bg={isSelected ? appHighlightBg : cardBg}
+                                    transition="all 0.2s"
+                                    position="relative"
+                                    overflow="hidden"
+                                    shadow={isSelected ? "md" : "sm"}
+                                >
+                                    <VStack align="stretch" gap={0}>
+                                        <Box p={5}>
+                                            <HStack justify="space-between" mb={4}>
+                                                <HStack gap={3}>
+                                                    <Circle size="12" bg={isSelected ? activeBorder : useColorModeValue("gray.100", "gray.800")} color={isSelected ? "white" : "inherit"}>
+                                                        <AsyncLoadIcon iconName={app.icon} />
+                                                    </Circle>
+                                                    <VStack align="start" gap={0}>
+                                                        <Text fontWeight="bold" fontSize="md">{app.name}</Text>
+                                                        <Text fontSize="xs" color="gray.500">Base: ₹{app.base_price}</Text>
+                                                    </VStack>
+                                                </HStack>
+                                                <VStack align="end" gap={0}>
+                                                    <Text fontWeight="black" color={activeBorder}>₹{appTotal}</Text>
+                                                    <Badge colorPalette={isSelected ? "blue" : "gray"} variant="subtle" size="xs">
+                                                        {isSelected ? "Selected" : "Not Selected"}
+                                                    </Badge>
+                                                </VStack>
+                                            </HStack>
+
+                                            <Text fontSize="xs" lineClamp={2} color="gray.500" mb={4}>
+                                                {app.description}
+                                            </Text>
+
+                                            {isSelected && selectedFeatures[app.id]?.length > 0 && (
+                                                <VStack align="start" gap={1.5} mb={4} p={3} bg="whiteAlpha.400" _dark={{ bg: "blackAlpha.200" }} borderRadius="xl">
+                                                    <Text fontSize="10px" fontWeight="bold" color="gray.400" textTransform="uppercase" letterSpacing="widest">Features Included</Text>
+                                                    <SimpleGrid columns={2} gap={2} w="full">
+                                                        {app.features?.filter((f: any) => selectedFeatures[app.id].includes(f.code)).map((f: any) => (
+                                                            <HStack key={f.code} gap={1.5}>
+                                                                <Icon as={FaCheck} color="green.500" size="xs" />
+                                                                <Text fontSize="11px" fontWeight="medium" lineClamp={1}>{f.name}</Text>
+                                                            </HStack>
+                                                        ))}
+                                                    </SimpleGrid>
+                                                </VStack>
+                                            )}
+
+                                            <SimpleGrid columns={2} gap={2}>
+                                                <Button
+                                                    size="sm"
+                                                    variant={isSelected ? "subtle" : "outline"}
+                                                    colorPalette={isSelected ? "red" : "blue"}
+                                                    onClick={() => toggleApp(app.id)}
+                                                    borderRadius="xl"
+                                                >
+                                                    {isSelected ? "Remove" : "Select App"}
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    colorPalette="blue"
+                                                    onClick={() => setCustomizingApp(app)}
+                                                    disabled={!isSelected}
+                                                    gap={2}
+                                                    borderRadius="xl"
+                                                    _hover={{ bg: "blue.50", _dark: { bg: "blue.900/20" } }}
+                                                >
+                                                    <FaEdit size={12} /> Customize
+                                                </Button>
+                                            </SimpleGrid>
+                                        </Box>
+                                    </VStack>
+                                </Box>
+                            );
+                        })}
+                    </SimpleGrid>
+                </Box>
             </VStack>
 
             {/* Plan Selection Section */}
-            <VStack align="start" gap={4}>
-                <Text fontWeight="bold" fontSize="lg">2. Choose a Subscription Plan</Text>
-                <SimpleGrid columns={{ base: 1, lg: 3 }} gap={6} w="full">
+            <VStack align="start" gap={6}>
+                <VStack align="start" gap={0}>
+                    <Text fontWeight="bold" fontSize="xl" letterSpacing="tight">2. Select Your Scaling Plan</Text>
+                    <Text fontSize="sm" color="gray.500">Choose how you want to scale your team and workspace.</Text>
+                </VStack>
+                <SimpleGrid columns={{ base: 1, lg: 3 }} gap={8} w="full">
                     {plans.length > 0 ? (
                         plans.map((plan: any) => (
                             <PlanCard
-
                                 key={plan.id}
-                                id={plan.id}
                                 plan_code={plan.plan_code}
                                 name={plan.plan_name}
-                                planBasePrice={plan.price || 0}
+                                totalPrice={calculatePlanPrice(plan.plan_code, plan.price || 0)}
                                 features={["Up to 5 Team Members", "Basic Analytics Dashboard", "Community Support"]}
+                                isSelected={selectedPlan === plan.plan_code}
+                                onClick={() => setSelectedPlan(plan.plan_code)}
+                                activeBorder={activeBorder}
+                                borderColor={borderColor}
+                                cardBg={cardBg}
+                                apps={apps}
+                                selectedApps={selectedApps}
+                                calculateAppTotal={calculateAppTotal}
                             />
                         ))
                     ) : (
                         <>
                             <PlanCard
-                                id="starter"
                                 plan_code="FREE_TRIAL"
                                 name="Starter"
-                                planBasePrice={0}
+                                totalPrice={calculatePlanPrice("FREE_TRIAL", 0)}
                                 features={["Up to 5 Team Members", "Basic Analytics", "Community Support"]}
+                                isSelected={selectedPlan === "FREE_TRIAL"}
+                                onClick={() => setSelectedPlan("FREE_TRIAL")}
+                                activeBorder={activeBorder}
+                                borderColor={borderColor}
+                                cardBg={cardBg}
+                                apps={apps}
+                                selectedApps={selectedApps}
+                                calculateAppTotal={calculateAppTotal}
                             />
                             <PlanCard
-                                id="pro"
                                 plan_code="PRO"
                                 name="Pro"
-                                planBasePrice={999}
+                                totalPrice={calculatePlanPrice("PRO", 999)}
                                 features={["Unlimited Team Members", "Advanced Reports", "Priority Support"]}
                                 recommended
+                                isSelected={selectedPlan === "PRO"}
+                                onClick={() => setSelectedPlan("PRO")}
+                                activeBorder={activeBorder}
+                                borderColor={borderColor}
+                                cardBg={cardBg}
+                                apps={apps}
+                                selectedApps={selectedApps}
+                                calculateAppTotal={calculateAppTotal}
                             />
                             <PlanCard
-                                id="enterprise"
                                 plan_code="ENTERPRISE"
                                 name="Enterprise"
-                                planBasePrice={2499}
+                                totalPrice={calculatePlanPrice("ENTERPRISE", 2499)}
                                 features={["Unlimited Everything", "Custom SLA", "Account Manager"]}
+                                isSelected={selectedPlan === "ENTERPRISE"}
+                                onClick={() => setSelectedPlan("ENTERPRISE")}
+                                activeBorder={activeBorder}
+                                borderColor={borderColor}
+                                cardBg={cardBg}
+                                apps={apps}
+                                selectedApps={selectedApps}
+                                calculateAppTotal={calculateAppTotal}
                             />
                         </>
                     )}
                 </SimpleGrid>
             </VStack>
+
+            <DialogRoot
+                open={!!customizingApp}
+                onOpenChange={(e) => !e.open && setCustomizingApp(null)}
+                size="xl"
+                placement="center"
+                motionPreset="slide-in-bottom"
+            >
+                <DialogContent borderRadius="2xl">
+                    <DialogHeader borderBottom="1px solid" borderColor="gray.100" _dark={{ borderColor: "gray.800" }} pb={4}>
+                        <HStack gap={4}>
+                            <Circle size="10" bg="blue.500" color="white" shadow='sm'>
+                                <AsyncLoadIcon iconName={customizingApp?.icon} />
+                            </Circle>
+                            <VStack align="start" gap={0}>
+                                <DialogTitle fontSize="xl">{customizingApp?.name}</DialogTitle>
+                                <Text fontSize="xs" color="gray.500">Customize features and addons</Text>
+                            </VStack>
+                        </HStack>
+                    </DialogHeader>
+
+                    <DialogBody py={6}>
+                        <VStack align="stretch" gap={6}>
+                            <Box>
+                                <Text fontWeight="bold" fontSize="sm" mb={4} color="gray.400" textTransform="uppercase" letterSpacing="widest">
+                                    Available Features
+                                </Text>
+                                <VStack align="stretch" gap={4}>
+                                    {customizingApp?.features?.map((feature: any) => {
+                                        const isSelected = (selectedFeatures[customizingApp.id] || []).includes(feature.code);
+                                        return (
+                                            <HStack
+                                                key={feature.code}
+                                                p={4}
+                                                borderRadius="xl"
+                                                border="1px solid"
+                                                borderColor={isSelected ? "blue.200" : "gray.100"}
+                                                _dark={{ borderColor: isSelected ? "blue.800" : "gray.800", bg: isSelected ? "rgba(66, 153, 225, 0.05)" : "transparent" }}
+                                                bg={isSelected ? "blue.50" : "transparent"}
+                                                justify="space-between"
+                                                transition="all 0.2s"
+                                            >
+                                                <HStack gap={4} flex="1">
+                                                    <Checkbox
+                                                        checked={isSelected}
+                                                        onCheckedChange={() => !feature.is_base_feature && toggleFeature(customizingApp.id, feature.code)}
+                                                        disabled={feature.is_base_feature}
+                                                        colorPalette="blue"
+                                                        size="lg"
+                                                    />
+                                                    <VStack align="start" gap={0}>
+                                                        <Text fontWeight="bold" fontSize="sm" color={isSelected ? "blue.700" : "inherit"} _dark={{ color: isSelected ? "blue.300" : "inherit" }}>
+                                                            {feature.name}
+                                                            {feature.is_base_feature && (
+                                                                <Badge ml={2} colorPalette="green" variant="subtle" size="xs">Included</Badge>
+                                                            )}
+                                                        </Text>
+                                                        <Text fontSize="xs" color="gray.500">{feature.description}</Text>
+                                                    </VStack>
+                                                </HStack>
+                                                <Text fontWeight="bold" fontSize="sm" color={feature.addon_price > 0 ? "blue.500" : "green.500"}>
+                                                    {feature.addon_price > 0 ? `+₹${feature.addon_price}` : "Free"}
+                                                </Text>
+                                            </HStack>
+                                        );
+                                    })}
+                                </VStack>
+                            </Box>
+                        </VStack>
+                    </DialogBody>
+
+                    <DialogFooter borderTop="1px solid" borderColor="gray.100" _dark={{ borderColor: "gray.800" }} pt={4}>
+                        <HStack justify="space-between" w="full">
+                            <VStack align="start" gap={0}>
+                                <Text fontSize="xs" color="gray.500">Estimated App Total</Text>
+                                <Text fontWeight="black" fontSize="xl" color="blue.600">₹{customizingApp ? calculateAppTotal(customizingApp) : 0}</Text>
+                            </VStack>
+                            <Button colorPalette="blue" onClick={() => setCustomizingApp(null)} px={8} borderRadius="xl">
+                                Done
+                            </Button>
+                        </HStack>
+                    </DialogFooter>
+                    <DialogCloseTrigger />
+                </DialogContent>
+            </DialogRoot>
         </VStack>
     );
 };

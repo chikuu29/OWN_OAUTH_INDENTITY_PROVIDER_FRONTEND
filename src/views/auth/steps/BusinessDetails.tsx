@@ -125,6 +125,8 @@ const BusinessDetailsForm: React.FC<BusinessDetailsFormProps> = ({
   }, [validatedAccountsData]);
 
   const handleSubmit = async (): Promise<boolean> => {
+    console.log("[BusinessDetails] Initiating form submission...", { formData });
+
     if (!validatedAccountsData) {
       toaster.create({ description: "Missing tenant info", type: "error" });
       return false;
@@ -132,6 +134,7 @@ const BusinessDetailsForm: React.FC<BusinessDetailsFormProps> = ({
 
     // Basic validation
     if (!formData.legal_name || !formData.business_email) {
+      console.warn("[BusinessDetails] Validation failed: Mandatory fields missing.");
       toaster.create({ description: "Legal Name and Email are mandatory", type: "error" });
       return false;
     }
@@ -147,6 +150,7 @@ const BusinessDetailsForm: React.FC<BusinessDetailsFormProps> = ({
 
       POSTAPI({ path: `/account/tenant/profile?tenant_id=${validatedAccountsData?.tenant_id}&tenant_uuid=${validatedAccountsData?.tenant_uuid}`, data: payload }).subscribe({
         next: (res: any) => {
+          console.log("[BusinessDetails] POSTAPI response received:", res);
           if (setIsSubmitting) setIsSubmitting(false);
           if (res && res.success) {
             toaster.create({
