@@ -10,6 +10,11 @@ const DynamicIcon = async (iconName: string): Promise<IconType> => {
       if (Icon) return Icon;
     }
 
+    if (iconName.startsWith("Fa")) {
+      const iconModule = await import("react-icons/fa");
+      const Icon = iconModule[iconName as keyof typeof iconModule] as IconType;
+      if (Icon) return Icon;
+    }
     // Check for Feather icons
     if (iconName.startsWith("Fi")) {
       const iconModule = await import("react-icons/fi");

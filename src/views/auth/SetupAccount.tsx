@@ -11,16 +11,26 @@ import {
   Flex,
   Spinner,
   Center,
-  Alert
+  Alert,
 } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import { useNavigate, useParams, useLocation } from "react-router";
-import { FaArrowLeft, FaBuilding, FaCheck, FaCreditCard, FaRocket, FaExclamationTriangle } from "react-icons/fa";
+import {
+  FaArrowLeft,
+  FaBuilding,
+  FaCheck,
+  FaCreditCard,
+  FaRocket,
+  FaExclamationTriangle,
+} from "react-icons/fa";
 import { BiBuildingHouse } from "react-icons/bi";
 
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { GETAPI } from "@/app/api";
-
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/app/store";
+import { setValidatedAccountsData } from "@/app/slices/account/setupAccountSlice";
+import { Toaster, toaster } from "@/components/ui/toaster";
 // Lazy Load Steps
 const BusinessDetailsForm = lazy(() => import("./steps/BusinessDetails"));
 const PlanSelection = lazy(() => import("./steps/PlanSelection"));
@@ -29,7 +39,7 @@ const CompletionView = lazy(() => import("./steps/CompletionView"));
 
 /**
  * SetupAccount Component
- * 
+ *
  * Full-page wizard for account setup.
  * Features:
  * - Responsive Design (Mobile First)
@@ -42,22 +52,37 @@ const CompletionView = lazy(() => import("./steps/CompletionView"));
 export default function SetupAccount() {
   const navigate = useNavigate();
   const { request_code, "*": splat } = useParams();
-
+  const dispatch = useDispatch<AppDispatch>();
   // States
   const [isValidating, setIsValidating] = useState(true);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [isStepSubmitting, setIsStepSubmitting] = useState(false);
+  const [activeSubmitHandler, setActiveSubmitHandler] = useState<(() => Promise<boolean>) | null>(null);
+
+  const handleSetSubmitHandler = React.useCallback(
+    (handler: (() => Promise<boolean>) | null) => {
+      setActiveSubmitHandler(() => handler);
+    },
+    []
+  );
 
   // Determine current step from URL path
   const currentStepSlug = splat || "business";
 
   const steps = [
-    { id: "business", index: 1, title: "Business Details", icon: <FaBuilding /> },
+    {
+      id: "business",
+      index: 1,
+      title: "Business Details",
+      icon: <FaBuilding />,
+    },
     { id: "plan", index: 2, title: "Choose Plan", icon: <FaRocket /> },
     { id: "payment", index: 3, title: "Payment", icon: <FaCreditCard /> },
     { id: "complete", index: 4, title: "Complete", icon: <FaCheck /> },
   ];
 
-  const currentStepObj = steps.find(s => s.id === currentStepSlug) || steps[0];
+  const currentStepObj =
+    steps.find((s) => s.id === currentStepSlug) || steps[0];
   const currentStepIndex = currentStepObj.index;
   const totalSteps = 4;
 
@@ -66,7 +91,10 @@ export default function SetupAccount() {
   const activeColor = useColorModeValue("blue.600", "blue.400");
   const mutedColor = useColorModeValue("gray.400", "gray.600");
   const borderColor = useColorModeValue("gray.200", "gray.700");
-  const glassBg = useColorModeValue("rgba(255, 255, 255, 0.8)", "rgba(15, 17, 23, 0.8)");
+  const glassBg = useColorModeValue(
+    "rgba(255, 255, 255, 0.8)",
+    "rgba(15, 17, 23, 0.8)"
+  );
 
   // Hoisted Colors for Hooks Compliance
   const stepperLineColor = useColorModeValue("gray.200", "gray.700");
@@ -83,8 +111,13 @@ export default function SetupAccount() {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
   `;
-  const prefersReducedMotion = typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
-  const animation = prefersReducedMotion ? undefined : `${fadeIn} 0.5s ease-out`;
+  const prefersReducedMotion =
+    typeof window !== "undefined"
+      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      : false;
+  const animation = prefersReducedMotion
+    ? undefined
+    : `${fadeIn} 0.5s ease-out`;
 
   // Redirect to business if no slug provided
   useEffect(() => {
@@ -98,24 +131,54 @@ export default function SetupAccount() {
     if (request_code) {
       setIsValidating(true);
       // GETAPI returns an Observable
-      const subscription = GETAPI({ path: `/account/activate/${request_code}` }).subscribe({
+      const subscription = GETAPI({
+        path: `/account/validate/${request_code}`,
+      }).subscribe({
         next: (res: any) => {
-          if (res.success) {
+          if (res.success && res.data.length > 0) {
+            dispatch(
+              setValidatedAccountsData({
+                validatedAccountsData: res.data[0],
+                validationsPassed: true,
+              })
+            );
             setIsValidating(false);
           } else {
-            setValidationError(res.message || "Invalid or expired activation link.");
+            dispatch(
+              setValidatedAccountsData({
+                validatedAccountsData: {},
+                validationsPassed: false,
+              })
+            );
+            setValidationError(
+              res.message || "Invalid or expired activation link."
+            );
             setIsValidating(false);
           }
         },
         error: (err: any) => {
+          dispatch(
+            setValidatedAccountsData({
+              validatedAccountsData: {},
+              validationsPassed: false,
+            })
+          );
           console.error("Activation Error:", err);
-          setValidationError(err.message || "An unexpected error occurred. Please try again.");
+          setValidationError(
+            err.message || "An unexpected error occurred. Please try again."
+          );
           setIsValidating(false);
-        }
+        },
       });
 
       return () => subscription.unsubscribe();
     } else {
+      dispatch(
+        setValidatedAccountsData({
+          validatedAccountsData: {},
+          validationsPassed: false,
+        })
+      );
       setValidationError("Missing activation code.");
       setIsValidating(false);
     }
@@ -126,7 +189,9 @@ export default function SetupAccount() {
       <Center minH="100vh" bg={bgColor}>
         <VStack gap={4}>
           <Spinner size="xl" color="blue.500" />
-          <Text color="gray.500" fontSize="lg">Verifying your account...</Text>
+          <Text color="gray.500" fontSize="lg">
+            Verifying your account...
+          </Text>
         </VStack>
       </Center>
     );
@@ -134,10 +199,36 @@ export default function SetupAccount() {
 
   if (validationError) {
     return (
-      <Center minH="100vh" bg={bgColor} px={4} position="relative" overflow="hidden">
+      <Center
+        minH="100vh"
+        bg={bgColor}
+        px={4}
+        position="relative"
+        overflow="hidden"
+      >
         {/* Background Decor */}
-        <Box position="absolute" top="-20%" left="-10%" w="500px" h="500px" bg="red.400" opacity="0.1" filter="blur(100px)" borderRadius="full" />
-        <Box position="absolute" bottom="-20%" right="-10%" w="500px" h="500px" bg="orange.400" opacity="0.1" filter="blur(100px)" borderRadius="full" />
+        <Box
+          position="absolute"
+          top="-20%"
+          left="-10%"
+          w="500px"
+          h="500px"
+          bg="red.400"
+          opacity="0.1"
+          filter="blur(100px)"
+          borderRadius="full"
+        />
+        <Box
+          position="absolute"
+          bottom="-20%"
+          right="-10%"
+          w="500px"
+          h="500px"
+          bg="orange.400"
+          opacity="0.1"
+          filter="blur(100px)"
+          borderRadius="full"
+        />
 
         <VStack
           bg={contentBg}
@@ -158,16 +249,19 @@ export default function SetupAccount() {
           </Circle>
 
           <VStack gap={2}>
-            <Heading size="xl" letterSpacing="tight">Link Expired or Invalid</Heading>
+            <Heading size="xl" letterSpacing="tight">
+              Link Expired or Invalid
+            </Heading>
             <Text color="gray.500" fontSize="lg" lineHeight="tall">
-              {validationError || "The activation link you clicked has expired or is invalid. Please request a new one or contact support."}
+              {validationError ||
+                "The activation link you clicked has expired or is invalid. Please request a new one or contact support."}
             </Text>
           </VStack>
 
           <Button
             size="xl"
             w="full"
-            onClick={() => navigate('/auth/sign-in')}
+            onClick={() => navigate("/auth/sign-in")}
             colorPalette="red"
             borderRadius="xl"
             fontWeight="bold"
@@ -182,18 +276,23 @@ export default function SetupAccount() {
   }
 
   // --- Navigation ---
-  const handleNext = () => {
+  const handleNext = async () => {
+    if (activeSubmitHandler) {
+      const success = await activeSubmitHandler();
+      if (!success) return;
+    }
+
     const nextIndex = currentStepIndex + 1;
     if (nextIndex <= totalSteps) {
-      const nextSlug = steps.find(s => s.index === nextIndex)?.id;
+      const nextSlug = steps.find((s) => s.index === nextIndex)?.id;
       navigate(`/account/setup/${request_code}/${nextSlug}`);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
   const handleBack = () => {
     if (currentStepIndex > 1) {
-      const prevSlug = steps.find(s => s.index === currentStepIndex - 1)?.id;
+      const prevSlug = steps.find((s) => s.index === currentStepIndex - 1)?.id;
       navigate(`/account/setup/${request_code}/${prevSlug}`);
     } else {
       navigate(-1);
@@ -203,18 +302,30 @@ export default function SetupAccount() {
   // --- Sub-Components ---
   const renderContent = () => {
     return (
-      <Suspense fallback={
-        <Center minH="400px">
-          <Spinner size="xl" color="blue.500" gap="4px" />
-        </Center>
-      }>
+      <Suspense
+        fallback={
+          <Center minH="400px">
+            <Spinner size="xl" color="blue.500" gap="4px" />
+          </Center>
+        }
+      >
         {(() => {
           switch (currentStepSlug) {
-            case "business": return <BusinessDetailsForm />;
-            case "plan": return <PlanSelection />;
-            case "payment": return <PaymentForm />;
-            case "complete": return <CompletionView />;
-            default: return null;
+            case "business":
+              return (
+                <BusinessDetailsForm
+                  setIsSubmitting={setIsStepSubmitting}
+                  setSubmitHandler={handleSetSubmitHandler}
+                />
+              );
+            case "plan":
+              return <PlanSelection />;
+            case "payment":
+              return <PaymentForm />;
+            case "complete":
+              return <CompletionView />;
+            default:
+              return null;
           }
         })()}
       </Suspense>
@@ -222,11 +333,11 @@ export default function SetupAccount() {
   };
 
   return (
-    <Box minH="100vh" bg={bgColor} width={'100%'} >
-
+    <Box minH="100vh" bg={bgColor} width={"100%"}>
+      <Toaster />
       {/* --- Sticky Glassmorphic Header --- */}
       <Box
-        w={'full'}
+        w={"full"}
         position="sticky"
         top="0"
         zIndex="50"
@@ -238,7 +349,14 @@ export default function SetupAccount() {
         py={3}
       >
         <Flex justify="space-between" align="center" maxW="7xl" mx="auto">
-          <Button variant="ghost" size="sm" onClick={handleBack} gap={2} color="gray.500" _hover={{ color: activeColor, bg: "transparent" }}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleBack}
+            gap={2}
+            color="gray.500"
+            _hover={{ color: activeColor, bg: "transparent" }}
+          >
             <FaArrowLeft /> <Text hideBelow="sm">Back</Text>
           </Button>
 
@@ -246,7 +364,9 @@ export default function SetupAccount() {
             <Box p={1.5} bg={activeColor} borderRadius="md" color="white">
               <BiBuildingHouse size={18} />
             </Box>
-            <Heading size="sm" display={{ base: "none", sm: "block" }}>Setup Account For Your Business</Heading>
+            <Heading size="sm" display={{ base: "none", sm: "block" }}>
+              Setup Account For Your Business
+            </Heading>
           </HStack>
 
           <Box w={{ base: "auto", sm: "80px" }}>
@@ -257,32 +377,64 @@ export default function SetupAccount() {
         </Flex>
       </Box>
 
-      <Container maxW="5xl" py={{ base: 6, md: 10 }} px={{ base: 4, md: 8 }}>
+      <Box py={{ base: 6, md: 10 }} px={{ base: 4, md: 8 }}>
         <VStack gap={{ base: 8, md: 12 }} align="stretch">
-
           {/* --- Header Info --- */}
-          <VStack gap={3} align="center" textAlign="center" animation={animation}>
-            <Heading size={{ base: "xl", md: "3xl" }} letterSpacing="tight" lineHeight="1.2">
+          <VStack
+            gap={3}
+            align="center"
+            textAlign="center"
+            animation={animation}
+          >
+            <Heading
+              size={{ base: "xl", md: "3xl" }}
+              letterSpacing="tight"
+              lineHeight="1.2"
+            >
               {currentStepSlug === "business" && "Tell us about your Business"}
               {currentStepSlug === "application" && "What are you building?"}
               {currentStepSlug === "plan" && "Select the Perfect Plan"}
               {currentStepSlug === "payment" && "Payment Details"}
               {currentStepSlug === "complete" && "You're All Set!"}
             </Heading>
-            <Text fontSize={{ base: "md", md: "lg" }} color="gray.500" maxW="2xl" lineHeight="tall">
-              {currentStepSlug === "business" && "Help us customize your workspace by answering a few quick questions."}
-              {currentStepSlug === "application" && "Select the application template that best fits your business needs."}
-              {currentStepSlug === "plan" && "Unlock the full potential of your team with our flexible pricing plans."}
-              {currentStepSlug === "payment" && "We encrypt all data. Securely enter your payment information below."}
-              {currentStepSlug === "complete" && "Your organization has been successfully created. Welcome aboard!"}
+            <Text
+              fontSize={{ base: "md", md: "lg" }}
+              color="gray.500"
+              maxW="2xl"
+              lineHeight="tall"
+            >
+              {currentStepSlug === "business" &&
+                "Help us customize your workspace by answering a few quick questions."}
+              {currentStepSlug === "application" &&
+                "Select the application template that best fits your business needs."}
+              {currentStepSlug === "plan" &&
+                "Unlock the full potential of your team with our flexible pricing plans."}
+              {currentStepSlug === "payment" &&
+                "We encrypt all data. Securely enter your payment information below."}
+              {currentStepSlug === "complete" &&
+                "Your organization has been successfully created. Welcome aboard!"}
             </Text>
           </VStack>
 
           {/* --- Responsive Stepper --- */}
-          <Box py={2} maxW="3xl" mx="auto" w="full" display={{ base: "none", md: "block" }}>
+          <Box
+            py={2}
+            maxW="3xl"
+            mx="auto"
+            w="full"
+            display={{ base: "none", md: "block" }}
+          >
             <HStack w="full" justify="space-between" position="relative">
               {/* Line Background */}
-              <Box position="absolute" top="14px" left="0" right="0" h="2px" bg={stepperLineColor} zIndex={0} />
+              <Box
+                position="absolute"
+                top="14px"
+                left="0"
+                right="0"
+                h="2px"
+                bg={stepperLineColor}
+                zIndex={0}
+              />
 
               {/* Progress Line */}
               <Box
@@ -306,11 +458,21 @@ export default function SetupAccount() {
                       bg={isActive ? activeColor : stepCircleBgNonActive}
                       color={isActive ? "white" : mutedColor}
                       border="2px solid"
-                      borderColor={isActive ? activeColor : stepCircleBorderNonActive}
+                      borderColor={
+                        isActive ? activeColor : stepCircleBorderNonActive
+                      }
                       transition="all 0.3s"
-                      boxShadow={isCurrent ? "0 0 0 4px rgba(66, 153, 225, 0.3)" : "none"}
+                      boxShadow={
+                        isCurrent ? "0 0 0 4px rgba(66, 153, 225, 0.3)" : "none"
+                      }
                     >
-                      {s.index < currentStepIndex ? <FaCheck size={12} /> : <Text fontSize="xs" fontWeight="bold">{s.index}</Text>}
+                      {s.index < currentStepIndex ? (
+                        <FaCheck size={12} />
+                      ) : (
+                        <Text fontSize="xs" fontWeight="bold">
+                          {s.index}
+                        </Text>
+                      )}
                     </Circle>
                     <Text
                       fontSize="xs"
@@ -322,14 +484,20 @@ export default function SetupAccount() {
                       {s.title}
                     </Text>
                   </VStack>
-                )
+                );
               })}
             </HStack>
           </Box>
 
           {/* Mobile Stepper Indicator */}
           <Box display={{ base: "block", md: "none" }} w="full">
-            <Box h="4px" w="full" bg={mobileStepperBg} borderRadius="full" overflow="hidden">
+            <Box
+              h="4px"
+              w="full"
+              bg={mobileStepperBg}
+              borderRadius="full"
+              overflow="hidden"
+            >
               <Box
                 h="full"
                 bg={activeColor}
@@ -339,7 +507,6 @@ export default function SetupAccount() {
               />
             </Box>
           </Box>
-
 
           {/* --- Content Area --- */}
           <Box
@@ -355,7 +522,7 @@ export default function SetupAccount() {
             {renderContent()}
 
             {/* Step Actions */}
-            {currentStepSlug !== 'complete' && (
+            {currentStepSlug !== "complete" && (
               <Flex
                 justify="space-between"
                 align="center"
@@ -380,19 +547,22 @@ export default function SetupAccount() {
                   colorPalette="blue"
                   px={10}
                   onClick={handleNext}
+                  loading={isStepSubmitting}
+                  loadingText="Saving"
                   borderRadius="xl"
                   w={{ base: "full", sm: "auto" }}
                   bgGradient="linear(to-r, blue.500, blue.600)"
                   _hover={{ bgGradient: "linear(to-r, blue.600, blue.700)" }}
                 >
-                  {currentStepSlug === 'payment' ? 'Complete Setup' : 'Next Step'}
+                  {currentStepSlug === "payment"
+                    ? "Complete Setup"
+                    : "Next Step"}
                 </Button>
               </Flex>
             )}
           </Box>
-
         </VStack>
-      </Container>
+      </Box>
     </Box>
   );
 }

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { SimpleGrid, Box, Badge, VStack, HStack, Text, Circle } from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
-import { FaCheck, FaRupeeSign, FaDumbbell, FaShoppingCart, FaRobot, FaCogs } from "react-icons/fa";
+import { FaCheck, FaRupeeSign } from "react-icons/fa";
 import { GETAPI } from "@/app/api";
+import AsyncLoadIcon from "@/utils/hooks/AsyncLoadIcon";
 
 const PlanSelection = () => {
     const activeBorder = useColorModeValue("blue.500", "blue.400");
@@ -11,13 +12,13 @@ const PlanSelection = () => {
     const [selectedApps, setSelectedApps] = useState<string[]>(["gym"]);
     const cardBg = useColorModeValue("white", "gray.700");
     const [plans, setPlans] = useState([]);
-
-    const apps = [
-        { id: "gym", name: "Gym Management", icon: <FaDumbbell />, basePrice: 999 },
-        { id: "oms", name: "Order Management", icon: <FaShoppingCart />, basePrice: 1499 },
-        { id: "ai", name: "AI Chatbot", icon: <FaRobot />, basePrice: 1999 },
-        { id: "admin", name: "Enterprise Admin", icon: <FaCogs />, basePrice: 2999 }
-    ];
+    const [apps, setApps] = useState<any[]>([]);
+    // const apps = [
+    //     { id: "gym", name: "Gym Management", icon: <FaDumbbell />, base_price: 999 },
+    //     { id: "oms", name: "Order Management", icon: <FaShoppingCart />, base_price: 1499 },
+    //     { id: "ai", name: "AI Chatbot", icon: <FaRobot />, base_price: 1999 },
+    //     { id: "admin", name: "Enterprise Admin", icon: <FaCogs />, base_price: 2999 }
+    // ];
 
     const toggleApp = (id: string) => {
         setSelectedApps(prev => {
@@ -41,7 +42,7 @@ const PlanSelection = () => {
         if (planId === 'FREE_TRIAL') return "0";
         const appsTotal = apps
             .filter(app => selectedApps.includes(app.id))
-            .reduce((sum, app) => sum + app.basePrice, 0);
+            .reduce((sum, app) => sum + parseInt(app.base_price), 0);
         return (appsTotal + planBasePrice).toLocaleString();
     };
 
@@ -125,6 +126,15 @@ const PlanSelection = () => {
     }
 
     useEffect(() => {
+        GETAPI({
+            path: "saas/get_apps"
+        }).subscribe((res: any) => {
+            console.log(res);
+
+            if (res.success && res.data.length > 0) {
+                setApps(res.data);
+            }
+        })
         GETAPI({ path: '/plans' }).subscribe((res: any) => {
 
             if (res.success && res.data.length > 0) {
@@ -163,11 +173,11 @@ const PlanSelection = () => {
                             >
                                 <VStack gap={1}>
                                     <Circle size="10" bg={isSelected ? activeBorder : useColorModeValue("gray.100", "gray.700")} color={isSelected ? "white" : "inherit"}>
-                                        {app.icon}
+                                        <AsyncLoadIcon iconName={app.icon} />
                                     </Circle>
                                     <Text fontSize="xs" fontWeight="bold">{app.name}</Text>
                                     <Text fontSize="10px" color="gray.500">
-                                        + <FaRupeeSign style={{ display: 'inline' }} size={8} />{app.basePrice}
+                                        + <FaRupeeSign style={{ display: 'inline' }} size={8} />{app.base_price}
                                     </Text>
                                 </VStack>
                             </Box>

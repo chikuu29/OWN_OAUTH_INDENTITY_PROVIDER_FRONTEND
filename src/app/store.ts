@@ -3,6 +3,8 @@ import authSlice from './slices/auth/authSlice'
 import appConfigSlice from './slices/appConfig/appConfigSlice'
 // import { loadState, saveState } from '../utils/app/localStorageUtils'
 import appLoaderSlice from './slices/loader/appLoaderSlice'
+import setupAccountSlice from './slices/account/setupAccountSlice'
+
 
 // const preLoadedState=loadState('app_config')
 
@@ -10,7 +12,8 @@ export const store = configureStore({
     reducer :{
         auth:authSlice,
         app:appConfigSlice,
-        loader:appLoaderSlice
+        loader:appLoaderSlice,
+        setup_account:setupAccountSlice
     },
     // preloadedState:{
     //     appConfig:preLoadedState?.appConfig ||{}
