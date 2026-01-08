@@ -6,11 +6,13 @@ import { Provider as ChakraProvider } from "./components/ui/provider.tsx";
 import { store } from "./app/store.ts";
 import { Provider } from "react-redux";
 import Loader from "./ui/components/Loader/Loader.tsx";
+import { Toaster } from "./components/ui/toaster.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ChakraProvider>
       <Provider store={store}>
+        <Toaster />
         <Loader></Loader>
         <App />
       </Provider>

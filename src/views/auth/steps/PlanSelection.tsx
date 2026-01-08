@@ -13,7 +13,7 @@ import {
     Button,
 } from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
-import { FaCheck, FaRupeeSign, FaEdit, FaSearch } from "react-icons/fa";
+import { FaCheck, FaRupeeSign, FaEdit, FaSearch, FaInfoCircle } from "react-icons/fa";
 import { GETAPI } from "@/app/api";
 import AsyncLoadIcon from "@/utils/hooks/AsyncLoadIcon";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -29,6 +29,9 @@ import {
 } from "@/components/ui/dialog";
 
 import { toaster } from "@/components/ui/toaster";
+import { Tooltip } from "@/components/ui/tooltip";
+import { TbSelect } from "react-icons/tb";
+import { TiDocumentDelete } from "react-icons/ti";
 
 interface PlanSelectionProps {
     setIsSubmitting?: (isSubmitting: boolean) => void;
@@ -369,7 +372,7 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
                         '&::-webkit-scrollbar-thumb:hover': { background: 'var(--chakra-colors-gray-300)' },
                     }}
                 >
-                    <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={6} w="full">
+                    <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap={6} w="full">
                         {filteredApps.map((app) => {
                             const isSelected = selectedApps.includes(app.id);
                             const appTotal = calculateAppTotal(app);
@@ -394,7 +397,14 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
                                                         <AsyncLoadIcon iconName={app.icon} />
                                                     </Circle>
                                                     <VStack align="start" gap={0}>
-                                                        <Text fontWeight="bold" fontSize="md">{app.name}</Text>
+                                                        <HStack gap={1}>
+                                                            <Text fontWeight="bold" fontSize="md">{app.name}</Text>
+                                                            <Tooltip content={app.description}>
+                                                                <Box color="gray.400" _hover={{ color: "blue.500" }} transition="color 0.2s">
+                                                                    <FaInfoCircle size={14} />
+                                                                </Box>
+                                                            </Tooltip>
+                                                        </HStack>
                                                         <Text fontSize="xs" color="gray.500">Base: ₹{app.base_price}</Text>
                                                     </VStack>
                                                 </HStack>
@@ -432,7 +442,7 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
                                                     onClick={() => toggleApp(app.id)}
                                                     borderRadius="xl"
                                                 >
-                                                    {isSelected ? "Remove" : "Select App"}
+                                                    {isSelected ? <TiDocumentDelete /> : <TbSelect />} {isSelected ? "Remove" : "Select App"}
                                                 </Button>
                                                 <Button
                                                     size="sm"

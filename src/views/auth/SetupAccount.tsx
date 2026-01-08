@@ -26,7 +26,7 @@ import {
 import { BiBuildingHouse } from "react-icons/bi";
 
 import { useColorModeValue } from "@/components/ui/color-mode";
-import { GETAPI } from "@/app/api";
+import { GETAPI, POSTAPI } from "@/app/api";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/app/store";
 import { setValidatedAccountsData } from "@/app/slices/account/setupAccountSlice";
@@ -57,6 +57,7 @@ export default function SetupAccount() {
   const [isValidating, setIsValidating] = useState(true);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isStepSubmitting, setIsStepSubmitting] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const [activeSubmitHandler, setActiveSubmitHandler] = useState<(() => Promise<boolean>) | null>(null);
 
   const handleSetSubmitHandler = React.useCallback(
@@ -184,6 +185,40 @@ export default function SetupAccount() {
     }
   }, [request_code]);
 
+  const handleResendLink = () => {
+    if (!request_code) return;
+    setIsResending(true);
+    const subscription = POSTAPI({
+      path: `/account/resend-activation/${request_code}`,
+    }).subscribe({
+      next: (res: any) => {
+        if (res.success) {
+          toaster.create({
+            title: "Success",
+            description: "New activation link sent successfully",
+            type: "success",
+          });
+        } else {
+          toaster.create({
+            title: "Error",
+            description: res.message || "Failed to resend activation link",
+            type: "error",
+          });
+        }
+        setIsResending(false);
+      },
+      error: (err: any) => {
+        console.error("Resend Error:", err);
+        toaster.create({
+          title: "Error",
+          description: err.message || "An unexpected error occurred",
+          type: "error",
+        });
+        setIsResending(false);
+      },
+    });
+  };
+
   if (isValidating) {
     return (
       <Center minH="100vh" bg={bgColor}>
@@ -258,18 +293,35 @@ export default function SetupAccount() {
             </Text>
           </VStack>
 
-          <Button
-            size="xl"
-            w="full"
-            onClick={() => navigate("/auth/sign-in")}
-            colorPalette="red"
-            borderRadius="xl"
-            fontWeight="bold"
-            _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
-            transition="all 0.2s"
-          >
-            Return to Sign In
-          </Button>
+          <VStack gap={3} w="full">
+            <Button
+              size="xl"
+              w="full"
+              onClick={handleResendLink}
+              colorPalette="blue"
+              borderRadius="xl"
+              fontWeight="bold"
+              loading={isResending}
+              loadingText="Resending..."
+              _hover={{ transform: "translateY(-2px)", boxShadow: "lg" }}
+              transition="all 0.2s"
+            >
+              Resend Activation Link
+            </Button>
+            <Button
+              size="xl"
+              w="full"
+              variant="ghost"
+              onClick={() => navigate("/auth/sign-in")}
+              colorPalette="gray"
+              borderRadius="xl"
+              fontWeight="bold"
+              _hover={{ transform: "translateY(-1px)", boxShadow: "lg" }}
+              transition="all 0.2s"
+            >
+              Return to Sign In
+            </Button>
+          </VStack>
         </VStack>
       </Center>
     );
@@ -346,7 +398,7 @@ export default function SetupAccount() {
 
   return (
     <Box minH="100vh" bg={bgColor} width={"100%"}>
-      <Toaster />
+
       {/* --- Sticky Glassmorphic Header --- */}
       <Box
         w={"full"}
@@ -441,8 +493,8 @@ export default function SetupAccount() {
               <Box
                 position="absolute"
                 top="14px"
-                left="0"
-                right="0"
+                left="18px"
+                right="18px"
                 h="2px"
                 bg={stepperLineColor}
                 zIndex={0}
@@ -452,11 +504,11 @@ export default function SetupAccount() {
               <Box
                 position="absolute"
                 top="14px"
-                left="0"
+                left="18px"
                 h="2px"
                 bg={activeColor}
                 zIndex={0}
-                width={`${((currentStepIndex - 1) / (totalSteps - 1)) * 100}%`}
+                width={`calc(${((currentStepIndex - 1) / (totalSteps - 1)) * 100}% - ${((currentStepIndex - 1) / (totalSteps - 1)) * 36}px)`}
                 transition="all 0.5s cubic-bezier(0.4, 0, 0.2, 1)"
               />
 
