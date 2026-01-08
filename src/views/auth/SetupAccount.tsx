@@ -385,7 +385,12 @@ export default function SetupAccount() {
                 />
               );
             case "payment":
-              return <PaymentForm />;
+              return (
+                <PaymentForm
+                  setIsSubmitting={setIsStepSubmitting}
+                  setSubmitHandler={handleSetSubmitHandler}
+                />
+              );
             case "complete":
               return <CompletionView />;
             default:

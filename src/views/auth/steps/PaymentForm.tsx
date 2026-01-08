@@ -11,15 +11,23 @@ import {
   SimpleGrid,
   Flex,
   Icon,
-  Button
+  Button,
+  Grid,
+  Stack
 } from "@chakra-ui/react";
 import { toaster } from "@/components/ui/toaster";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useParams } from "react-router";
-import { FaCreditCard, FaCheck, FaReceipt } from "react-icons/fa";
+import { FaCreditCard, FaCheck, FaReceipt, FaMobileAlt, FaUniversity } from "react-icons/fa";
 import { GETAPI } from "@/app/api";
+import confetti from "canvas-confetti";
 
-const PaymentForm = () => {
+interface PaymentFormProps {
+  setIsSubmitting: (loading: boolean) => void;
+  setSubmitHandler: (handler: (() => Promise<boolean>) | null) => void;
+}
+
+const PaymentForm = ({ setIsSubmitting, setSubmitHandler }: PaymentFormProps) => {
   const { request_code } = useParams();
   const STORAGE_KEY = `setup_plan_selection_${request_code}`;
 
@@ -31,6 +39,8 @@ const PaymentForm = () => {
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<any | null>(null);
   const [showCoupons, setShowCoupons] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<string>("card");
+  const [transactions, setTransactions] = useState<any[]>([]);
 
   const availableCoupons = [
     { code: "WELCOME100", percentage: 1, description: "100% discount for Antigravity team." },
@@ -47,6 +57,12 @@ const PaymentForm = () => {
         setSelectedPlan(parsed.selectedPlan);
         setSelectedApps(parsed.selectedApps || []);
         setSelectedFeatures(parsed.selectedFeatures || {});
+        if (parsed.appliedCoupon) {
+          setAppliedCoupon(parsed.appliedCoupon);
+        }
+        if (parsed.transactions) {
+          setTransactions(parsed.transactions);
+        }
       } catch (e) {
         console.error("Failed to parse storage data", e);
       }
@@ -109,6 +125,16 @@ const PaymentForm = () => {
     setAppliedCoupon({ code: lowerCoupon, percentage: discount });
     setCouponInput("");
     setShowCoupons(false);
+
+    // Trigger confetti from the right side (Payment Box)
+    confetti({
+      particleCount: 150,
+      spread: 100,
+      origin: { x: 0.75, y: 0.5 },
+      gravity: 1.2,
+      scalar: 1.2,
+    });
+
     toaster.create({
       title: "Coupon Applied",
       description: message,
@@ -119,6 +145,16 @@ const PaymentForm = () => {
   const applySpecificCoupon = (coupon: any) => {
     setAppliedCoupon({ code: coupon.code, percentage: coupon.percentage });
     setShowCoupons(false);
+
+    // Trigger confetti from the right side (Payment Box)
+    confetti({
+      particleCount: 150,
+      spread: 100,
+      origin: { x: 0.75, y: 0.5 },
+      gravity: 1.2,
+      scalar: 1.2,
+    });
+
     toaster.create({
       title: "Coupon Applied",
       description: `Coupon ${coupon.code} applied successfully!`,
@@ -148,39 +184,109 @@ const PaymentForm = () => {
   const tax = taxableAmount * taxRate;
   const grandTotal = taxableAmount + tax;
 
+  useEffect(() => {
+    const handleSubmit = async () => {
+      console.log("=== FINAL SETUP SELECTIONS ===");
+      console.log("Selected Plan:", selectedPlan);
+      console.log("Selected Apps:", selectedApps);
+      console.log("Selected Features:", selectedFeatures);
+      console.log("Applied Coupon:", appliedCoupon);
+      console.log("Price Breakdown:", {
+        subtotal,
+        discount: discountAmount,
+        taxable: taxableAmount,
+        tax,
+        total: grandTotal
+      });
+      console.log("===============================");
+
+      toaster.create({
+        title: "Setup Data Logged",
+        description: "Check the console to see all your selections.",
+        type: "success",
+      });
+
+      // User requested NOT to move to next step
+      return false;
+    };
+
+    setSubmitHandler(handleSubmit);
+    return () => setSubmitHandler(null);
+  }, [setSubmitHandler, selectedPlan, selectedApps, selectedFeatures, appliedCoupon, subtotal, discountAmount, taxableAmount, tax, grandTotal, paymentMethod]);
+
+  const handlePayNow = async () => {
+    setIsSubmitting(true);
+    // Simulate payment processing
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    // Simulate random success/failure (80% success)
+    const isSuccess = Math.random() > 0.2;
+    const status = isSuccess ? 'success' : 'failed';
+
+    const newTransaction = {
+      id: `TXN-${Math.floor(Math.random() * 1000000)}`,
+      date: new Date().toLocaleString(),
+      amount: grandTotal,
+      method: paymentMethod,
+      status: status
+    };
+
+    setTransactions(prev => [newTransaction, ...prev]);
+
+    console.log("=== PAYMENT PROCESSED ===");
+    console.log("Method:", paymentMethod);
+    console.log("Amount Paid:", grandTotal);
+    console.log("Status:", status);
+    console.log("=========================");
+
+    if (isSuccess) {
+      toaster.create({
+        title: "Payment Successful",
+        description: `Payment of ₹${grandTotal.toLocaleString()} processed via ${paymentMethod === 'card' ? 'Credit Card' : paymentMethod.toUpperCase()}.`,
+        type: "success",
+      });
+    } else {
+      toaster.create({
+        title: "Payment Failed",
+        description: "Transaction failed. Please try again.",
+        type: "error",
+      });
+    }
+
+    setIsSubmitting(false);
+  };
+
+  // Persist all selections to localStorage
+  useEffect(() => {
+    if (!selectedPlan && selectedApps.length === 0) return; // Don't overwrite if not loaded yet
+
+    const dataToSave = {
+      selectedPlan,
+      selectedApps,
+      selectedFeatures,
+      appliedCoupon,
+      transactions, // Save transactions too
+      pricing: {
+        subtotal,
+        discountAmount,
+        taxableAmount,
+        tax,
+        grandTotal
+      }
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+  }, [STORAGE_KEY, selectedPlan, selectedApps, selectedFeatures, appliedCoupon, subtotal, discountAmount, taxableAmount, tax, grandTotal, transactions]);
+
   const summaryBg = useColorModeValue("blue.50/50", "blue.900/10");
   const cardBg = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.700");
 
   return (
     <SimpleGrid columns={{ base: 1, lg: 2 }} gap={8} alignItems="start">
-      {/* Left Side: Payment Form Placeholder */}
-      <VStack gap={6} w="full">
-        <Box
-          w="full"
-          p={{ base: 8, md: 12 }}
-          border="2px dashed"
-          borderColor="gray.300"
-          borderRadius="2xl"
-          textAlign="center"
-          bg={useColorModeValue("gray.50", "whiteAlpha.50")}
-          h="full"
-          minH="400px"
-          display="flex"
-          flexDirection="column"
-          justifyContent="center"
-        >
-          <Circle size="16" bg="blue.100" color="blue.600" mx="auto" mb={6}>
-            <FaCreditCard size={32} />
-          </Circle>
-          <Heading size="md" mb={2}>Secure Payment</Heading>
-          <Text color="gray.500" maxW="sm" mx="auto">
-            Stripe Elements will be integrated here for secure credit card processing.
-          </Text>
-        </Box>
-      </VStack>
 
-      {/* Right Side: Order Summary */}
+
+
+      {/* Left Side: Order Summary */}
       <Box
         bg={cardBg}
         border="1px solid"
@@ -343,6 +449,122 @@ const PaymentForm = () => {
           </HStack>
         </VStack>
       </Box>
+
+      {/* Right Side: Payment Form or Free Access UI */}
+      <VStack gap={6} w="full">
+        <Box
+          w="full"
+          p={{ base: 8, md: 12 }}
+          border="2px dashed"
+          borderColor={grandTotal === 0 ? "green.300" : "gray.300"}
+          borderRadius="2xl"
+          textAlign="center"
+          bg={grandTotal === 0 ? useColorModeValue("green.50/50", "green.900/10") : useColorModeValue("gray.50", "whiteAlpha.50")}
+          h="full"
+          minH="400px"
+          display="flex"
+          flexDirection="column"
+          justifyContent="center"
+          transition="all 0.3s"
+        >
+          {grandTotal === 0 ? (
+            <VStack gap={6}>
+              <Circle size="20" bg="green.100" color="green.600" shadow="lg">
+                <FaCheck size={32} />
+              </Circle>
+              <VStack gap={2}>
+                <Heading size="lg">Enjoy Free Access!</Heading>
+                <Text color="gray.500" maxW="sm" mx="auto">
+                  Your coupon covers the entire cost. No payment method or credit card is required to complete your setup.
+                </Text>
+              </VStack>
+              <Badge colorPalette="green" variant="solid" px={4} py={1} borderRadius="full" fontSize="sm">
+                100% DISCOUNT APPLIED
+              </Badge>
+            </VStack>
+          ) : (
+            <VStack gap={6} align="stretch" h="full">
+              <VStack align="start" gap={2}>
+                <Heading size="md">Payment Method</Heading>
+                <Text color="gray.500" fontSize="sm">Select how you'd like to pay</Text>
+              </VStack>
+
+              <Grid templateColumns="repeat(3, 1fr)" gap={3}>
+                {[
+                  { id: 'card', label: 'Card', icon: FaCreditCard },
+                  { id: 'upi', label: 'UPI', icon: FaMobileAlt },
+                  { id: 'bank', label: 'Bank', icon: FaUniversity },
+                ].map((item) => (
+                  <VStack
+                    key={item.id}
+                    as="button"
+                    p={4}
+                    borderRadius="xl"
+                    border="2px solid"
+                    borderColor={paymentMethod === item.id ? "blue.500" : "gray.200"}
+                    bg={paymentMethod === item.id ? "blue.50/50" : "transparent"}
+                    _dark={{
+                      borderColor: paymentMethod === item.id ? "blue.400" : "gray.700",
+                      bg: paymentMethod === item.id ? "blue.900/20" : "transparent"
+                    }}
+                    transition="all 0.2s"
+                    onClick={() => setPaymentMethod(item.id)}
+                    cursor="pointer"
+                    _hover={{ borderColor: paymentMethod === item.id ? "blue.500" : "gray.300" }}
+                  >
+                    <Icon as={item.icon} size="lg" color={paymentMethod === item.id ? "blue.500" : "gray.500"} />
+                    <Text fontSize="xs" fontWeight="bold">{item.label}</Text>
+                  </VStack>
+                ))}
+              </Grid>
+
+              <Box flex={1} display="flex" alignItems="center" justifyContent="center" py={4}>
+                <VStack gap={4} w="full">
+                  <Box p={6} borderRadius="xl" bg="gray.50" _dark={{ bg: "whiteAlpha.50" }} w="full" textAlign="center" border="1px dashed" borderColor="gray.200">
+                    <Text fontSize="xs" color="gray.500">
+                      {paymentMethod === 'card' && "Safe and secure credit card payments via Stripe."}
+                      {paymentMethod === 'upi' && "Pay instantly using any UPI app (PhonePe, GPay, etc.)"}
+                      {paymentMethod === 'bank' && "Direct bank transfer. May take up to 24h to verify."}
+                    </Text>
+                  </Box>
+                  <Button
+                    size="xl"
+                    w="full"
+                    colorPalette="blue"
+                    onClick={handlePayNow}
+                    bgGradient="linear(to-r, blue.500, blue.600)"
+                    _hover={{ bgGradient: "linear(to-r, blue.600, blue.700)" }}
+                    fontWeight="bold"
+                    borderRadius="xl"
+                  >
+                    Pay ₹{grandTotal.toLocaleString()} Now
+                  </Button>
+                </VStack>
+              </Box>
+
+              {/* Transaction History Log */}
+              {transactions.length > 0 && (
+                <VStack align="stretch" gap={4} pt={4} borderTop="1px solid" borderColor="gray.200" _dark={{ borderColor: "gray.700" }}>
+                  <Heading size="sm" color="gray.500">Transaction History</Heading>
+                  <VStack gap={2} align="stretch" maxH="200px" overflowY="auto">
+                    {transactions.map((txn) => (
+                      <HStack key={txn.id} justify="space-between" p={3} bg="gray.50" _dark={{ bg: "whiteAlpha.100" }} borderRadius="md" fontSize="sm">
+                        <VStack align="start" gap={0}>
+                          <Text fontWeight="bold">{txn.method === 'card' ? 'Credit Card' : txn.method.toUpperCase()} • ₹{txn.amount.toLocaleString()}</Text>
+                          <Text fontSize="xs" color="gray.500">{txn.date}</Text>
+                        </VStack>
+                        <Badge colorPalette={txn.status === 'success' ? 'green' : 'red'} variant="subtle">
+                          {txn.status.toUpperCase()}
+                        </Badge>
+                      </HStack>
+                    ))}
+                  </VStack>
+                </VStack>
+              )}
+            </VStack>
+          )}
+        </Box>
+      </VStack>
     </SimpleGrid>
   );
 };
