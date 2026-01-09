@@ -235,9 +235,9 @@ const PaymentForm = ({ setIsSubmitting, setSubmitHandler }: PaymentFormProps) =>
     setIsSubmitting(true);
     try {
       const payload = {
-        // tenant_email: validatedAccountsData?.tenant_email,
-        // tenant_name: validatedAccountsData?.tenant_name,
-        // tenant_uuid: validatedAccountsData?.tenant_uuid,
+        tenant_email: validatedAccountsData?.tenant_email,
+        tenant_name: validatedAccountsData?.tenant_name,
+        tenant_uuid: validatedAccountsData?.tenant_uuid,
         plan_code: selectedPlan?.plan_code,
         current_version_id: selectedPlan?.current_version_id,
         apps: selectedApps,

@@ -29,11 +29,11 @@ export const ErrorSummary: React.FC<ErrorSummaryProps> = ({ error }) => {
                         <Heading size="sm" color="red.700" _dark={{ color: "red.300" }}>
                             {error.summary}
                         </Heading>
-                        {error.issues.length === 0 && (
+                        {/* {error.issues.length === 0 && (
                             <Text fontSize="sm" color="red.600" _dark={{ color: "red.400" }}>
                                 Please check your inputs and try again.
                             </Text>
-                        )}
+                        )} */}
                     </VStack>
                 </HStack>
 

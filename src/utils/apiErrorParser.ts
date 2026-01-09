@@ -74,8 +74,8 @@ export const parseApiError = (error: any): ParsedError => {
     // 3. Fallback: If no structured validation errors, but we have a generic "detail"
     if (issues.length === 0 && errorDetails.detail) {
         // sometimes detail is a string, sometimes a list
-        if (typeof errorDetails.detail === 'string') {
-            summary = errorDetails.detail;
+        if (typeof errorDetails.detail === 'string' || typeof errorDetails.details === 'string') {
+            summary = errorDetails.detail || errorDetails.details;
         } else if (Array.isArray(errorDetails.detail)) {
             // Standard FastAPI validation error list (loc, msg, type) IF it wasn't caught by our custom handler
             errorDetails.detail.forEach((err: any) => {
