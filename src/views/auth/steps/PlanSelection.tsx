@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router";
 import {
     SimpleGrid,
@@ -14,7 +14,6 @@ import {
 } from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { FaCheck, FaRupeeSign, FaEdit, FaSearch, FaInfoCircle } from "react-icons/fa";
-import { GETAPI } from "@/app/api";
 import AsyncLoadIcon from "@/utils/hooks/AsyncLoadIcon";
 import { Checkbox } from "@/components/ui/checkbox";
 import { InputGroup } from "@/components/ui/input-group";
@@ -32,6 +31,16 @@ import { toaster } from "@/components/ui/toaster";
 import { Tooltip } from "@/components/ui/tooltip";
 import { TbSelect } from "react-icons/tb";
 import { TiDocumentDelete } from "react-icons/ti";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/app/store";
+import {
+    fetchPlans,
+    fetchApps,
+    setSelectedPlan,
+    toggleApp,
+    toggleFeature,
+    restorePlanSelection
+} from "@/app/slices/account/setupAccountSlice";
 
 interface PlanSelectionProps {
     setIsSubmitting?: (isSubmitting: boolean) => void;
@@ -158,42 +167,46 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
     const { request_code } = useParams();
     const STORAGE_KEY = `setup_plan_selection_${request_code}`;
 
+    const dispatch = useDispatch<AppDispatch>();
+    const {
+        plans,
+        apps,
+        selectedPlan,
+        selectedApps,
+        selectedFeatures
+    } = useSelector((state: RootState) => state.setup_account);
+
     const activeBorder = useColorModeValue("blue.500", "blue.400");
     const borderColor = useColorModeValue("gray.200", "gray.600");
-
-    // Initialize states from LOCAL STORAGE if available
-    const [selectedPlan, setSelectedPlan] = useState(() => {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-            try { return JSON.parse(saved).selectedPlan || "PRO"; } catch (e) { return "PRO"; }
-        }
-        return "PRO";
-    });
-
-    const [selectedApps, setSelectedApps] = useState<string[]>(() => {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-            try { return JSON.parse(saved).selectedApps || []; } catch (e) { return []; }
-        }
-        return [];
-    });
-
-    const [selectedFeatures, setSelectedFeatures] = useState<Record<string, string[]>>(() => {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-            try { return JSON.parse(saved).selectedFeatures || {}; } catch (e) { return {}; }
-        }
-        return {};
-    });
+    const cardBg = useColorModeValue("white", "gray.700");
+    const appHighlightBg = useColorModeValue("blue.50", "rgba(66, 153, 225, 0.05)");
 
     const [customizingApp, setCustomizingApp] = useState<any | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
-    const cardBg = useColorModeValue("white", "gray.700");
-    const appHighlightBg = useColorModeValue("blue.50", "rgba(66, 153, 225, 0.05)");
-    const [plans, setPlans] = useState([]);
-    const [apps, setApps] = useState<any[]>([]);
 
-    // PERSIST to localStorage on every change
+    // Initialize/Restore state
+    useEffect(() => {
+        // Fetch data if not already present
+        if (plans.length === 0) dispatch(fetchPlans());
+        if (apps.length === 0) dispatch(fetchApps());
+
+        // Restore from storage if redux is empty (initial load scenario)
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved && selectedApps.length === 0) { // Simple check to avoid overwriting current redux state if already populated
+            try {
+                const parsed = JSON.parse(saved);
+                dispatch(restorePlanSelection({
+                    selectedPlan: parsed.selectedPlan || 'PRO',
+                    selectedApps: parsed.selectedApps || [],
+                    selectedFeatures: parsed.selectedFeatures || {}
+                }));
+            } catch (e) {
+                console.error("Failed to restore plan selection", e);
+            }
+        }
+    }, [dispatch, plans.length, apps.length, STORAGE_KEY /*, selectedApps.length */]); // Careful with deps to avoid loops
+
+    // Persist to localStorage
     useEffect(() => {
         const data = { selectedPlan, selectedApps, selectedFeatures };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -205,43 +218,6 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
             app.description?.toLowerCase().includes(searchTerm.toLowerCase())
         );
     }, [apps, searchTerm]);
-
-    const toggleApp = (id: string) => {
-        setSelectedApps(prev => {
-            const isRemoving = prev.includes(id);
-            let next;
-            if (selectedPlan === 'FREE_TRIAL') {
-                next = isRemoving ? [] : [id];
-            } else {
-                next = isRemoving ? prev.filter(a => a !== id) : [...prev, id];
-            }
-
-            if (!isRemoving) {
-                const app = apps.find(a => a.id === id);
-                if (app && app.features) {
-                    const baseFeatures = app.features
-                        .filter((f: any) => f.is_base_feature)
-                        .map((f: any) => f.code);
-                    setSelectedFeatures(prevFeat => ({ ...prevFeat, [id]: baseFeatures }));
-                }
-            } else {
-                const { [id]: _, ...rest } = selectedFeatures;
-                setSelectedFeatures(rest);
-            }
-            return next;
-        });
-    };
-
-    const toggleFeature = (appId: string, featureCode: string) => {
-        setSelectedFeatures(prev => {
-            const appFeats = prev[appId] || [];
-            if (appFeats.includes(featureCode)) {
-                return { ...prev, [appId]: appFeats.filter(f => f !== featureCode) };
-            } else {
-                return { ...prev, [appId]: [...appFeats, featureCode] };
-            }
-        });
-    };
 
     const calculateAppTotal = (app: any) => {
         const basePrice = parseFloat(app.base_price) || 0;
@@ -283,7 +259,7 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
         return true;
     };
 
-    // Register the submit handler with the parent
+    // Register submit handler
     useEffect(() => {
         if (setSubmitHandler) {
             setSubmitHandler(handleSubmit);
@@ -291,36 +267,8 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
         return () => {
             if (setSubmitHandler) setSubmitHandler(null);
         };
-    }, [selectedApps, setSubmitHandler]);
-
-    useEffect(() => {
-        const sub = GETAPI({
-            path: "saas/get_apps"
-        }).subscribe((res: any) => {
-            if (res.success && res.data.length > 0) {
-                setApps(res.data);
-                if (selectedApps.length === 0) {
-                    setSelectedApps([res.data[0].id]);
-                    const firstApp = res.data[0];
-                    const baseFeats = firstApp.features?.filter((f: any) => f.is_base_feature).map((f: any) => f.code) || [];
-                    setSelectedFeatures({ [firstApp.id]: baseFeats });
-                }
-            }
-        });
-        const subPlans = GETAPI({ path: 'plans' }).subscribe((res: any) => {
-            if (res.success && res.data.length > 0) {
-                setPlans(res.data);
-                const planExists = res.data.some((p: any) => p.plan_code === selectedPlan);
-                if (!planExists || !selectedPlan) {
-                    setSelectedPlan(res.data[0].plan_code);
-                }
-            }
-        });
-        return () => {
-            sub.unsubscribe();
-            subPlans.unsubscribe();
-        };
-    }, []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedApps, setSubmitHandler]); // Keep deps correctly
 
     return (
         <VStack gap={10} w="full" align="stretch">
@@ -394,7 +342,7 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
                                             <HStack justify="space-between" mb={4}>
                                                 <HStack gap={3}>
                                                     <Circle size="12" bg={isSelected ? activeBorder : useColorModeValue("gray.100", "gray.800")} color={isSelected ? "white" : "inherit"}>
-                                                        <AsyncLoadIcon iconName={app.icon} />
+                                                        <AsyncLoadIcon iconName={app.icon || "BsBox"} />
                                                     </Circle>
                                                     <VStack align="start" gap={0}>
                                                         <HStack gap={1}>
@@ -439,7 +387,7 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
                                                     size="sm"
                                                     variant={isSelected ? "subtle" : "outline"}
                                                     colorPalette={isSelected ? "red" : "blue"}
-                                                    onClick={() => toggleApp(app.id)}
+                                                    onClick={() => dispatch(toggleApp(app.id))}
                                                     borderRadius="xl"
                                                 >
                                                     {isSelected ? <TiDocumentDelete /> : <TbSelect />} {isSelected ? "Remove" : "Select App"}
@@ -492,7 +440,7 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
                                     totalPrice={calculatePlanPrice(plan.plan_code, basePrice)}
                                     features={planFeatures}
                                     isSelected={selectedPlan === plan.plan_code}
-                                    onClick={() => setSelectedPlan(plan.plan_code)}
+                                    onClick={() => dispatch(setSelectedPlan(plan.plan_code))}
                                     activeBorder={activeBorder}
                                     borderColor={borderColor}
                                     cardBg={cardBg}
@@ -512,7 +460,7 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
                                 totalPrice={calculatePlanPrice("FREE_TRIAL", 0)}
                                 features={["Up to 5 Team Members", "Basic Analytics", "Community Support"]}
                                 isSelected={selectedPlan === "FREE_TRIAL"}
-                                onClick={() => setSelectedPlan("FREE_TRIAL")}
+                                onClick={() => dispatch(setSelectedPlan("FREE_TRIAL"))}
                                 activeBorder={activeBorder}
                                 borderColor={borderColor}
                                 cardBg={cardBg}
@@ -527,7 +475,7 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
                                 features={["Unlimited Team Members", "Advanced Reports", "Priority Support"]}
                                 recommended
                                 isSelected={selectedPlan === "PRO"}
-                                onClick={() => setSelectedPlan("PRO")}
+                                onClick={() => dispatch(setSelectedPlan("PRO"))}
                                 activeBorder={activeBorder}
                                 borderColor={borderColor}
                                 cardBg={cardBg}
@@ -541,7 +489,7 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
                                 totalPrice={calculatePlanPrice("ENTERPRISE", 2499)}
                                 features={["Unlimited Everything", "Custom SLA", "Account Manager"]}
                                 isSelected={selectedPlan === "ENTERPRISE"}
-                                onClick={() => setSelectedPlan("ENTERPRISE")}
+                                onClick={() => dispatch(setSelectedPlan("ENTERPRISE"))}
                                 activeBorder={activeBorder}
                                 borderColor={borderColor}
                                 cardBg={cardBg}
@@ -598,7 +546,7 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
                                                 <HStack gap={4} flex="1">
                                                     <Checkbox
                                                         checked={isSelected}
-                                                        onCheckedChange={() => !feature.is_base_feature && toggleFeature(customizingApp.id, feature.code)}
+                                                        onCheckedChange={() => !feature.is_base_feature && dispatch(toggleFeature({ appId: customizingApp.id, featureCode: feature.code }))}
                                                         disabled={feature.is_base_feature}
                                                         colorPalette="blue"
                                                         size="lg"

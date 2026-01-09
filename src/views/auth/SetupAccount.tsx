@@ -1,4 +1,4 @@
-import React, { useEffect, useState, Suspense, lazy } from "react";
+import React, { useEffect, useState, Suspense, lazy, useCallback } from "react";
 import {
   Box,
   Button,
@@ -60,7 +60,7 @@ export default function SetupAccount() {
   const [isResending, setIsResending] = useState(false);
   const [activeSubmitHandler, setActiveSubmitHandler] = useState<(() => Promise<boolean>) | null>(null);
 
-  const handleSetSubmitHandler = React.useCallback(
+  const handleSetSubmitHandler = useCallback(
     (handler: (() => Promise<boolean>) | null) => {
       setActiveSubmitHandler(() => handler);
     },
