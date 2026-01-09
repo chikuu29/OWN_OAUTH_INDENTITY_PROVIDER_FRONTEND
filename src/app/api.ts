@@ -25,7 +25,8 @@ const errorMessages: Record<number, string> = {
     500: 'Internal server error',
     502: 'Bad gateway',
     503: 'Service unavailable',
-    505: 'Server not found'
+    505: 'Server not found',
+    400: 'Bad request',
     // Add more mappings as needed
 };
 
@@ -243,7 +244,7 @@ const POSTAPI = ({
                 const message = errorMessages[statusCode] || 'An unknown error occurred';
                 // Format the error response
                 return of({
-                    data: error['response']['data'],
+                    ...error?.['response']?.['data'],
                     success: false,
                     message: message || 'An unknown error occurred',
                     errorInfo: error

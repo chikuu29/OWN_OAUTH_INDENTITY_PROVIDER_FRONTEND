@@ -19,8 +19,16 @@ import { toaster } from "@/components/ui/toaster";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useParams } from "react-router";
 import { FaCreditCard, FaCheck, FaReceipt, FaMobileAlt, FaUniversity } from "react-icons/fa";
-import { GETAPI } from "@/app/api";
 import confetti from "canvas-confetti";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/app/store";
+import {
+  fetchPlans,
+  fetchApps,
+  restorePlanSelection,
+  verifyPayment,
+  completeActivation
+} from "@/app/slices/account/setupAccountSlice";
 
 interface PaymentFormProps {
   setIsSubmitting: (loading: boolean) => void;
@@ -31,11 +39,17 @@ const PaymentForm = ({ setIsSubmitting, setSubmitHandler }: PaymentFormProps) =>
   const { request_code } = useParams();
   const STORAGE_KEY = `setup_plan_selection_${request_code}`;
 
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-  const [selectedApps, setSelectedApps] = useState<string[]>([]);
-  const [selectedFeatures, setSelectedFeatures] = useState<Record<string, string[]>>({});
-  const [apps, setApps] = useState<any[]>([]);
-  const [plans, setPlans] = useState<any[]>([]);
+  const dispatch = useDispatch<AppDispatch>();
+  const {
+    plans,
+    apps,
+    validatedAccountsData,
+    selectedPlan,
+    selectedApps,
+    selectedFeatures
+  } = useSelector((state: RootState) => state.setup_account);
+
+  // Local UI state
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<any | null>(null);
   const [showCoupons, setShowCoupons] = useState(false);
@@ -49,37 +63,37 @@ const PaymentForm = ({ setIsSubmitting, setSubmitHandler }: PaymentFormProps) =>
     { code: "LAUNCH50", percentage: 0.5, description: "Special launch offer! 50% discount." },
   ];
 
+  // Initialize/Restore state on mount
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setSelectedPlan(parsed.selectedPlan);
-        setSelectedApps(parsed.selectedApps || []);
-        setSelectedFeatures(parsed.selectedFeatures || {});
-        if (parsed.appliedCoupon) {
-          setAppliedCoupon(parsed.appliedCoupon);
+    // If Redux state is empty, try to fetch/restore
+    if (plans.length === 0) dispatch(fetchPlans());
+    if (apps.length === 0) dispatch(fetchApps());
+
+    console.log("CHECKING REDUX STATE:", { selectedPlan, selectedApps });
+
+    // Restore from localStorage if Redux is empty (page refresh scenario)
+    // Checking selectedPlan.plan_code because selectedPlan defaults to {}
+    if (!selectedPlan?.plan_code && request_code) {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          console.log("RESTORING FROM STORAGE:", parsed);
+          dispatch(restorePlanSelection({
+            selectedPlan: parsed.selectedPlan,
+            selectedApps: parsed.selectedApps || [],
+            selectedFeatures: parsed.selectedFeatures || {}
+          }));
+          // Also restore local UI state like coupon if present
+          if (parsed.appliedCoupon) setAppliedCoupon(parsed.appliedCoupon);
+          if (parsed.transactions) setTransactions(parsed.transactions);
+
+        } catch (e) {
+          console.error("Failed to restore plan selection", e);
         }
-        if (parsed.transactions) {
-          setTransactions(parsed.transactions);
-        }
-      } catch (e) {
-        console.error("Failed to parse storage data", e);
       }
     }
-
-    const subApps = GETAPI({ path: "saas/get_apps" }).subscribe((res: any) => {
-      if (res.success) setApps(res.data);
-    });
-    const subPlans = GETAPI({ path: "plans" }).subscribe((res: any) => {
-      if (res.success) setPlans(res.data);
-    });
-
-    return () => {
-      subApps.unsubscribe();
-      subPlans.unsubscribe();
-    };
-  }, [STORAGE_KEY]);
+  }, [dispatch, plans.length, apps.length, request_code, STORAGE_KEY, selectedPlan?.plan_code]);
 
   const calculateAppTotal = (app: any) => {
     const basePrice = parseFloat(app.base_price) || 0;
@@ -92,9 +106,12 @@ const PaymentForm = ({ setIsSubmitting, setSubmitHandler }: PaymentFormProps) =>
     return basePrice + addonsPrice;
   };
 
-  const getSelectedPlanDetails = () => {
-    return plans.find(p => p.plan_code === selectedPlan);
-  };
+  const planDetails = React.useMemo(() => {
+    // selectedPlan in Redux is { plan_code, current_version_id }
+    // We need to find the full plan object from the 'plans' array
+    if (!selectedPlan?.plan_code) return null;
+    return plans.find(p => p.plan_code === selectedPlan.plan_code);
+  }, [plans, selectedPlan]);
 
   const handleApplyCoupon = () => {
     const lowerCoupon = couponInput.trim().toUpperCase();
@@ -170,7 +187,7 @@ const PaymentForm = ({ setIsSubmitting, setSubmitHandler }: PaymentFormProps) =>
     });
   };
 
-  const planDetails = getSelectedPlanDetails();
+  // Calculations
   const planBasePrice = parseFloat(planDetails?.current_version?.price || "0");
   const appsSubtotal = apps
     .filter(app => selectedApps.includes(app.id))
@@ -216,56 +233,111 @@ const PaymentForm = ({ setIsSubmitting, setSubmitHandler }: PaymentFormProps) =>
 
   const handlePayNow = async () => {
     setIsSubmitting(true);
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      const payload = {
+        // tenant_email: validatedAccountsData?.tenant_email,
+        // tenant_name: validatedAccountsData?.tenant_name,
+        // tenant_uuid: validatedAccountsData?.tenant_uuid,
+        plan_code: selectedPlan?.plan_code,
+        current_version_id: selectedPlan?.current_version_id,
+        apps: selectedApps,
+        features: selectedFeatures,
+        coupon: appliedCoupon,
+        payment_method: paymentMethod,
+        grand_total: grandTotal,
+        tax: tax,
+        discount_amount: discountAmount,
+        taxable_amount: taxableAmount,
+        subtotal: subtotal,
+        tax_rate: taxRate,
+      };
 
-    // Simulate random success/failure (80% success)
-    const isSuccess = Math.random() > 0.2;
-    const status = isSuccess ? 'success' : 'failed';
+      console.log("=== VERIFYING PAYMENT ===");
+      // Dispatch verifyPayment thunk
+      const verifyResult: any = await dispatch(verifyPayment(payload)).unwrap();
 
-    const newTransaction = {
-      id: `TXN-${Math.floor(Math.random() * 1000000)}`,
-      date: new Date().toLocaleString(),
-      amount: grandTotal,
-      method: paymentMethod,
-      status: status
-    };
+      const { razorpay_order_id, key_id, amount, currency, transaction_id } = verifyResult;
 
-    setTransactions(prev => [newTransaction, ...prev]);
+      console.log("=== INITIATING RAZORPAY ===", verifyResult);
 
-    console.log("=== PAYMENT PROCESSED ===");
-    console.log("Method:", paymentMethod);
-    console.log("Amount Paid:", grandTotal);
-    console.log("Status:", status);
-    console.log("=========================");
+      const options = {
+        key: key_id,
+        amount: amount * 100, // Amount is in paise
+        currency: currency,
+        name: "Antigravity SaaS",
+        description: `Subscription for ${selectedPlan?.plan_code}`,
+        order_id: razorpay_order_id,
+        handler: async function (response: any) {
+          console.log("PAYMENT SUCCESS", response);
+          // Call complete activation
+          try {
+            const activationPayload = {
+              plan_uuid: selectedPlan?.current_version_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+              transaction_id: transaction_id
+            };
 
-    if (isSuccess) {
-      toaster.create({
-        title: "Payment Successful",
-        description: `Payment of ₹${grandTotal.toLocaleString()} processed via ${paymentMethod === 'card' ? 'Credit Card' : paymentMethod.toUpperCase()}.`,
-        type: "success",
+            // Dispatch completeActivation thunk
+            await dispatch(completeActivation({
+              token: request_code!,
+              payload: activationPayload
+            })).unwrap();
+
+            toaster.create({ title: "Account Activated!", type: "success" });
+            confetti({ particleCount: 200, spread: 300 });
+            // Proceed to next step if there is one, or redirect
+
+          } catch (error: any) {
+            console.error(error);
+            toaster.create({ title: "Activation Failed", description: error, type: "error" });
+          }
+        },
+        prefill: {
+          name: validatedAccountsData?.tenant_name,
+          email: validatedAccountsData?.tenant_email,
+          contact: ""
+        },
+        theme: {
+          color: "#3182ce"
+        }
+      };
+
+      const razorpay = new (window as any).Razorpay(options);
+      razorpay.on('payment.failed', function (response: any) {
+        toaster.create({ title: "Payment Failed", description: response.error.description, type: "error" });
       });
-    } else {
-      toaster.create({
-        title: "Payment Failed",
-        description: "Transaction failed. Please try again.",
-        type: "error",
-      });
+      razorpay.open();
+
+    } catch (error: any) {
+      // console.error(error);
+      console.log(error);
+      // toaster.create({
+      //   title: "Error",
+      //   description: error.message || "Something went wrong",
+      //   type: "error"
+      // });
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setIsSubmitting(false);
   };
 
-  // Persist all selections to localStorage
+  // Persist all selections to localStorage (Optional: usually PlanSelection handles this, 
+  // but we update appliedCoupon and transactions locally here, so might want to save them)
   useEffect(() => {
-    if (!selectedPlan && selectedApps.length === 0) return; // Don't overwrite if not loaded yet
+    if (!selectedPlan?.plan_code && selectedApps.length === 0) return;
 
+    // We can update the same key, but be careful not to overwrite the core plan data if Redux hasn't loaded yet?
+    // Actually, we trust Redux is the source of truth now.
+
+    // Just saving what we have in Redux + local PaymentForm state
     const dataToSave = {
       selectedPlan,
       selectedApps,
       selectedFeatures,
       appliedCoupon,
-      transactions, // Save transactions too
+      transactions,
       pricing: {
         subtotal,
         discountAmount,
@@ -283,8 +355,6 @@ const PaymentForm = ({ setIsSubmitting, setSubmitHandler }: PaymentFormProps) =>
 
   return (
     <SimpleGrid columns={{ base: 1, lg: 2 }} gap={8} alignItems="start">
-
-
 
       {/* Left Side: Order Summary */}
       <Box

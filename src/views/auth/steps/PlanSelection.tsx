@@ -196,7 +196,7 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
             try {
                 const parsed = JSON.parse(saved);
                 dispatch(restorePlanSelection({
-                    selectedPlan: parsed.selectedPlan || 'PRO',
+                    selectedPlan: parsed.selectedPlan,
                     selectedApps: parsed.selectedApps || [],
                     selectedFeatures: parsed.selectedFeatures || {}
                 }));
@@ -279,7 +279,7 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
                         <Text fontWeight="bold" fontSize="xl" letterSpacing="tight">1. Choose Your Applications</Text>
                         <Text fontSize="sm" color="gray.500">Select the apps and customize features for your business.</Text>
                     </VStack>
-                    {selectedPlan === 'FREE_TRIAL' && (
+                    {selectedPlan.plan_code === 'FREE_TRIAL' && (
                         <Badge colorPalette="orange" variant="solid" borderRadius="full" px={3} py={1}>
                             Free Trial: 1 App
                         </Badge>
@@ -439,8 +439,8 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
                                     name={plan.name}
                                     totalPrice={calculatePlanPrice(plan.plan_code, basePrice)}
                                     features={planFeatures}
-                                    isSelected={selectedPlan === plan.plan_code}
-                                    onClick={() => dispatch(setSelectedPlan(plan.plan_code))}
+                                    isSelected={selectedPlan.plan_code === plan.plan_code}
+                                    onClick={() => dispatch(setSelectedPlan(plan))}
                                     activeBorder={activeBorder}
                                     borderColor={borderColor}
                                     cardBg={cardBg}
@@ -459,7 +459,7 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
                                 name="Starter"
                                 totalPrice={calculatePlanPrice("FREE_TRIAL", 0)}
                                 features={["Up to 5 Team Members", "Basic Analytics", "Community Support"]}
-                                isSelected={selectedPlan === "FREE_TRIAL"}
+                                isSelected={selectedPlan.plan_code === "FREE_TRIAL"}
                                 onClick={() => dispatch(setSelectedPlan("FREE_TRIAL"))}
                                 activeBorder={activeBorder}
                                 borderColor={borderColor}
@@ -474,7 +474,7 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
                                 totalPrice={calculatePlanPrice("PRO", 999)}
                                 features={["Unlimited Team Members", "Advanced Reports", "Priority Support"]}
                                 recommended
-                                isSelected={selectedPlan === "PRO"}
+                                isSelected={selectedPlan.plan_code === "PRO"}
                                 onClick={() => dispatch(setSelectedPlan("PRO"))}
                                 activeBorder={activeBorder}
                                 borderColor={borderColor}
@@ -488,7 +488,7 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
                                 name="Enterprise"
                                 totalPrice={calculatePlanPrice("ENTERPRISE", 2499)}
                                 features={["Unlimited Everything", "Custom SLA", "Account Manager"]}
-                                isSelected={selectedPlan === "ENTERPRISE"}
+                                isSelected={selectedPlan.plan_code === "ENTERPRISE"}
                                 onClick={() => dispatch(setSelectedPlan("ENTERPRISE"))}
                                 activeBorder={activeBorder}
                                 borderColor={borderColor}

@@ -67,7 +67,7 @@ interface SetupAccountState {
     // Plan Selection State
     plans: Plan[];
     apps: App[];
-    selectedPlan: string;
+    selectedPlan: any;
     selectedApps: string[];
     selectedFeatures: Record<string, string[]>; // { appId: [featureCode1, featureCode2] }
     billingCycle: 'monthly' | 'yearly';
@@ -83,7 +83,7 @@ const initialState: SetupAccountState = {
 
     plans: [],
     apps: [],
-    selectedPlan: 'PRO', // Default
+    selectedPlan: {}, // Default
     selectedApps: [],
     selectedFeatures: {},
     billingCycle: 'monthly',
@@ -164,6 +164,7 @@ export const fetchBusinessDetails = createAsyncThunk(
     }
 );
 
+// Existing updateBusinessDetails thunk...
 export const updateBusinessDetails = createAsyncThunk(
     'setup_account/updateBusinessDetails',
     async (payload: any, { rejectWithValue }) => { // Payload includes tenant_id, tenant_uuid and form fields
@@ -190,6 +191,83 @@ export const updateBusinessDetails = createAsyncThunk(
     }
 );
 
+// Payment Verification Thunk
+export const verifyPayment = createAsyncThunk(
+    'setup_account/verifyPayment',
+    async (payload: any, { rejectWithValue }) => {
+        try {
+            return await new Promise((resolve, reject) => {
+                POSTAPI({
+                    path: '/account/verify-payment',
+                    data: payload
+                }).subscribe({
+                    next: (res: any) => {
+                        if (res && res.success) {
+                            resolve(res.data);
+                        } else {
+                            // console.log("err", res);
+                            // Remove non-serializable errorInfo (AxiosError) before rejecting
+                            const { errorInfo, ...serializableError } = res;
+                            reject(serializableError);
+                        }
+                    },
+                    error: (err) => {
+                        // Extract serializable error data
+                        console.log("err", err);
+                        const errorData = err.response?.data || { message: err.message || "Network Error" };
+                        reject(errorData);
+                    }
+                });
+            });
+        } catch (error: any) {
+            // Fallback sanitization: Ensure we don't pass non-serializable Axios objects
+            const safeError = (error.config && error.request)
+                ? { message: error.message || "Network Error", ...error.response?.data }
+                : error;
+
+            // Double check to remove errorInfo
+            const { errorInfo, ...finalError } = safeError;
+
+            return rejectWithValue(finalError);
+        }
+    }
+);
+
+// Complete Activation Thunk
+export const completeActivation = createAsyncThunk(
+    'setup_account/completeActivation',
+    async ({ token, payload }: { token: string, payload: any }, { rejectWithValue }) => {
+        try {
+            return await new Promise((resolve, reject) => {
+                POSTAPI({
+                    path: `/account/activate/${token}/complete`,
+                    data: payload
+                }).subscribe({
+                    next: (res: any) => {
+                        if (res && res.success) {
+                            resolve(res.data);
+                        } else {
+                            // Remove non-serializable errorInfo
+                            const { errorInfo, ...serializableError } = res;
+                            reject(serializableError);
+                        }
+                    },
+                    error: (err) => {
+                        const errorData = err.response?.data || { message: err.message || "Network Error" };
+                        reject(errorData);
+                    }
+                });
+            });
+        } catch (error: any) {
+            const safeError = (error.config && error.request)
+                ? { message: error.message || "Network Error", ...error.response?.data }
+                : error;
+            const { errorInfo, ...finalError } = safeError;
+            return rejectWithValue(finalError);
+        }
+    }
+);
+
 const setupAccountSlice = createSlice({
     name: 'setup_account',
     initialState,
@@ -203,9 +281,10 @@ const setupAccountSlice = createSlice({
             state.error = null;
         },
         // Plan Selection Reducers
-        setSelectedPlan: (state, action: PayloadAction<string>) => {
-            state.selectedPlan = action.payload;
-            if (action.payload === 'FREE_TRIAL') {
+        setSelectedPlan: (state, action: PayloadAction<any>) => {
+            const { plan_code, current_version } = action.payload;
+            state.selectedPlan = { plan_code: plan_code, current_version_id: current_version.id };
+            if (plan_code === 'FREE_TRIAL') {
                 if (state.selectedApps.length > 1) {
                     state.selectedApps = [state.selectedApps[0]]; // Keep only first app
                 }
