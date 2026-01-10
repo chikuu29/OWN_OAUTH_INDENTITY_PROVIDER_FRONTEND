@@ -255,6 +255,15 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
             return false;
         }
 
+        if (!selectedPlan || !selectedPlan.plan_code) {
+            console.warn("[PlanSelection] Validation failed: No plan selected.");
+            toaster.create({
+                description: "Please select a plan to proceed.",
+                type: "error",
+            });
+            return false;
+        }
+
         console.log("[PlanSelection] Validation successful.");
         return true;
     };
