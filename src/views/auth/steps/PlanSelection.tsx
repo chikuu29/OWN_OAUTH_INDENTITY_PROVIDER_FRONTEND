@@ -180,9 +180,11 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
     const borderColor = useColorModeValue("gray.200", "gray.600");
     const cardBg = useColorModeValue("white", "gray.700");
     const appHighlightBg = useColorModeValue("blue.50", "rgba(66, 153, 225, 0.05)");
+    const circleBgNonSelected = useColorModeValue("gray.100", "gray.800");
 
     const [customizingApp, setCustomizingApp] = useState<any | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
+    const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
     // Initialize/Restore state
     useEffect(() => {
@@ -195,6 +197,7 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
         if (saved && selectedApps.length === 0) { // Simple check to avoid overwriting current redux state if already populated
             try {
                 const parsed = JSON.parse(saved);
+                console.log("[PlanSelection] Restoring from storage:", parsed);
                 dispatch(restorePlanSelection({
                     selectedPlan: parsed.selectedPlan,
                     selectedApps: parsed.selectedApps || [],
@@ -204,13 +207,22 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
                 console.error("Failed to restore plan selection", e);
             }
         }
+
+        // Mark initial load as complete so we can start saving updates
+        setInitialLoadComplete(true);
+
     }, [dispatch, plans.length, apps.length, STORAGE_KEY /*, selectedApps.length */]); // Careful with deps to avoid loops
 
     // Persist to localStorage
     useEffect(() => {
+        // Only save if we have finished the initial load/restore process
+        // This prevents overwriting storage with empty state on page refresh
+        if (!initialLoadComplete) return;
+
         const data = { selectedPlan, selectedApps, selectedFeatures };
+        console.log("[PlanSelection] Saving to storage:", data);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    }, [selectedPlan, selectedApps, selectedFeatures, STORAGE_KEY]);
+    }, [selectedPlan, selectedApps, selectedFeatures, STORAGE_KEY, initialLoadComplete]);
 
     const filteredApps = useMemo(() => {
         return apps.filter(app =>
@@ -350,7 +362,7 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
                                         <Box p={5}>
                                             <HStack justify="space-between" mb={4}>
                                                 <HStack gap={3}>
-                                                    <Circle size="12" bg={isSelected ? activeBorder : useColorModeValue("gray.100", "gray.800")} color={isSelected ? "white" : "inherit"}>
+                                                    <Circle size="12" bg={isSelected ? activeBorder : circleBgNonSelected} color={isSelected ? "white" : "inherit"}>
                                                         <AsyncLoadIcon iconName={app.icon || "BsBox"} />
                                                     </Circle>
                                                     <VStack align="start" gap={0}>

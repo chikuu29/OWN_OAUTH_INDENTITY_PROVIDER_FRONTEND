@@ -1,5 +1,5 @@
 
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk, PayloadAction, createSelector } from '@reduxjs/toolkit'
 import { GETAPI, POSTAPI } from '@/app/api';
 
 interface BusinessDetails {
@@ -74,6 +74,7 @@ interface SetupAccountState {
 
     loading: boolean;
     error: string | null;
+    appliedCoupon: { code: string; percentage: number } | null;
 }
 
 const initialState: SetupAccountState = {
@@ -90,6 +91,7 @@ const initialState: SetupAccountState = {
 
     loading: false,
     error: null,
+    appliedCoupon: null,
 }
 
 // Async Thunks
@@ -98,7 +100,7 @@ export const fetchPlans = createAsyncThunk<Plan[]>(
     async (_, { rejectWithValue }) => {
         try {
             return await new Promise<Plan[]>((resolve, reject) => {
-                GETAPI({ path: 'plans' }).subscribe({
+                GETAPI({ path: 'plans/available_plans' }).subscribe({
                     next: (res: any) => {
                         if (res && res.success) {
                             resolve(res.data);
@@ -233,21 +235,22 @@ export const verifyPayment = createAsyncThunk(
     }
 );
 
-// Complete Activation Thunk
-export const completeActivation = createAsyncThunk(
-    'setup_account/completeActivation',
-    async ({ token, payload }: { token: string, payload: any }, { rejectWithValue }) => {
+
+// Get Payment Status Thunk
+export const getPaymentStatus = createAsyncThunk(
+    'setup_account/getPaymentStatus',
+    async (payload: { transaction_id: string }, { rejectWithValue }) => {
+        // ... (existing implementation)
         try {
             return await new Promise((resolve, reject) => {
                 POSTAPI({
-                    path: `/account/activate/${token}/complete`,
+                    path: '/account/payment-status',
                     data: payload
                 }).subscribe({
                     next: (res: any) => {
                         if (res && res.success) {
-                            resolve(res.data);
+                            resolve(res.data[0]);
                         } else {
-                            // Remove non-serializable errorInfo
                             const { errorInfo, ...serializableError } = res;
                             reject(serializableError);
                         }
@@ -268,14 +271,52 @@ export const completeActivation = createAsyncThunk(
     }
 );
 
+// Fetch Payment History Thunk
+export const fetchPaymentHistory = createAsyncThunk(
+    'setup_account/fetchPaymentHistory',
+    async (tenant_uuid: string, { rejectWithValue }) => {
+        try {
+            return await new Promise((resolve, reject) => {
+                GETAPI({
+                    path: '/account/payment-history',
+                    params: { tenant_uuid }
+                }).subscribe({
+                    next: (res: any) => {
+                        if (res && res.success) {
+                            resolve(res.data);
+                        } else {
+                            const { errorInfo, ...serializableError } = res;
+                            reject(serializableError);
+                        }
+                    },
+                    error: (err) => {
+                        const errorData = err.response?.data || { message: err.message || "Network Error" };
+                        reject(errorData);
+                    }
+                });
+            });
+        } catch (error: any) {
+            const safeError = (error.config && error.request)
+                ? { message: error.message || "Network Error", ...error.response?.data }
+                : error;
+            return rejectWithValue(safeError);
+        }
+    }
+);
+
 const setupAccountSlice = createSlice({
     name: 'setup_account',
     initialState,
     reducers: {
-        setValidatedAccountsData: (state, action) => {
-            const { validatedAccountsData, validationsPassed } = action.payload;
-            state.validatedAccountsData = validatedAccountsData;
-            state.validationsPassed = validationsPassed;
+        setValidatedAccountsData: (state, action: PayloadAction<{ validatedAccountsData: any; validationsPassed: boolean }>) => {
+            state.validatedAccountsData = action.payload.validatedAccountsData;
+            state.validationsPassed = action.payload.validationsPassed;
+        },
+        setAppliedCoupon: (state, action: PayloadAction<{ code: string; percentage: number }>) => {
+            state.appliedCoupon = action.payload;
+        },
+        clearAppliedCoupon: (state) => {
+            state.appliedCoupon = null;
         },
         clearError: (state) => {
             state.error = null;
@@ -414,6 +455,55 @@ export const {
     toggleApp,
     toggleFeature,
     setBillingCycle,
-    restorePlanSelection
-} = setupAccountSlice.actions
-export default setupAccountSlice.reducer
+    restorePlanSelection,
+    setAppliedCoupon,
+    clearAppliedCoupon
+} = setupAccountSlice.actions;
+
+export default setupAccountSlice.reducer;
+
+// Selectors
+const selectSetupAccountState = (state: { setup_account: SetupAccountState }) => state.setup_account;
+
+export const selectPricing = createSelector(
+    [selectSetupAccountState],
+    (setupAccount) => {
+        const { plans, apps, selectedPlan, selectedApps, selectedFeatures, appliedCoupon } = setupAccount;
+
+        const planDetails = plans.find((p: Plan) => p.plan_code === selectedPlan.plan_code);
+        const planBasePrice = parseFloat(planDetails?.current_version?.price || "0");
+
+        const calculateAppTotal = (app: App) => {
+            const basePrice = parseFloat(app.base_price) || 0;
+            const selectedForApp = selectedFeatures[app.id] || [];
+            const addonsPrice = app.features
+                ? app.features
+                    .filter((f: Feature) => !f.is_base_feature && selectedForApp.includes(f.code))
+                    .reduce((sum: number, f: Feature) => sum + (parseFloat(f.addon_price) || 0), 0)
+                : 0;
+            return basePrice + addonsPrice;
+        };
+
+        const appsSubtotal = apps
+            .filter((app: App) => selectedApps.includes(app.id))
+            .reduce((sum: number, app: App) => sum + calculateAppTotal(app), 0);
+
+        const subtotal = planBasePrice + appsSubtotal;
+        const discountAmount = appliedCoupon ? subtotal * appliedCoupon.percentage : 0;
+        const taxableAmount = subtotal - discountAmount;
+
+        const taxRate = 0.18; // 18% GST
+        const tax = taxableAmount * taxRate;
+        const grandTotal = taxableAmount + tax;
+
+        return {
+            subtotal: Number(subtotal.toFixed(2)),
+            discountAmount: Number(discountAmount.toFixed(2)),
+            taxableAmount: Number(taxableAmount.toFixed(2)),
+            tax: Number(tax.toFixed(2)),
+            grandTotal: Number(grandTotal.toFixed(2)),
+            planBasePrice,
+            taxRate
+        };
+    }
+);

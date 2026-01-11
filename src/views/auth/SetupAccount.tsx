@@ -27,15 +27,15 @@ import { BiBuildingHouse } from "react-icons/bi";
 
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { GETAPI, POSTAPI } from "@/app/api";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "@/app/store";
-import { setValidatedAccountsData } from "@/app/slices/account/setupAccountSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/app/store";
+import { setValidatedAccountsData, selectPricing } from "@/app/slices/account/setupAccountSlice";
 import { Toaster, toaster } from "@/components/ui/toaster";
 // Lazy Load Steps
 const BusinessDetailsForm = lazy(() => import("./steps/BusinessDetails"));
 const PlanSelection = lazy(() => import("./steps/PlanSelection"));
 const PaymentForm = lazy(() => import("./steps/PaymentForm"));
-const CompletionView = lazy(() => import("./steps/CompletionView"));
+const ConfirmationView = lazy(() => import("./steps/ConfirmationView"));
 
 /**
  * SetupAccount Component
@@ -79,7 +79,7 @@ export default function SetupAccount() {
     },
     { id: "plan", index: 2, title: "Choose Plan", icon: <FaRocket /> },
     { id: "payment", index: 3, title: "Payment", icon: <FaCreditCard /> },
-    { id: "complete", index: 4, title: "Complete", icon: <FaCheck /> },
+    { id: "confirmation", index: 4, title: "Confirmation", icon: <FaCheck /> },
   ];
 
   const currentStepObj =
@@ -127,6 +127,69 @@ export default function SetupAccount() {
     }
   }, [splat, navigate, request_code]);
 
+  // Route Guard Logic
+  const { validatedAccountsData, selectedPlan } = useSelector((state: RootState) => state.setup_account);
+  const { grandTotal } = useSelector(selectPricing);
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!currentStepSlug || !request_code) return;
+
+    const checkAccess = () => {
+      // 1. Business Step: Always accessible (or check if token validated?)
+      // For now, assume always accessible as entry point.
+
+      // 2. Plan Step: Typically accessible if we have basic account data? 
+      // (Assuming validatedAccountsData is populated by the validation effect below)
+
+      // 3. Payment Step: Requires a plan to be selected
+      if (currentStepSlug === 'payment') {
+        // Check if plan is selected. 
+        // Note: selectedPlan might be empty on reload until Redux restores it.
+        // However, PlanSelection usage of localStorage restore is local to that component?
+        // No, PlanSelection restores to Redux. But here in SetupAccount, we might run before restoration?
+        // SetupAccount doesn't seem to trigger restore itself found in PlanSelection.
+        // Logic gap: The restore logic is inside PlanSelection. If user refreshes on /payment, 
+        // PlanSelection isn't mounted, so Redux is empty!
+        // Fix: We need to handle hydration or check localStorage here too, OR 
+        // accept that refresh on /payment redirects to /plan, and let PlanSelection restore it there?
+        // That seems acceptable/safer. 
+        // Or better: SetupAccount acts as the layout/parent, it should responsible for restoring state if needed,
+        // or we rely on the sub-components.
+
+        const stored = localStorage.getItem(`setup_plan_selection_${request_code}`);
+        const hasStoredPlan = stored ? JSON.parse(stored).selectedPlan?.plan_code : false;
+
+        if (!selectedPlan?.plan_code && !hasStoredPlan) {
+          console.warn("[RouteGuard] No plan selected. Redirecting to plan selection.");
+          toaster.create({
+            description: "Please select a plan first.",
+            type: "error",
+          });
+          navigate(`/account/setup/${request_code}/plan`, { replace: true });
+        }
+      }
+
+      // 4. Confirmation Step: Requires valid payment/transaction state
+      if (currentStepSlug === 'confirmation') {
+        console.log("Location state:", location.state);
+
+        const status = location.state?.status;
+        const txnId = location.state?.transaction_id;
+
+        if (!status && !txnId) {
+          console.warn("[RouteGuard] No confirmation status or transaction ID. Redirecting to payment.");
+          navigate(`/account/setup/${request_code}/payment`, { replace: true });
+        }
+      }
+    };
+
+    // Small delay to allow initial validation/hydration if needed? 
+    // Actually, standard react effect timing.
+    checkAccess();
+
+  }, [currentStepSlug, request_code, selectedPlan, navigate, location.state]);
+
   // Validate Token on Mount
   useEffect(() => {
     if (request_code) {
@@ -137,13 +200,25 @@ export default function SetupAccount() {
       }).subscribe({
         next: (res: any) => {
           if (res.success && res.data.length > 0) {
+            const linkData = res.data[0];
             dispatch(
               setValidatedAccountsData({
-                validatedAccountsData: res.data[0],
+                validatedAccountsData: linkData,
                 validationsPassed: true,
               })
             );
             setIsValidating(false);
+            // If link is already used, it means activation is complete
+            if (linkData.is_used) {
+              console.log("[SetupAccount] Link already used. Redirecting to confirmation.");
+              navigate(`/account/setup/${request_code}/confirmation`, {
+                replace: true,
+                state: { status: 'success' }
+              });
+              return;
+            }
+
+
           } else {
             dispatch(
               setValidatedAccountsData({
@@ -391,8 +466,8 @@ export default function SetupAccount() {
                   setSubmitHandler={handleSetSubmitHandler}
                 />
               );
-            case "complete":
-              return <CompletionView />;
+            case "confirmation":
+              return <ConfirmationView />;
             default:
               return null;
           }
@@ -464,7 +539,7 @@ export default function SetupAccount() {
               {currentStepSlug === "application" && "What are you building?"}
               {currentStepSlug === "plan" && "Select the Perfect Plan"}
               {currentStepSlug === "payment" && "Payment Details"}
-              {currentStepSlug === "complete" && "You're All Set!"}
+              {currentStepSlug === "confirmation" && "Transaction Confirmation"}
             </Heading>
             <Text
               fontSize={{ base: "md", md: "lg" }}
@@ -480,8 +555,8 @@ export default function SetupAccount() {
                 "Unlock the full potential of your team with our flexible pricing plans."}
               {currentStepSlug === "payment" &&
                 "We encrypt all data. Securely enter your payment information below."}
-              {currentStepSlug === "complete" &&
-                "Your organization has been successfully created. Welcome aboard!"}
+              {currentStepSlug === "confirmation" &&
+                "Review your transaction status and organization details below."}
             </Text>
           </VStack>
 
@@ -591,7 +666,7 @@ export default function SetupAccount() {
             {renderContent()}
 
             {/* Step Actions */}
-            {currentStepSlug !== "complete" && (
+            {currentStepSlug !== "confirmation" && (
               <Flex
                 justify="space-between"
                 align="center"
@@ -611,22 +686,24 @@ export default function SetupAccount() {
                 >
                   Back
                 </Button>
-                <Button
-                  size="lg"
-                  colorPalette="blue"
-                  px={10}
-                  onClick={handleNext}
-                  loading={isStepSubmitting}
-                  loadingText="Saving"
-                  borderRadius="xl"
-                  w={{ base: "full", sm: "auto" }}
-                  bgGradient="linear(to-r, blue.500, blue.600)"
-                  _hover={{ bgGradient: "linear(to-r, blue.600, blue.700)" }}
-                >
-                  {currentStepSlug === "payment"
-                    ? "Complete Setup"
-                    : "Next Step"}
-                </Button>
+                {(currentStepSlug !== "payment" || grandTotal < 1) && (
+                  <Button
+                    size="lg"
+                    colorPalette="blue"
+                    px={10}
+                    onClick={handleNext}
+                    loading={isStepSubmitting}
+                    loadingText="Saving"
+                    borderRadius="xl"
+                    w={{ base: "full", sm: "auto" }}
+                    bgGradient="linear(to-r, blue.500, blue.600)"
+                    _hover={{ bgGradient: "linear(to-r, blue.600, blue.700)" }}
+                  >
+                    {currentStepSlug === "payment"
+                      ? (grandTotal < 1 ? "Activate Account Free" : "Complete Setup")
+                      : "Next Step"}
+                  </Button>
+                )}
               </Flex>
             )}
           </Box>
