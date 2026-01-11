@@ -239,7 +239,7 @@ export const verifyPayment = createAsyncThunk(
 // Get Payment Status Thunk
 export const getPaymentStatus = createAsyncThunk(
     'setup_account/getPaymentStatus',
-    async (payload: { transaction_id: string }, { rejectWithValue }) => {
+    async (payload: { transaction_id: string; token?: string }, { rejectWithValue }) => {
         // ... (existing implementation)
         try {
             return await new Promise((resolve, reject) => {
@@ -274,12 +274,15 @@ export const getPaymentStatus = createAsyncThunk(
 // Fetch Payment History Thunk
 export const fetchPaymentHistory = createAsyncThunk(
     'setup_account/fetchPaymentHistory',
-    async (tenant_uuid: string, { rejectWithValue }) => {
+    async (payload: { tenant_uuid: string; token?: string }, { rejectWithValue }) => {
         try {
             return await new Promise((resolve, reject) => {
+                const params: any = { tenant_uuid: payload.tenant_uuid };
+                if (payload.token) params.token = payload.token;
+
                 GETAPI({
                     path: '/account/payment-history',
-                    params: { tenant_uuid }
+                    params
                 }).subscribe({
                     next: (res: any) => {
                         if (res && res.success) {

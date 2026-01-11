@@ -34,13 +34,18 @@ const ConfirmationView = () => {
 
   // Status can come from location state (sent after payment) or we derive from history
   const statusFromState = location.state?.status;
+  console.log("statusFromState", location);
+
   const errorDetails = location.state?.error || null;
 
   const loadHistory = async () => {
     if (!validatedAccountsData?.tenant_uuid) return;
     setIsLoadingHistory(true);
     try {
-      const history: any = await dispatch(fetchPaymentHistory(validatedAccountsData.tenant_uuid)).unwrap();
+      const history: any = await dispatch(fetchPaymentHistory({
+        tenant_uuid: validatedAccountsData.tenant_uuid,
+        token: request_code
+      })).unwrap();
       setTransactions(history);
     } catch (err) {
       console.error("Failed to load history", err);
@@ -52,7 +57,7 @@ const ConfirmationView = () => {
   const pollingRef = useRef<boolean>(false);
   const timerRef = useRef<any>(null);
 
-  const startPolling = async (transactionId: string) => {
+  const startPolling = async (transactionId?: string) => {
     if (pollingRef.current) return;
     pollingRef.current = true;
     setIsVerifying(true);
@@ -61,7 +66,13 @@ const ConfirmationView = () => {
 
     const poll = async () => {
       try {
-        const result: any = await dispatch(getPaymentStatus({ transaction_id: transactionId })).unwrap();
+        // Use token-based lookup if no transaction_id provided
+        const payload: any = { token: request_code };
+        if (transactionId) {
+          payload.transaction_id = transactionId;
+        }
+
+        const result: any = await dispatch(getPaymentStatus(payload)).unwrap();
         console.log("POLLING RESULT:", result);
 
         if (result.status === "SUCCESS") {
@@ -111,11 +122,14 @@ const ConfirmationView = () => {
     const txnId = location.state?.transaction_id;
     console.log("txnId", txnId);
     console.log("statusFromState", statusFromState);
-    if (txnId && !statusFromState) {
-      startPolling(txnId);
-    } else {
-      loadHistory();
-    }
+
+    // Always start polling if we don't have a final status
+    // Pass transaction_id if available for faster lookup, otherwise use token-only
+    // if (!statusFromState) {
+    startPolling(txnId);
+    // } else {
+    loadHistory();
+    // }
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);

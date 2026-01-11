@@ -249,6 +249,7 @@ const PaymentForm = ({ setIsSubmitting, setSubmitHandler }: PaymentFormProps) =>
         taxable_amount: taxableAmount,
         subtotal: subtotal,
         tax_rate: taxRate,
+        request_code: request_code,
       };
 
       console.log("=== VERIFYING PAYMENT ===");
