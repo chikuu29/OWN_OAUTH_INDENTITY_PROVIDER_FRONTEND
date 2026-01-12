@@ -4,7 +4,7 @@ import appConfigSlice from './slices/appConfig/appConfigSlice'
 // import { loadState, saveState } from '../utils/app/localStorageUtils'
 import appLoaderSlice from './slices/loader/appLoaderSlice'
 // import appLoaderSlice from './slices/loader/appLoaderSlice'
-import setupAccountSlice from './slices/account/setupAccountSlice'
+import onboardingSlice from './slices/account/onboardingSlice'
 import errorReducer from './slices/errorSlice';
 
 
@@ -15,7 +15,7 @@ export const store = configureStore({
         auth: authSlice,
         app: appConfigSlice,
         loader: appLoaderSlice,
-        setup_account: setupAccountSlice,
+        onboarding: onboardingSlice,
         error: errorReducer
     },
     // preloadedState:{

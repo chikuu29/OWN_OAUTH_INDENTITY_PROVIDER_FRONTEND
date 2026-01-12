@@ -31,7 +31,7 @@ import {
   setAppliedCoupon,
   clearAppliedCoupon,
   selectPricing
-} from "@/app/slices/account/setupAccountSlice";
+} from "@/app/slices/account/onboardingSlice";
 
 interface PaymentFormProps {
   setIsSubmitting: (loading: boolean) => void;
@@ -52,7 +52,7 @@ const PaymentForm = ({ setIsSubmitting, setSubmitHandler }: PaymentFormProps) =>
     selectedApps,
     selectedFeatures, businessDetails,
     appliedCoupon
-  } = useSelector((state: RootState) => state.setup_account);
+  } = useSelector((state: RootState) => state.onboarding);
 
   // Local UI state
   const [couponInput, setCouponInput] = useState("");
@@ -71,10 +71,7 @@ const PaymentForm = ({ setIsSubmitting, setSubmitHandler }: PaymentFormProps) =>
     // If Redux state is empty, try to fetch/restore
     if (plans.length === 0) dispatch(fetchPlans());
     if (apps.length === 0) dispatch(fetchApps());
-    // ...
 
-    // Restore from localStorage if Redux is empty (page refresh scenario)
-    // Checking selectedPlan.plan_code because selectedPlan defaults to {}
     if (!selectedPlan?.plan_code && request_code) {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
@@ -260,7 +257,7 @@ const PaymentForm = ({ setIsSubmitting, setSubmitHandler }: PaymentFormProps) =>
 
       if (amount <= 0) {
         console.log("=== FREE ACTIVATION DETECTED ===");
-        navigate(`/account/setup/${request_code}/confirmation`, {
+        navigate(`/onboarding/${request_code}/confirmation`, {
           state: { transaction_id: transaction_id, is_free: true }
         });
         return;
@@ -277,7 +274,7 @@ const PaymentForm = ({ setIsSubmitting, setSubmitHandler }: PaymentFormProps) =>
         order_id: razorpay_order_id,
         handler: async function (response: any) {
           console.log("PAYMENT CAPTURED BY CLIENT", response);
-          navigate(`/account/setup/${request_code}/confirmation`, {
+          navigate(`/onboarding/${request_code}/confirmation`, {
             state: { transaction_id: transaction_id }
           });
         },
@@ -295,7 +292,7 @@ const PaymentForm = ({ setIsSubmitting, setSubmitHandler }: PaymentFormProps) =>
       razorpay.on('payment.failed', function (response: any) {
         console.log("Payment failed:", response);
         // We can still redirect to failure page immediately if Razorpay says it failed
-        navigate(`/account/setup/${request_code}/confirmation`, {
+        navigate(`/onboarding/${request_code}/confirmation`, {
           state: { status: 'failed', error: response.error }
         });
       });

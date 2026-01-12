@@ -59,7 +59,7 @@ interface Plan {
     };
 }
 
-interface SetupAccountState {
+interface OnboardingState {
     validationsPassed: boolean;
     validatedAccountsData: any;
     businessDetails: BusinessDetails | null;
@@ -77,7 +77,7 @@ interface SetupAccountState {
     appliedCoupon: { code: string; percentage: number } | null;
 }
 
-const initialState: SetupAccountState = {
+const initialState: OnboardingState = {
     validationsPassed: false,
     validatedAccountsData: {},
     businessDetails: null,
@@ -96,7 +96,7 @@ const initialState: SetupAccountState = {
 
 // Async Thunks
 export const fetchPlans = createAsyncThunk<Plan[]>(
-    'setup_account/fetchPlans',
+    'onboarding/fetchPlans',
     async (_, { rejectWithValue }) => {
         try {
             return await new Promise<Plan[]>((resolve, reject) => {
@@ -118,7 +118,7 @@ export const fetchPlans = createAsyncThunk<Plan[]>(
 );
 
 export const fetchApps = createAsyncThunk<App[]>(
-    'setup_account/fetchApps',
+    'onboarding/fetchApps',
     async (_, { rejectWithValue }) => {
         try {
             return await new Promise<App[]>((resolve, reject) => {
@@ -140,7 +140,7 @@ export const fetchApps = createAsyncThunk<App[]>(
 );
 
 export const fetchBusinessDetails = createAsyncThunk(
-    'setup_account/fetchBusinessDetails',
+    'onboarding/fetchBusinessDetails',
     async ({ tenant_id, tenant_uuid }: { tenant_id: string, tenant_uuid: string }, { rejectWithValue }) => {
         try {
             return await new Promise((resolve, reject) => {
@@ -168,7 +168,7 @@ export const fetchBusinessDetails = createAsyncThunk(
 
 // Existing updateBusinessDetails thunk...
 export const updateBusinessDetails = createAsyncThunk(
-    'setup_account/updateBusinessDetails',
+    'onboarding/updateBusinessDetails',
     async (payload: any, { rejectWithValue }) => { // Payload includes tenant_id, tenant_uuid and form fields
         try {
             return await new Promise((resolve, reject) => {
@@ -195,7 +195,7 @@ export const updateBusinessDetails = createAsyncThunk(
 
 // Payment Verification Thunk
 export const verifyPayment = createAsyncThunk(
-    'setup_account/verifyPayment',
+    'onboarding/verifyPayment',
     async (payload: any, { rejectWithValue }) => {
         try {
             return await new Promise((resolve, reject) => {
@@ -238,13 +238,13 @@ export const verifyPayment = createAsyncThunk(
 
 // Get Payment Status Thunk
 export const getPaymentStatus = createAsyncThunk(
-    'setup_account/getPaymentStatus',
-    async (payload: { transaction_id: string; token?: string }, { rejectWithValue }) => {
+    'onboarding/getPaymentStatus',
+    async (payload: any, { rejectWithValue }) => {
         // ... (existing implementation)
         try {
             return await new Promise((resolve, reject) => {
                 POSTAPI({
-                    path: '/account/payment-status',
+                    path: '/account/check-onboarding-status',
                     data: payload
                 }).subscribe({
                     next: (res: any) => {
@@ -271,44 +271,10 @@ export const getPaymentStatus = createAsyncThunk(
     }
 );
 
-// Fetch Payment History Thunk
-export const fetchPaymentHistory = createAsyncThunk(
-    'setup_account/fetchPaymentHistory',
-    async (payload: { tenant_uuid: string; token?: string }, { rejectWithValue }) => {
-        try {
-            return await new Promise((resolve, reject) => {
-                const params: any = { tenant_uuid: payload.tenant_uuid };
-                if (payload.token) params.token = payload.token;
 
-                GETAPI({
-                    path: '/account/payment-history',
-                    params
-                }).subscribe({
-                    next: (res: any) => {
-                        if (res && res.success) {
-                            resolve(res.data);
-                        } else {
-                            const { errorInfo, ...serializableError } = res;
-                            reject(serializableError);
-                        }
-                    },
-                    error: (err) => {
-                        const errorData = err.response?.data || { message: err.message || "Network Error" };
-                        reject(errorData);
-                    }
-                });
-            });
-        } catch (error: any) {
-            const safeError = (error.config && error.request)
-                ? { message: error.message || "Network Error", ...error.response?.data }
-                : error;
-            return rejectWithValue(safeError);
-        }
-    }
-);
 
-const setupAccountSlice = createSlice({
-    name: 'setup_account',
+const onboardingSlice = createSlice({
+    name: 'onboarding',
     initialState,
     reducers: {
         setValidatedAccountsData: (state, action: PayloadAction<{ validatedAccountsData: any; validationsPassed: boolean }>) => {
@@ -461,17 +427,17 @@ export const {
     restorePlanSelection,
     setAppliedCoupon,
     clearAppliedCoupon
-} = setupAccountSlice.actions;
+} = onboardingSlice.actions;
 
-export default setupAccountSlice.reducer;
+export default onboardingSlice.reducer;
 
 // Selectors
-const selectSetupAccountState = (state: { setup_account: SetupAccountState }) => state.setup_account;
+const selectOnboardingState = (state: { onboarding: OnboardingState }) => state.onboarding;
 
 export const selectPricing = createSelector(
-    [selectSetupAccountState],
-    (setupAccount) => {
-        const { plans, apps, selectedPlan, selectedApps, selectedFeatures, appliedCoupon } = setupAccount;
+    [selectOnboardingState],
+    (onboarding) => {
+        const { plans, apps, selectedPlan, selectedApps, selectedFeatures, appliedCoupon } = onboarding;
 
         const planDetails = plans.find((p: Plan) => p.plan_code === selectedPlan.plan_code);
         const planBasePrice = parseFloat(planDetails?.current_version?.price || "0");

@@ -20,7 +20,7 @@ const SignInPage = lazy(() => import("./views/auth/signin/SignIn"));
 const SignUpPage = lazy(() => import("./views/auth/signup/SignUp"));
 const PageNotFound = lazy(() => import("./pages/NoPageFound"));
 const AuthorizePage = lazy(() => import("./views/auth/oauth/AuthorizePage"));
-const SetupAccount = lazy(() => import("./views/auth/SetupAccount"));
+const Onboarding = lazy(() => import("./views/auth/Onboarding"));
 const MyApps = lazy(() => import("./views/myApps/MyApps"));
 // const PanelLayout = lazy(() => import("./ui/layouts/dashboard/dash"));
 const PrivateRoute = lazy(() => import("./contexts/PrivateRoute"));
@@ -90,10 +90,10 @@ const routes: RouteObject[] = [
     ],
   },
   {
-    path: "account/setup/:request_code/*",
+    path: "onboarding/:request_code/*",
     element: (
 
-      <SetupAccount />
+      <Onboarding />
 
     ),
   },

@@ -15,7 +15,7 @@ import { FaCheck, FaTimes, FaExclamationTriangle, FaRedo } from "react-icons/fa"
 import { useLocation, useNavigate, useParams } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/app/store";
-import { fetchPaymentHistory, getPaymentStatus } from "@/app/slices/account/setupAccountSlice";
+import { getPaymentStatus } from "@/app/slices/account/onboardingSlice";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import confetti from "canvas-confetti";
 import { toaster } from "@/components/ui/toaster";
@@ -26,33 +26,18 @@ const ConfirmationView = () => {
   const { request_code } = useParams();
   const dispatch = useDispatch<AppDispatch>();
 
-  const { validatedAccountsData } = useSelector((state: RootState) => state.setup_account);
+  const { validatedAccountsData } = useSelector((state: RootState) => state.onboarding);
 
   const [transactions, setTransactions] = useState<any[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [refundEligible, setRefundEligible] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string>("");
 
   // Status can come from location state (sent after payment) or we derive from history
   const statusFromState = location.state?.status;
-  console.log("statusFromState", location);
 
   const errorDetails = location.state?.error || null;
-
-  const loadHistory = async () => {
-    if (!validatedAccountsData?.tenant_uuid) return;
-    setIsLoadingHistory(true);
-    try {
-      const history: any = await dispatch(fetchPaymentHistory({
-        tenant_uuid: validatedAccountsData.tenant_uuid,
-        token: request_code
-      })).unwrap();
-      setTransactions(history);
-    } catch (err) {
-      console.error("Failed to load history", err);
-    } finally {
-      setIsLoadingHistory(false);
-    }
-  };
 
   const pollingRef = useRef<boolean>(false);
   const timerRef = useRef<any>(null);
@@ -67,19 +52,32 @@ const ConfirmationView = () => {
     const poll = async () => {
       try {
         // Use token-based lookup if no transaction_id provided
-        const payload: any = { token: request_code };
-        if (transactionId) {
-          payload.transaction_id = transactionId;
+        const payload: any = {};
+        if (validatedAccountsData?.tenant_uuid) {
+          payload.tenant_uuid = validatedAccountsData.tenant_uuid;
         }
-
+        if (validatedAccountsData?.request_id) {
+          payload.request_id = validatedAccountsData.request_id;
+        }
+        payload.request_type = validatedAccountsData.type;
         const result: any = await dispatch(getPaymentStatus(payload)).unwrap();
         console.log("POLLING RESULT:", result);
+
+        // Update history and other info from the unified response
+        if (result.history) {
+          setTransactions(result.history);
+        }
+        if (result.refund_eligible !== undefined) {
+          setRefundEligible(result.refund_eligible);
+        }
+        if (result.message) {
+          setStatusMessage(result.message);
+        }
 
         if (result.status === "SUCCESS") {
           setIsVerifying(false);
           pollingRef.current = false;
-          loadHistory();
-          toaster.create({ title: "Account Activated!", type: "success" });
+          // toaster.create({ title: "Account Activated!", type: "success" });
           confetti({ particleCount: 200, spread: 300 });
           return;
         }
@@ -87,15 +85,15 @@ const ConfirmationView = () => {
         if (result.status === "FAILED") {
           setIsVerifying(false);
           pollingRef.current = false;
-          loadHistory();
-          toaster.create({
-            title: "Activation Failed",
-            description: result.message || "We couldn't verify your account activation.",
-            type: "error"
-          });
+          // toaster.create({
+          //   title: "Activation Failed",
+          //   description: result.message || "We couldn't verify your account activation.",
+          //   type: "error"
+          // });
           return;
         }
 
+        // If PENDING, keep polling
         attempts++;
         if (attempts < maxAttempts) {
           timerRef.current = setTimeout(poll, 3000);
@@ -120,16 +118,9 @@ const ConfirmationView = () => {
 
   useEffect(() => {
     const txnId = location.state?.transaction_id;
-    console.log("txnId", txnId);
-    console.log("statusFromState", statusFromState);
 
-    // Always start polling if we don't have a final status
-    // Pass transaction_id if available for faster lookup, otherwise use token-only
-    // if (!statusFromState) {
+    // Start polling or validtion check
     startPolling(txnId);
-    // } else {
-    loadHistory();
-    // }
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -137,14 +128,33 @@ const ConfirmationView = () => {
   }, [validatedAccountsData?.tenant_uuid]);
 
   const handleRetry = () => {
-    navigate(`/account/setup/${request_code}/payment`);
+    navigate(`/onboarding/${request_code}/payment`);
   };
 
   const isFreePlan = transactions.length > 0 && parseFloat(transactions[0].amount) === 0;
 
   const getLatestStatus = () => {
-    if (statusFromState) return statusFromState;
-    if (transactions.length > 0) return transactions[0].status.toLowerCase();
+    // If we have transactions history, the logic is usually: logic is handled by backend now mostly, but frontend display logic:
+    // If any success is prioritized by backend and returned as 'status' of endpoint. 
+    // We should rely on valid transactions if available
+    if (transactions.length > 0) {
+      // Find if there is a success one to show success state? 
+      // The backend ensures the 'status' field in result reflects the prioritized status.
+      // BUT, we don't store the result.status in a state, we derived it.
+      // Let's improve this by relying on the derived state from the history we just set.
+
+      // However, the component was relying on 'statusFromState' or Derived.
+      // Let's rely on the latest transaction in the history list (which backend ordered by date desc), 
+      // UNLESS we want to search for success like the backend does.
+      // Actually, consistency with backend is key. The backend returns 'status' in the root. 
+      // But here we only stored 'transactions'.
+
+      // Simple logic: if any success, return success.
+      const hasSuccess = transactions.some(t => t.status.toLowerCase() === 'success');
+      if (hasSuccess) return 'success';
+
+      return transactions[0].status.toLowerCase();
+    }
     return "pending";
   };
 
@@ -208,6 +218,12 @@ const ConfirmationView = () => {
               </>
             )}
           </Text>
+          {/* Refund Info Message */}
+          {refundEligible && (
+            <Badge colorPalette="yellow" variant="outline" size="lg" p={2}>
+              {statusMessage || "Multiple successful payments detected. Duplicate charges may be eligible for refund."}
+            </Badge>
+          )}
         </VStack>
 
         {currentStatus === "failed" && (
@@ -242,21 +258,21 @@ const ConfirmationView = () => {
 
       <Box h="1px" w="full" bg="gray.100" _dark={{ bg: "gray.700" }} />
 
-      {/* Transaction History Section (Moved from PaymentForm) */}
+      {/* Transaction History Section */}
       <VStack align="stretch" w="full" gap={6} p={6} bg={cardBg} borderRadius="2xl" border="1px solid" borderColor={borderColor}>
         <HStack justify="space-between" w="full">
           <Heading size="md" color="gray.600" _dark={{ color: "gray.400" }}>
             Transaction History
           </Heading>
-          {isLoadingHistory && <Spinner size="sm" />}
-          {!isLoadingHistory && (
-            <Button variant="ghost" size="xs" onClick={loadHistory} color="blue.500">
+          {isVerifying && <Spinner size="sm" />}
+          {!isVerifying && (
+            <Button variant="ghost" size="xs" onClick={() => startPolling()} color="blue.500">
               Refresh
             </Button>
           )}
         </HStack>
 
-        {transactions.length === 0 && !isLoadingHistory ? (
+        {transactions.length === 0 && !isVerifying ? (
           <Text color="gray.400" fontStyle="italic">No transaction records found.</Text>
         ) : (
           <VStack gap={3} align="stretch" maxH="300px" overflowY="auto" pr={2}>

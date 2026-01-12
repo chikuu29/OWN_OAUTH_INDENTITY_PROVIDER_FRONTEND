@@ -29,7 +29,7 @@ import { useColorModeValue } from "@/components/ui/color-mode";
 import { GETAPI, POSTAPI } from "@/app/api";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/app/store";
-import { setValidatedAccountsData, selectPricing } from "@/app/slices/account/setupAccountSlice";
+import { setValidatedAccountsData, selectPricing } from "@/app/slices/account/onboardingSlice";
 import { Toaster, toaster } from "@/components/ui/toaster";
 // Lazy Load Steps
 const BusinessDetailsForm = lazy(() => import("./steps/BusinessDetails"));
@@ -49,7 +49,7 @@ const ConfirmationView = lazy(() => import("./steps/ConfirmationView"));
  * - Lazy Loading Steps
  * - Account Activation on Mount
  */
-export default function SetupAccount() {
+export default function Onboarding() {
   const navigate = useNavigate();
   const { request_code, "*": splat } = useParams();
   const dispatch = useDispatch<AppDispatch>();
@@ -123,40 +123,43 @@ export default function SetupAccount() {
   // Redirect to business if no slug provided
   useEffect(() => {
     if (!splat && request_code) {
-      navigate(`/account/setup/${request_code}/business`, { replace: true });
+      navigate(`/onboarding/${request_code}/business`, { replace: true });
     }
   }, [splat, navigate, request_code]);
 
   // Route Guard Logic
-  const { validatedAccountsData, selectedPlan } = useSelector((state: RootState) => state.setup_account);
+  const { validatedAccountsData, selectedPlan } = useSelector((state: RootState) => state.onboarding);
   const { grandTotal } = useSelector(selectPricing);
   const location = useLocation();
 
   useEffect(() => {
-    if (!currentStepSlug || !request_code) return;
+    if (!currentStepSlug || !request_code || isValidating || validationError) return;
 
     const checkAccess = () => {
-      // 1. Business Step: Always accessible (or check if token validated?)
-      // For now, assume always accessible as entry point.
+      // 1. Strict Enforcement: If link is used, MUST be on confirmation
+      if (validatedAccountsData?.is_used) {
+        if (currentStepSlug !== 'confirmation') {
+          console.warn("[RouteGuard] Link is used. Redirecting to confirmation.");
+          navigate(`/onboarding/${request_code}/confirmation`, { replace: true });
+        }
+        // If already on confirmation, allowed. Stop other checks.
+        return;
+      }
 
-      // 2. Plan Step: Typically accessible if we have basic account data? 
-      // (Assuming validatedAccountsData is populated by the validation effect below)
+      // 2. Confirmation Step: Requires valid payment/transaction state (ONLY if not used)
+      if (currentStepSlug === 'confirmation') {
+        const status = location.state?.status;
+        const txnId = location.state?.transaction_id;
+
+        if (!status && !txnId) {
+          console.warn("[RouteGuard] No confirmation status or transaction ID. Redirecting to payment.");
+          navigate(`/onboarding/${request_code}/payment`, { replace: true });
+        }
+        return;
+      }
 
       // 3. Payment Step: Requires a plan to be selected
       if (currentStepSlug === 'payment') {
-        // Check if plan is selected. 
-        // Note: selectedPlan might be empty on reload until Redux restores it.
-        // However, PlanSelection usage of localStorage restore is local to that component?
-        // No, PlanSelection restores to Redux. But here in SetupAccount, we might run before restoration?
-        // SetupAccount doesn't seem to trigger restore itself found in PlanSelection.
-        // Logic gap: The restore logic is inside PlanSelection. If user refreshes on /payment, 
-        // PlanSelection isn't mounted, so Redux is empty!
-        // Fix: We need to handle hydration or check localStorage here too, OR 
-        // accept that refresh on /payment redirects to /plan, and let PlanSelection restore it there?
-        // That seems acceptable/safer. 
-        // Or better: SetupAccount acts as the layout/parent, it should responsible for restoring state if needed,
-        // or we rely on the sub-components.
-
         const stored = localStorage.getItem(`setup_plan_selection_${request_code}`);
         const hasStoredPlan = stored ? JSON.parse(stored).selectedPlan?.plan_code : false;
 
@@ -166,29 +169,17 @@ export default function SetupAccount() {
             description: "Please select a plan first.",
             type: "error",
           });
-          navigate(`/account/setup/${request_code}/plan`, { replace: true });
+          navigate(`/onboarding/${request_code}/plan`, { replace: true });
         }
+        return;
       }
 
-      // 4. Confirmation Step: Requires valid payment/transaction state
-      if (currentStepSlug === 'confirmation') {
-        console.log("Location state:", location.state);
-
-        const status = location.state?.status;
-        const txnId = location.state?.transaction_id;
-
-        if (!status && !txnId) {
-          console.warn("[RouteGuard] No confirmation status or transaction ID. Redirecting to payment.");
-          navigate(`/account/setup/${request_code}/payment`, { replace: true });
-        }
-      }
+      // 4. Plan/Business Steps: Usually always accessible
     };
 
-    // Small delay to allow initial validation/hydration if needed? 
-    // Actually, standard react effect timing.
     checkAccess();
 
-  }, [currentStepSlug, request_code, selectedPlan, navigate, location.state]);
+  }, [currentStepSlug, request_code, selectedPlan, navigate, location.state, validatedAccountsData, isValidating, validationError]);
 
   // Validate Token on Mount
   useEffect(() => {
@@ -210,8 +201,8 @@ export default function SetupAccount() {
             setIsValidating(false);
             // If link is already used, it means activation is complete
             if (linkData.is_used) {
-              console.log("[SetupAccount] Link already used. Redirecting to confirmation.");
-              navigate(`/account/setup/${request_code}/confirmation`, {
+              console.log("[Onboarding] Link already used. Redirecting to confirmation.");
+              navigate(`/onboarding/${request_code}/confirmation`, {
                 replace: true,
                 state: { status: 'success' }
               });
@@ -419,7 +410,7 @@ export default function SetupAccount() {
     const nextIndex = currentStepIndex + 1;
     if (nextIndex <= totalSteps) {
       const nextSlug = steps.find((s) => s.index === nextIndex)?.id;
-      navigate(`/account/setup/${request_code}/${nextSlug}`);
+      navigate(`/onboarding/${request_code}/${nextSlug}`);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
@@ -427,7 +418,7 @@ export default function SetupAccount() {
   const handleBack = () => {
     if (currentStepIndex > 1) {
       const prevSlug = steps.find((s) => s.index === currentStepIndex - 1)?.id;
-      navigate(`/account/setup/${request_code}/${prevSlug}`);
+      navigate(`/onboarding/${request_code}/${prevSlug}`);
     } else {
       navigate(-1);
     }

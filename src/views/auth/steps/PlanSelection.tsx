@@ -40,7 +40,7 @@ import {
     toggleApp,
     toggleFeature,
     restorePlanSelection
-} from "@/app/slices/account/setupAccountSlice";
+} from "@/app/slices/account/onboardingSlice";
 
 interface PlanSelectionProps {
     setIsSubmitting?: (isSubmitting: boolean) => void;
@@ -174,7 +174,7 @@ const PlanSelection: React.FC<PlanSelectionProps> = ({
         selectedPlan,
         selectedApps,
         selectedFeatures
-    } = useSelector((state: RootState) => state.setup_account);
+    } = useSelector((state: RootState) => state.onboarding);
 
     const activeBorder = useColorModeValue("blue.500", "blue.400");
     const borderColor = useColorModeValue("gray.200", "gray.600");

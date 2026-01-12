@@ -37,7 +37,7 @@ import {
   AccordionItemTrigger,
   AccordionRoot,
 } from "@/components/ui/accordion";
-import { fetchBusinessDetails, updateBusinessDetails } from "@/app/slices/account/setupAccountSlice";
+import { fetchBusinessDetails, updateBusinessDetails } from "@/app/slices/account/onboardingSlice";
 
 interface BusinessDetailsFormProps {
   onSuccess?: () => void;
@@ -52,7 +52,7 @@ const BusinessDetailsForm: React.FC<BusinessDetailsFormProps> = ({
 }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { validatedAccountsData, businessDetails } = useSelector(
-    (state: RootState) => state.setup_account
+    (state: RootState) => state.onboarding
   );
 
   const { control, handleSubmit, reset, formState: { isDirty } } = useForm({
